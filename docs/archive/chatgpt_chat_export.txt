@@ -1,0 +1,1518 @@
+Audit And Finalize Project
+==========================
+
+You:
+https://www.perplexity.ai/search/e25e3c75-5259-4340-a968-8d26bfd76a48
+get this chat. docs attached. review and audit every single thing and source. suggest and finalize project and idea. the course this is for is AI for social impact at harvard university taught by milind tambe.
+extensive deep research $deep-research and across the fields. suggest directions and supported papers
+
+
+ChatGPT:
+Deep Research has started on the full audit, including the Perplexity thread and both attached research documents.  
+It will first present the research plan, then proceed with the source verification, cross-field literature review, novelty analysis, alternative project directions, and final project recommendation.
+
+
+You:
+create a markdown document, which i can send to my teammates. it needs to be project focused, combine all high category items, and sources they should read.ask me if any questions for this doc
+
+
+ChatGPT:
+Yes. A few choices will materially affect how useful this is for your teammates:
+
+Project decision: Should the document present the accessible adaptive micro-tutor as the chosen project, or should it say “this is our leading direction, pending final comparison with alternatives”? I can be more critical if the project is not locked.
+
+Audience: Are your teammates already familiar with the two research docs/Perplexity discussion, or should this Markdown file be fully standalone so someone can understand the problem, evidence, proposed system, and experiment without reading anything else first?
+
+Length: I’d recommend a substantial but readable ~6–10 page Markdown brief rather than a giant literature review. Is that right, or do you want a shorter 3–5 page decision memo?
+
+Action orientation: Should I include a concrete “What we build / What we test / Who does what next” section with architecture, MVP scope, experiment, datasets, metrics, risks, and immediate team tasks? I strongly recommend this.
+
+Sources: For the reading list, do you want only the essential ~10–15 papers everyone should read, or also a second-tier bibliography for whoever owns literature review/technical design? I can label them Must Read / Useful / Background and explain why each matters.
+
+Course deliverable: Do you know the expected final format, team size, project deadline, and whether you realistically have IRB/access to children, educators, or neurodivergent participants? This substantially changes the project I would recommend.
+
+
+My default would be a standalone team brief structured roughly as: project thesis → social-impact problem → evidence → gap/novelty → proposed system → what is actually AI vs accessibility → MVP architecture → experiment → datasets → evaluation → ethics → risks/failure criteria → semester plan → open decisions → must-read papers, with claims linked to primary sources rather than carrying over questionable citations from the existing research.
+Answer those six—even very briefly—and I’ll turn the research into the Markdown document.
+
+
+You:
+
+not locked, but this doc is from me and not ai you, so project suggestions okay, like one project one page with what how why etc and sources?
+not familiar
+not huge, this is brief, maybe one page per project? include sources or papers absolutely neceassary 
+action not now, just how it would work in each project overview maybe?
+essential only, not too many per project
+no idea yet, dont worry about it. 
+
+this is for teammates reading and discussion
+
+
+ChatGPT:
+No more questions needed. I’d make it a discussion brief rather than a proposal: enough context that nobody needs the earlier research, then roughly one page per serious project direction, with only the papers/sources that are actually worth reading. I’ve also kept the voice as something you could send directly to the team.
+:::writing{variant="document" id="58314" title="AI for Social Impact — Project Directions for Team Discussion"}
+AI for Social Impact — Project Directions
+Why I’m sending this
+I pulled together the strongest directions from the research so we can discuss what we actually want to pursue. None of these is locked in.
+The general area is AI + education + accessibility/neurodiversity, but I think we should be careful about how we frame the problem. The most interesting opportunity is probably not “build an AI tutor for ADHD/autism/dyslexia.” Neurodivergent learners are heterogeneous, diagnoses overlap, and observable behavior does not reliably tell us why someone is struggling.
+A stronger framing is:
+
+How can AI make learning systems adapt to differences in knowledge, access needs, pacing, and interaction preferences while keeping the learner or educator in control?
+
+That leaves us with several possible projects, ranging from a full adaptive tutor to a much more focused accessibility or modeling contribution.
+Principles that seem worth keeping across projects
+
+
+
+Principle
+What it means for the project
+
+
+
+Accessibility first
+Basic accessibility should work for everyone before any personalization happens.
+
+
+Do not infer diagnoses
+The system should not decide that slow responses = ADHD, rereading = dyslexia, etc.
+
+
+Learner agency
+Adaptations should generally be explainable, reversible, and controllable by the learner.
+
+
+Separate knowledge from access
+“What does this learner know?” and “How should this be presented?” are different questions.
+
+
+AI needs a reason to exist
+If a deterministic accessibility setting solves the problem just as well, we should use that instead of manufacturing an ML problem.
+
+
+Measure outcomes, not just engagement
+More clicks or more time in an app does not necessarily mean better learning.
+
+
+Low-surveillance by default
+Cameras, gaze tracking, emotion recognition, EEG, diagnosis prediction, etc. create major validity/privacy problems and do not seem necessary for a strong project.
+
+
+Quick comparison
+
+
+
+Direction
+Social impact
+AI component
+Feasibility
+Main strength
+
+
+
+1. Explainable adaptive micro-tutor
+High
+High
+Medium
+Strongest overall combination
+
+
+2. Adaptive executive-function scaffold
+High
+Medium
+High
+Narrower and easier to evaluate
+
+
+3. Learner-controlled accessibility engine
+High
+Medium
+High
+Strong accessibility/deployment contribution
+
+
+4. Knowledge-tracing robustness + fairness audit
+Medium
+High
+Very high
+Safest option if participant access is difficult
+
+
+
+Project 1 — Explainable, Learner-Controlled Adaptive Micro-Tutor
+The idea
+Build a small middle-school math tutor that adapts along two separate dimensions:
+Academic adaptation: what problem, difficulty, hint, or worked example should come next?
+Access adaptation: how should the activity be presented so the learner can work with it effectively?
+The key idea is that these should not be the same model.
+A learner getting several questions wrong may need a different academic problem. A learner who wants less text, no timer, a worked example, audio instructions, or smaller chunks may need a different presentation. One should not automatically be interpreted as the other.
+This could be designed with neurodivergent learners in mind without requiring a diagnosis or claiming to identify one.
+How it could work
+The tutor could contain a small curriculum unit such as fractions, ratios, or introductory algebra.
+A mastery model estimates what concepts the learner seems to understand from their problem-solving history. Bayesian Knowledge Tracing, Performance Factors, IRT/Elo-style models, or a small sequence model could be compared.
+Separately, an access/preference model stores things such as preferred amount of text, whether instructions should be read aloud, hint granularity, timer visibility, chunk size, break preference, animation level, or preferred representation.
+The tutor might say:
+
+“You’ve used worked examples on the last two multi-step problems. Want one here?”
+
+or:
+
+“This problem has several instructions. Want me to show them one step at a time?”
+
+The important part is that the learner can say yes, no, undo, or change the setting themselves.
+The AI is therefore recommending rather than silently deciding.
+Why this seems strong
+There are many precedents for pieces of this idea. Systems such as Calcularis adapt academic instruction; iRead used learner/domain models to personalize literacy applications; accessibility standards already describe learner needs and alternative representations.
+What seems less established is putting these together as two intentionally separate adaptive systems, with accessibility adaptation remaining transparent and learner-controlled.
+That gives us a cleaner contribution than claiming to have invented adaptive tutoring.
+It also creates a meaningful research question:
+
+Does adding explainable, learner-controlled access adaptation to an academically adaptive tutor reduce learning friction or improve learning/agency compared with academic adaptation alone?
+
+This feels particularly appropriate for AI for Social Impact because the question is not just whether the model predicts well. The question is whether the AI changes access to an educational service in a useful and responsible way.
+What we should not claim
+This would not “treat ADHD,” “identify dyslexia,” or discover an “autistic learning style.”
+The stronger claim is that learners vary in both knowledge state and access needs, and a learning system may work better when it models those separately.
+Essential reading
+
+
+
+Source
+Why read it
+
+
+
+Perrault et al. — AI for Social Impact: Learning and Planning in the Data-to-Deployment Pipeline
+Tambe et al.'s framing of AI for social impact: technical performance is not enough; the intervention needs to connect to real-world impact.
+
+
+CAST — Universal Design for Learning Guidelines 3.0
+Strong foundation for learner variability, choice, multiple representations, access, and agency.
+
+
+1EdTech — AccessForAll / Personal Needs & Preferences
+Important precedent: represent the supports a learner needs rather than their diagnosis or medical history.
+
+
+Calcularis — adaptive learning for developmental dyscalculia
+A good example of an actual adaptive academic intervention and of substantial individual variation in response.
+
+
+
+Project 2 — Adaptive Executive-Function Scaffold for Academic Work
+The idea
+Instead of building an entire adaptive tutor, build an AI layer that helps learners manage an academic task.
+The target problem is executive-function friction: starting a task, keeping instructions available, breaking a problem into manageable pieces, deciding when to ask for help, remembering where you were, and managing time or breaks.
+This is relevant to ADHD and other neurodivergent populations, but we would deliberately make the tool diagnosis-free. Anyone who benefits from external structure could use it.
+How it could work
+Imagine a learner solving a multi-step math problem.
+The system could offer optional supports such as:
+“Break this into steps.”
+“Keep the instructions visible.”
+“Show me only the current step.”
+“Give me a worked example.”
+“Hide the timer.”
+“Save where I am and take a break.”
+The interesting AI problem is deciding when a support might be useful without automatically imposing it.
+For an initial version, the decision rule could actually be fairly simple and interpretable. Signals might include repeated errors, repeated reopening of instructions, hint requests, abandoned steps, or the learner explicitly saying “I’m stuck.”
+A more advanced version could eventually learn which suggestions an individual learner tends to accept and which are actually helpful.
+Again, the distinction matters: the model is estimating whether a support might help right now, not estimating whether the learner “has ADHD.”
+Why this seems strong
+This is narrower than Project 1, which could be an advantage.
+There is a substantial literature on computerized cognitive training for ADHD. The important result is actually a cautionary one: training working memory can improve performance on closely related tasks without necessarily producing broad academic improvements.
+That suggests a different social-impact approach.
+Instead of trying to “train executive function” in an isolated game, support executive functioning inside the academic activity where the difficulty actually occurs.
+The research question becomes something like:
+
+Can context-aware, learner-controlled scaffolding reduce avoidable friction during authentic academic tasks without increasing dependence on the system?
+
+This could potentially be tested without building a sophisticated curriculum model.
+What makes the AI interesting
+The long-term technical problem is a contextual intervention problem:
+Given what is happening right now, should the system offer a particular support, offer nothing, or ask the learner?
+That potentially connects to contextual bandits, adaptive interventions, recommender systems, and human-in-the-loop AI.
+But we would not need reinforcement learning in the first version. A transparent model could be a stronger project if the evaluation is good.
+Main risk
+We have to distinguish helpful scaffolding from simply making everything easier.
+The goal is not maximum assistance. The goal is the right amount of assistance while preserving autonomy and learning.
+Essential reading
+
+
+
+Source
+Why read it
+
+
+
+Westwood et al. — Computerized cognitive training in ADHD: a meta-analysis of randomized controlled trials
+Very important evidence against assuming that improvements on cognitive-training tasks automatically transfer to broad academic outcomes.
+
+
+CAST — Universal Design for Learning Guidelines 3.0
+Relevant to planning, strategy development, graduated support, learner autonomy, and multiple ways of interacting with material.
+
+
+1EdTech — Personal Needs & Preferences
+Useful model for storing what support someone wants without turning that into a medical profile.
+
+
+
+Project 3 — Learner-Controlled Accessibility / Equivalent-Content Engine
+The idea
+This moves further away from “AI tutor” and focuses directly on accessibility infrastructure.
+The problem is that educational material is usually delivered in one primary representation. A learner might understand the underlying concept perfectly well but struggle with the way it is presented.
+For example, the same concept might have:
+standard explanation → concise explanation → read-aloud version → diagram → worked example → manipulable step-by-step representation
+The system would maintain a portable learner preference profile and recommend an equivalent representation depending on the learner's stated preferences and current context.
+How it could work
+Suppose the learner reaches an algebra problem with a long text explanation.
+The system knows that this learner often chooses diagrams and concise instructions for math. Instead of silently replacing the material, it could offer:
+
+“There’s also a diagram and step-by-step version. Switch?”
+
+The learner's preferences could persist across activities.
+This idea has a particularly strong precedent in 1EdTech AccessForAll, which describes Personal Needs and Preferences and alternative/equivalent resources. Importantly, the standard focuses on what support someone needs rather than why they need it.
+That maps almost exactly onto the direction we have been discussing.
+Where AI enters
+There are several possible levels.
+At the simplest level, there may be almost no AI: the learner explicitly configures their preferences and the system matches them to content.
+A more interesting version could learn which representations tend to help in which contexts and recommend rather than automatically switch.
+For example:
+
+learner + concept + task characteristics + previous choices → recommended representation
+
+Over time this becomes a recommender-system problem.
+A generative model could also help create alternative representations, but I would be careful about making LLM content generation the central contribution. Generated educational content introduces correctness and equivalence problems that could distract from the stronger research question.
+Why this could matter
+This is probably the most directly accessibility-focused project.
+Most personalization systems ask:
+
+“What should this learner learn next?”
+
+This project asks:
+
+“How can the learner access the same learning objective in a form that works for them?”
+
+That is a different personalization problem.
+It also potentially extends beyond neurodivergence. The same architecture could support visual, motor, language, cognitive, temporary, environmental, or assistive-technology needs.
+Main question
+
+Can a learner-controlled recommendation system reduce the effort required to find useful accessibility adaptations while preserving choice and avoiding diagnosis-based personalization?
+
+This could potentially become infrastructure used by an existing educational system rather than another standalone tutoring product.
+Essential reading
+
+
+
+Source
+Why read it
+
+
+
+1EdTech — AccessForAll Specifications
+Probably the most important source for this project. It already formalizes matching preferences/needs to alternative resources.
+
+
+1EdTech — QTI 3 Accessibility
+Shows how personal needs/preferences can actually influence the presentation of educational and assessment content.
+
+
+CAST — Universal Design for Learning Guidelines 3.0
+The broader design framework for multiple representations, interaction methods, autonomy, and barrier reduction.
+
+
+W3C — WCAG 2 Overview
+Important distinction between baseline accessibility, which should simply work, and personalization layered on top of it.
+
+
+
+Project 4 — Robust Knowledge Tracing for Real Learners
+The idea
+This is the more technical/research-heavy fallback if access to schools, children, or a partner becomes difficult.
+Instead of claiming a new tutoring system, ask whether current student-modeling methods are actually reliable enough to drive high-stakes personalization.
+Knowledge-tracing models estimate what a student knows from their history of answers. Those estimates can determine what problem or support a tutor gives next.
+That makes a basic question surprisingly important:
+
+How robust, calibrated, and fair are these models when used under realistic conditions?
+
+How it could work
+We could use FoundationalASSIST, a recent dataset built from authentic ASSISTments middle-school math activity. It contains a large set of real student/problem interactions and the actual natural-language problems and responses.
+We could compare several levels of modeling:
+simple statistical baseline → BKT/PFA-style model → neural knowledge tracing
+But the contribution would not just be “model X gets a slightly higher AUC.”
+The interesting analysis would be what happens with:
+unseen students, students with very little history, rare problems, unseen content, missing interaction data, different achievement levels, and model confidence/calibration.
+A tutor making an incorrect prediction with 55% confidence is very different from a tutor making the same incorrect prediction with 99% confidence.
+We could also test whether apparently sophisticated models still beat simple interpretable baselines once the evaluation prevents leakage between students and respects chronological order.
+Why this fits the broader project
+Projects 1–3 all assume that some model can estimate learner state well enough to make useful decisions.
+This project challenges that assumption directly.
+It also creates an interesting responsible-AI contribution: if an adaptive educational system performs significantly worse for students with short histories or unusual interaction patterns, those learners may receive systematically worse personalization.
+The project could therefore connect knowledge tracing, uncertainty, calibration, robustness, and equitable access to adaptive education.
+What it cannot show
+An offline dataset can tell us whether a model predicts future answers.
+It generally cannot tell us:
+
+“If the tutor had selected a different problem, would the student have learned more?”
+
+That is a causal intervention question and would require stronger experimental evidence.
+Keeping that distinction explicit could itself make this a stronger project.
+Essential reading
+
+
+
+Source
+Why read it
+
+
+
+FoundationalASSIST
+Best-fit dataset from the research so far: authentic grade 6–8 math interactions with problem and response content.
+
+
+Knowledge Tracing: A Survey — ACM Computing Surveys
+Broad overview of the field and major model families.
+
+
+Piech et al. — Deep Knowledge Tracing
+Important neural knowledge-tracing baseline and historical reference point.
+
+
+
+How I currently see the options
+Project 1 is the strongest overall direction. It combines a legitimate AI problem with accessibility, learner agency, existing educational data, and a clear social-impact argument. The strongest part is not “adaptive tutoring” by itself; that already exists. The interesting contribution is explicitly separating mastery adaptation from access adaptation and keeping the second one learner-controlled.
+Project 2 may be the best narrower project. It avoids having to build an entire tutor and asks a very concrete question about when AI should offer support during real academic work. It also gives us a good response to the limited transfer seen in some cognitive-training research.
+Project 3 may have the strongest accessibility/infrastructure story. It is less obviously “AI” at the beginning, but that could actually be intellectually interesting: establish what should simply be good accessible design, then identify exactly where recommendation/personalization adds value.
+Project 4 is the safest technically. It can be done with existing data and without making claims about diagnoses or running a child study. The tradeoff is that the direct social intervention is less visible unless we connect the modeling failure modes clearly to how adaptive educational systems affect learners.
+One thing I would avoid across all of these is building a system that watches a learner through a camera, tracks gaze/emotion, or tries to classify ADHD/autism/dyslexia. That creates a much harder privacy and validity problem while moving us away from what seems to be the more interesting question: can AI provide useful individualized support without needing to classify the person first?
+Two papers/frameworks everyone should probably read first
+Before choosing between the projects, I think these two are the best common starting point:
+Perrault, Fang, Sinha & Tambe — AI for Social Impact: Learning and Planning in the Data-to-Deployment Pipeline.Harvard CRCS
+This is useful for deciding whether we actually have an AI-for-social-impact project rather than just an interesting ML application. The important framing is moving from technical performance toward an intervention that could plausibly create real-world impact.
+CAST — Universal Design for Learning Guidelines 3.0.UDL Guidelines
+This gives us a common accessibility/design vocabulary: learner agency, choice and autonomy, multiple representations, graduated support, different interaction methods, and reducing barriers rather than designing around a supposedly “normal” learner.
+
+Main discussion question
+The choice probably comes down to where we want the research contribution to sit:
+
+Adaptive learning + accessibility → Project 1Context-aware support / executive function → Project 2Accessibility + recommender systems / infrastructure → Project 3Student modeling + responsible AI / robustness → Project 4
+
+My current preference is Project 1, with Projects 2 and 3 potentially becoming narrower versions of it if the full idea is too broad.
+The main thing I want us to decide is not the exact model yet. It is which problem we think is important enough, specific enough, and genuinely improved by AI to spend the project on.:::
+This incorporates the strongest parts of the two original research documents, while using the source audit to remove the weaker product/marketing evidence and the more questionable diagnosis/sensing directions.   The key foundations in the brief—Tambe’s data-to-deployment framing, learner agency in UDL, diagnosis-free needs/preferences in AccessForAll, the ADHD transfer caution, and FoundationalASSIST—are supported by the primary/authoritative sources checked in the audit. 
+I can also tighten this another ~20–25% if you want it to feel more like an informal team memo than a research brief.
+
+
+You:
+$deep-research review and audit and comment and suggest.
+
+
+ChatGPT:
+Deep Research is now reviewing the new line-by-line audit alongside the earlier project research and sources. 
+It will update the research plan, independently verify the audit’s claims, challenge the current project ranking, and return a decision-focused recommendation with corrections and essential readings.
+
+
+You:
+create final project document. in great detail. what why how where etc etc resources datasets citations problem proof articles and even existing products. full method architecture. social impact. surveys. etc etc etc.evryrthing
+
+
+You:
+create final project document. in great detail. what why how where etc etc resources datasets citations problem proof articles and even existing products. full method architecture. social impact. surveys. etc etc etc.evryrthing deep reseacrhed
+
+
+ChatGPT:
+I’m turning this into a single final project dossier, not another brainstorming memo. I’ll ground it in the three attached research/audit documents, independently verify the load-bearing claims and current 2025–2026 sources, then produce a detailed Markdown deliverable covering the problem evidence, prior art/products, social-impact logic, architecture, datasets, AI/non-AI split, study design, surveys, statistics, ethics, deployment, risks, and an annotated reference set.
+
+
+ChatGPT:
+The central conclusion is holding up under verification: the strongest version is not “an AI tutor for ADHD/autism/dyslexia.” It is an accessible mastery-adaptive math tutor with a separate, explicit learner preference profile and transparent access-suggestion policy. That distinction is important: accessibility should work before AI, and the access layer should start deterministic rather than pretending there is enough data to learn a safe personalization policy. The attached audit reaches the same corrected thesis.
+
+
+ChatGPT:
+The source audit is also changing the tone of the final document in a useful way: vendor/product pages will only be used to establish features, never efficacy; systematic reviews/RCTs will support outcome claims; standards bodies will support accessibility architecture; and official repositories/data cards will support dataset facts. I’m also including negative evidence—for example, where a large adaptive-tutor trial did not improve outcomes—because that makes the project’s causal claims much more defensible.
+
+
+ChatGPT:
+I created the full final project dossier as a portable Markdown document:
+Download — AccessPath Final Project Dossier
+It is substantial—about 93,000 characters / 2,300+ lines—and is written as an actual project specification rather than another idea memo. It builds from the attached research and line-by-line audit, including the corrected thesis that separates mastery estimation from explicit accessibility preferences rather than pretending both need to be learned ML models. 
+The final recommendation is AccessPath: An Explainable, Learner-Controlled Adaptive Access Layer for a Mastery-Adaptive Middle-School Math Tutor. The architecture uses an interpretable learner/mastery model for academic sequencing, but starts the accessibility side with explicit learner preferences plus transparent deterministic suggestion rules. Diagnosis inference, camera/gaze/EEG attention detection, emotion recognition, and covert “neurodivergence prediction” are explicitly excluded from the MVP. That choice is supported by both the accessibility standards/prior art and the still-limited, heterogeneous evidence base in recent neurodivergent-AI research. 
+The dossier contains the full why / what / who / where / how: problem proof and U.S. scale; social-impact theory; stakeholder and nonprofit-partner discovery; precise research questions and hypotheses; existing products including ASSISTments, ALEKS, DreamBox, MathSpring, Otsimo, iLearnRW/iRead, Calcularis, Todo Math, ECHOES, FLOE, and AccessForAll; novelty analysis; complete system and data-flow architecture; preference schema; suggestion rules; event schema; AI-vs-non-AI boundaries; curriculum plan; implementation stack; database design; modeling methodology; offline and prospective evaluation; surveys and interview guides; statistics; causal-claim boundaries; accessibility testing; IRB/child-study pathway; COPPA/FERPA/privacy; disability-justice principles; failure modes; go/no-go criteria; an eight-week execution plan; alternate projects; final pitches; and a portable annotated bibliography.
+A few evidence choices are especially important. The document uses Harvard’s actual Fall 2026 COMPSCI 2880 description and Perrault/Fang/Sinha/Tambe’s data-to-deployment framing rather than treating model accuracy as social impact.  It treats 1EdTech AccessForAll as an architectural precedent for explicit accessibility preferences, not efficacy evidence.  It also includes negative evidence: the 2025 preregistered MathSpring RCT involved 53 teachers and 2,003 students and did not find evidence of improved achievement, affect, or math dispositions relative to business-as-usual. That is exactly why the proposed study tests incremental value instead of assuming “adaptive = effective.” 
+For data, the primary recommendation is FoundationalASSIST, but the dossier is unusually careful about what it can and cannot establish. Its current official data card reports 1,722,169 interactions, 5,000 learners, 3,395 problems, and CC BY-NC 4.0 terms. Crucially, its discrete_score is not generic correctness: a 1 means a correct first attempt without requesting support. The dossier therefore calls the target independent first-pass success, which is methodologically much cleaner.  It explicitly prohibits using this dataset to claim neurodivergence fairness or to train the access-recommendation policy.
+Accessibility is similarly treated as infrastructure rather than an ML feature. The prototype targets WCAG 2.2 AA as an engineering goal; W3C identifies WCAG 2.2 as ISO/IEC 40500:2025. The document separately explains the DOJ Title II rule context rather than conflating a prototype accessibility target with legal compliance. 
+Most importantly, the final study now has a clean causal comparison: Condition A gets the fully accessible, mastery-adaptive tutor plus manual access controls; Condition B gets exactly the same system plus contextual, explainable, learner-controlled access suggestions. The primary endpoint is support-discovery effort, with mathematics performance as a safeguard. If contextual suggestions do not outperform good manual controls, the documented recommendation is to remove the adaptive access layer rather than manufacture an AI success story.
+That makes the project substantially stronger for an AI-for-social-impact course: the social problem comes first, simple baselines are mandatory, AI has to demonstrate marginal value, and “less AI” is an acceptable—and potentially important—research result. 
+
+
+You:
+Project proposals will be due Tuesday 10/13. Please email myself (anaghasatish@g.harvard.edu) and Akseli (akselikangaslahti@g.harvard.edu) with your 3-person group and a brief 1-page description about your project idea. Your project group is final, but your proposal does not need to be very detailed (it can even be in bullet point format). Please discuss the social good problem you are trying to solve, why it is important, and the methods/datasets you intend to use. Come prepared on 10/14 to discuss your ideas with the teaching staff.   
+write email. mention that we are group of 2 and could not find a third person. follow guidelines and write project idea in 100 words. humanize and tell the why what how etc.
+
+
+ChatGPT:
+Here’s a natural, concise version that follows the requested format and keeps the project description around 100 words.
+:::writing{variant="email" id="41726" subject="CS 2880 Project Proposal – Adaptive Learning Accessibility" recipient="anaghasatish@g.harvard.edu"}Hi Anagha and Akseli,
+We’re submitting our project idea for CS 2880. We are currently a group of two and unfortunately weren’t able to find a third person before the deadline. Please let us know if there is someone still looking for a group or if it is okay for us to continue as a two-person team.
+Project idea — Accessible Adaptive Learning
+Many learning platforms adapt what students learn, but not how they access it. This can be especially limiting for students who benefit from different pacing, presentation, or support. We want to build a middle-school math tutor that separates academic adaptation from accessibility. A mastery model (e.g., BKT/PFA) would estimate what a learner is ready to practice, while a separate learner-controlled profile would offer optional supports such as smaller steps, persistent instructions, read-aloud, or worked examples. We plan to use the FoundationalASSIST dataset for learner modeling and evaluate whether contextual support suggestions reduce the effort required to find useful accommodations without hurting learning or learner autonomy.
+The broader goal is to make personalization respond to individual learning needs without trying to infer diagnoses such as ADHD, autism, or dyslexia. We’re particularly interested in whether AI actually adds value beyond a well-designed accessible interface.
+Looking forward to discussing this with you tomorrow.
+Best,[Your Name][Teammate’s Name]:::
+I’d keep the “AI actually adds value beyond a well-designed accessible interface” sentence—it makes the proposal sound thoughtful and very aligned with the course’s social-impact framing rather than like a generic AI tutor pitch.
+
+
+You:
+in title focus on neurodivergence? because otherwise just too generic?
+
+
+ChatGPT:
+Yes — I’d foreground neurodivergence in the title, because that makes the social-impact motivation immediately legible. I would just avoid wording that sounds like we are building a diagnostic or condition-specific tutor.
+My preferred title is:
+Neurodiversity-Informed Adaptive Learning: A Learner-Controlled Math Tutor
+That gives you the specificity you want while preserving the important idea that the system adapts to individual access needs rather than diagnosis labels.
+For the email subject, I’d use:
+CS 2880 Project Proposal – Neurodiversity-Informed Adaptive Learning
+A slightly more research-oriented project title would be:
+Learner-Controlled Adaptive Learning for Neurodivergent and Diverse Learners
+I prefer the first one because “neurodiversity-informed” signals the motivating population without implying “we built an AI specifically for people with ADHD/autism/dyslexia.”
+
+
+You:
+from cathy (team partner):[1:24 PM, 10/14/2026] Kathy Harvard Social Impact: Thanks for putting these directions together! I like the focus on accessibility and learner agency. After considering data availability and what we could realistically evaluate, I’d suggest narrowing Project 3 to studying whether LLMs can adapt math problems into plain-language and chunked formats while preserving the original mathematical task.We could start with 100 problems from GSM8K, compare two LLMs, and evaluate mathematical fidelity, presentation quality, and whether the adaptations accidentally reveal solution steps. That would give us concrete deliverables: an annotated benchmark, reproducible evaluation code, and a comparison with failure analysis. We could also add a small demo if time allows.This seems feasible without depending on student records or participant recruitment, while keeping the accessibility motivation. I’ve drafted a formal proposal outlining the methods and deliverables.[1:25 PM, 10/14/2026] Kathy Harvard Social Impact: What do you think about bringing this narrower direction
+comment, diffs, novelty, has anyone done this, is this useful, rate on all factors. suggest
+
+
+ChatGPT:
+I’ll compare Kathy’s proposal against our original AccessPath idea, check whether similar work already exists, and assess novelty, social impact, methodological strength, and semester feasibility. I’ll also review her attached proposal itself—not just the message—and suggest specific changes that would make the narrower direction more defensible for CS 2880.
+
+
+ChatGPT:
+My assessment: Kathy's proposal is a strong pivot, but it needs a sharper research contribution
+I would support narrowing the project in Kathy's direction—with a few important changes before committing.
+Her proposal, titled Evaluating Mathematical Fidelity in LLM Adapted Educational Content, turns our broader adaptive-tutoring idea into a specific, testable question: can an LLM make a math word problem easier to read without changing the mathematics or giving away the solution?
+That is a worthwhile problem. It is also much more achievable for a two-person team because it does not depend on school partnerships, student data, participant recruitment, or building an entire tutoring system.
+However, the most important finding from reviewing existing research is that researchers have already studied LLM rewriting of mathematics problems to support emerging readers. A particularly close paper is  (published in the International Journal of Artificial Intelligence in Education, 2025). It evaluated readability-oriented rewriting and considered learner outcomes. 
+That does not invalidate Kathy's idea. It means we should not present “using LLMs to simplify math word problems” as the novelty.
+The stronger contribution is a safety-and-fidelity evaluation: identifying when accessibility-oriented rewrites change the underlying mathematical task, add unintended hints, or introduce new ambiguity—and testing whether those failures can be detected or prevented.
+
+
+ChatGPT:
+One important prior-art detail: the Norberg et al. study did more than show that GPT-4 can rewrite math problems. It examined outcomes in Carnegie Learning’s MATHia and found mixed effects across content areas. Their paper also notes that some earlier models failed to preserve problem structure. That makes Kathy’s fidelity-first question defensible, but it means the proposal should explicitly position itself as a follow-on evaluation rather than a first demonstration of LLM-based math simplification. 
+
+
+ChatGPT:
+1. How Kathy's proposal differs from our original project
+
+
+
+Dimension
+Original AccessPath project
+Kathy's proposal
+
+
+
+Central problem
+Learners cannot always find or configure appropriate supports
+AI-generated accessibility adaptations may silently change a math problem
+
+
+Primary beneficiaries
+Learners with varied access needs, including neurodivergent students
+Teachers, curriculum developers, and potentially students needing clearer presentation
+
+
+Main contribution
+Adaptive tutoring + learner-controlled accessibility
+Evaluation of generated educational content
+
+
+AI component
+Knowledge tracing and pedagogical recommendation
+LLM-based language transformation
+
+
+Data
+FoundationalASSIST + newly authored activities and interaction logs
+GSM8K
+
+
+Deliverable
+Working adaptive learning system
+Annotated benchmark, evaluation code, model comparison, failure taxonomy
+
+
+Human study
+Important for validating accessibility benefits
+Not required for the core technical study
+
+
+Evaluation
+Learning, support discovery, autonomy, usability
+Fidelity, task preservation, format compliance, unintended hints
+
+
+Main risk
+Too many components and difficult user evaluation
+Limited novelty and no direct demonstration of learner benefit
+
+
+Best potential contribution
+Inclusive human-AI learning system
+Trustworthy adaptation and educational-content quality assurance
+
+
+The difference is fundamental. AccessPath was a proposed intervention; Kathy's project is an evaluation of an AI capability that a future intervention could use.
+I see this as a sensible reduction in scope, not a retreat from the original social-impact motivation. The benchmark could eventually become the validation component of AccessPath, a teacher-facing content-review tool, or an accessibility pipeline in an existing learning platform.
+2. Has anyone done this? Yes—several closely related projects
+These are the papers I would want us to know before defending the proposal to the teaching staff.
+
+  
+    
+      **1. Norberg et al. (2025) — The closest prior art**
+
+  <text size="sm">*Rewriting Content with GPT-4 to Support Emerging Readers in Adaptive Mathematics Software.*</text>
+
+  Carnegie Learning researchers used GPT-4 to revise mathematics problems in MATHia, investigated readability changes, and analyzed student outcomes. The results were mixed across content areas. Their paper also describes challenges preserving mathematical structure.
+
+  **Implication:** We must explicitly distinguish Kathy's fidelity benchmark from their rewriting and learning-outcomes study. <Cite ref="turn549255view0"/>
+  <text size="xs"><Link url="https://doi.org/10.1007/s40593-024-00420-2" title="Read the paper"/></text>
+</box>
+
+  
+  
+  
+    **2. Almoubayyed et al. (2023) — Math word-problem rewriting was tested in schools**
+
+*Rewriting Math Word Problems to Improve Learning Outcomes for Emerging Readers.*
+
+A randomized MATHia field trial involved **12,374 learners** and studied rewriting math problems to improve accessibility for emerging English readers.
+
+**Implication:** The educational problem is real enough to have been evaluated at scale. Our project needs a narrower methodological question that these trials did not resolve. <Cite ref="turn441399view0"/>
+
+<text size="xs"><Link url="https://doi.org/10.1007/978-3-031-36336-8_30" title="Read the paper"/></text>
+
+  
+  
+  
+    **3. Christ et al. (2026) — EDUMATH**
+
+*EDUMATH: Generating Standards-aligned Educational Math Word Problems.*
+
+This recent ACL paper analyzed more than **11,000 generated math problems**, developed teacher-annotated data, and included a student study. It focuses on generation, curriculum alignment, and customization rather than exactly Kathy's preservation question.
+
+**Implication:** A teacher-reviewed math-generation benchmark is no longer inherently novel. The annotation dimensions and error-detection methodology need to be distinctive. <Cite ref="turn292855search7"/>
+
+<text size="xs"><Link url="https://aclanthology.org/2026.acl-long.1973/" title="Read the paper"/></text>
+
+  
+  
+  
+    **4. Agrawal & Carpuat (2024) — Meaning preservation in simplification**
+
+*Do Text Simplification Systems Preserve Meaning? A Human Evaluation via Reading Comprehension.*
+
+This paper establishes that simplification quality must consider what information readers actually recover, not just surface readability.
+
+**Implication:** Meaning preservation is an established research question. Kathy's domain-specific angle should be mathematical relationships, solution leakage, and instructional integrity. <Cite ref="turn349633search0"/>
+
+<text size="xs"><Link url="https://aclanthology.org/2024.tacl-1.24/" title="Read the paper"/></text>
+
+  
+  
+  
+    **5. Daroczy et al. (2015) — The learning-sciences foundation**
+
+*Word problems: A review of linguistic and numerical factors contributing to their difficulty.*
+
+This review examines linguistic and mathematical factors that affect word-problem difficulty.
+
+**Implication:** The benchmark should distinguish unnecessary language complexity from mathematically essential wording. A word may look difficult but encode a critical relationship. <Cite ref="turn441399view1"/>
+
+<text size="xs"><Link url="https://doi.org/10.3389/fpsyg.2015.00348" title="Read the review"/></text>
+
+  
+
+
+There are commercial products in this space as well.  explicitly markets the adaptation of math word problems and other instructional texts to different reading levels.  provides presentation, reading, and focus supports, while Carnegie Learning's  provides adaptive mathematics instruction. These establish product precedents, not independent evidence of efficacy or mathematical fidelity. <Cite refs={["turn803637search11","turn803637search2","turn803637search1"]}/>
+Where novelty remains possible
+The gap I would investigate is more precise:
+
+Can we systematically detect and reduce mathematical-task corruption and unintended instructional assistance introduced by accessibility-oriented LLM rewrites, while still achieving meaningful presentation improvements?
+
+That is better than a generic two-model comparison because it has a concrete failure mode, an evaluation methodology, and a potential safety mechanism.
+I did not identify an exact match for that entire proposed combination in this search, but I would not claim it has never been studied.
+3. Ratings across the important factors
+These are my assessments on a 1–10 scale, not experimentally established scores. They assume our original full AccessPath scope and Kathy's current attached proposal, for a two-person course team.
+
+    
+      **Criterion**
+    
+    
+      **AccessPath**
+    
+    
+      **Kathy's current proposal**
+    
+  
+  {#each [
+    ["Semester feasibility",4,9],
+    ["Dataset availability",6,10],
+    ["Evaluation clarity",5,9],
+    ["Research novelty",7,5],
+    ["Technical AI substance",8,6],
+    ["Social-impact potential",9,7],
+    ["Social-impact evidence attainable this term",4,4],
+    ["Methodological rigor achievable",6,8],
+    ["Reproducibility",6,9],
+    ["Ethical/privacy manageability",6,9],
+    ["Two-person workload",4,9],
+    ["Potential for useful research artifact",7,8],
+    ["Fit for AI for Social Impact",8,7]
+  ] as item}
+    
+      {item[0]}
+      =8?"success":item[1]<=4?"danger":"default"} weight="medium" tabularNums>{item[1]}/10
+      =8?"success":item[2]<=4?"danger":"default"} weight="medium" tabularNums>{item[2]}/10
+    
+  {/each}
+
+  
+
+
+  
+    
+      Original AccessPath — overall
+      6.5/10
+      More ambitious intervention, but high scope and evaluation risk
+    
+  
+  
+    
+      Kathy's proposal — overall
+      8.0/10
+      Better likelihood of completing a rigorous, defensible project
+    
+  
+
+
+I would rate a revised version of Kathy's project at about 8.7/10, provided it includes a clear prior-art comparison, stronger mathematical-preservation labels, and ideally an intervention that detects or reduces rewriting errors.
+This isn't a weighted numerical average. I'm prioritizing the likelihood of producing credible evidence by the end of the course.
+
+
+ChatGPT:
+My assessment: Kathy's proposal is a strong pivot, but it needs a sharper research contribution
+I would support narrowing the project in Kathy's direction—with a few important changes before committing.
+Her proposal, titled Evaluating Mathematical Fidelity in LLM Adapted Educational Content, turns our broader adaptive-tutoring idea into a specific, testable question: can an LLM make a math word problem easier to read without changing the mathematics or giving away the solution?
+That is a worthwhile problem. It is also much more achievable for a two-person team because it does not depend on school partnerships, student data, participant recruitment, or building an entire tutoring system.
+However, the most important finding from reviewing existing research is that researchers have already studied LLM rewriting of mathematics problems to support emerging readers. A particularly close paper is  (published in the International Journal of Artificial Intelligence in Education, 2025). It evaluated readability-oriented rewriting and considered learner outcomes. 
+That does not invalidate Kathy's idea. It means we should not present “using LLMs to simplify math word problems” as the novelty.
+The stronger contribution is a safety-and-fidelity evaluation: identifying when accessibility-oriented rewrites change the underlying mathematical task, add unintended hints, or introduce new ambiguity—and testing whether those failures can be detected or prevented.
+1. How Kathy's proposal differs from our original project
+
+
+
+Dimension
+Original AccessPath project
+Kathy's proposal
+
+
+
+Central problem
+Learners cannot always find or configure appropriate supports
+AI-generated accessibility adaptations may silently change a math problem
+
+
+Primary beneficiaries
+Learners with varied access needs, including neurodivergent students
+Teachers, curriculum developers, and potentially students needing clearer presentation
+
+
+Main contribution
+Adaptive tutoring + learner-controlled accessibility
+Evaluation of generated educational content
+
+
+AI component
+Knowledge tracing and pedagogical recommendation
+LLM-based language transformation
+
+
+Data
+FoundationalASSIST + newly authored activities and interaction logs
+GSM8K
+
+
+Deliverable
+Working adaptive learning system
+Annotated benchmark, evaluation code, model comparison, failure taxonomy
+
+
+Human study
+Important for validating accessibility benefits
+Not required for the core technical study
+
+
+Evaluation
+Learning, support discovery, autonomy, usability
+Fidelity, task preservation, format compliance, unintended hints
+
+
+Main risk
+Too many components and difficult user evaluation
+Limited novelty and no direct demonstration of learner benefit
+
+
+Best potential contribution
+Inclusive human-AI learning system
+Trustworthy adaptation and educational-content quality assurance
+
+
+The difference is fundamental. AccessPath was a proposed intervention; Kathy's project is an evaluation of an AI capability that a future intervention could use.
+I see this as a sensible reduction in scope, not a retreat from the original social-impact motivation. The benchmark could eventually become the validation component of AccessPath, a teacher-facing content-review tool, or an accessibility pipeline in an existing learning platform.
+2. Has anyone done this? Yes—several closely related projects
+These are the papers I would want us to know before defending the proposal to the teaching staff.
+
+  
+    
+      **1. Norberg et al. (2025) — The closest prior art**
+
+  <text size="sm">*Rewriting Content with GPT-4 to Support Emerging Readers in Adaptive Mathematics Software.*</text>
+
+  Carnegie Learning researchers used GPT-4 to revise mathematics problems in MATHia, investigated readability changes, and analyzed student outcomes. The results were mixed across content areas. Their paper also describes challenges preserving mathematical structure.
+
+  **Implication:** We must explicitly distinguish Kathy's fidelity benchmark from their rewriting and learning-outcomes study. <Cite ref="turn549255view0"/>
+  <text size="xs"><Link url="https://doi.org/10.1007/s40593-024-00420-2" title="Read the paper"/></text>
+</box>
+
+  
+  
+  
+    **2. Almoubayyed et al. (2023) — Math word-problem rewriting was tested in schools**
+
+*Rewriting Math Word Problems to Improve Learning Outcomes for Emerging Readers.*
+
+A randomized MATHia field trial involved **12,374 learners** and studied rewriting math problems to improve accessibility for emerging English readers.
+
+**Implication:** The educational problem is real enough to have been evaluated at scale. Our project needs a narrower methodological question that these trials did not resolve. <Cite ref="turn441399view0"/>
+
+<text size="xs"><Link url="https://doi.org/10.1007/978-3-031-36336-8_30" title="Read the paper"/></text>
+
+  
+  
+  
+    **3. Christ et al. (2026) — EDUMATH**
+
+*EDUMATH: Generating Standards-aligned Educational Math Word Problems.*
+
+This recent ACL paper analyzed more than **11,000 generated math problems**, developed teacher-annotated data, and included a student study. It focuses on generation, curriculum alignment, and customization rather than exactly Kathy's preservation question.
+
+**Implication:** A teacher-reviewed math-generation benchmark is no longer inherently novel. The annotation dimensions and error-detection methodology need to be distinctive. <Cite ref="turn292855search7"/>
+
+<text size="xs"><Link url="https://aclanthology.org/2026.acl-long.1973/" title="Read the paper"/></text>
+
+  
+  
+  
+    **4. Agrawal & Carpuat (2024) — Meaning preservation in simplification**
+
+*Do Text Simplification Systems Preserve Meaning? A Human Evaluation via Reading Comprehension.*
+
+This paper establishes that simplification quality must consider what information readers actually recover, not just surface readability.
+
+**Implication:** Meaning preservation is an established research question. Kathy's domain-specific angle should be mathematical relationships, solution leakage, and instructional integrity. <Cite ref="turn349633search0"/>
+
+<text size="xs"><Link url="https://aclanthology.org/2024.tacl-1.24/" title="Read the paper"/></text>
+
+  
+  
+  
+    **5. Daroczy et al. (2015) — The learning-sciences foundation**
+
+*Word problems: A review of linguistic and numerical factors contributing to their difficulty.*
+
+This review examines linguistic and mathematical factors that affect word-problem difficulty.
+
+**Implication:** The benchmark should distinguish unnecessary language complexity from mathematically essential wording. A word may look difficult but encode a critical relationship. <Cite ref="turn441399view1"/>
+
+<text size="xs"><Link url="https://doi.org/10.3389/fpsyg.2015.00348" title="Read the review"/></text>
+
+  
+
+
+There are commercial products in this space as well.  explicitly markets the adaptation of math word problems and other instructional texts to different reading levels.  provides presentation, reading, and focus supports, while Carnegie Learning's  provides adaptive mathematics instruction. These establish product precedents, not independent evidence of efficacy or mathematical fidelity. <Cite refs={["turn803637search11","turn803637search2","turn803637search1"]}/>
+Where novelty remains possible
+The gap I would investigate is more precise:
+
+Can we systematically detect and reduce mathematical-task corruption and unintended instructional assistance introduced by accessibility-oriented LLM rewrites, while still achieving meaningful presentation improvements?
+
+That is better than a generic two-model comparison because it has a concrete failure mode, an evaluation methodology, and a potential safety mechanism.
+I did not identify an exact match for that entire proposed combination in this search, but I would not claim it has never been studied.
+3. Ratings across the important factors
+These are my assessments on a 1–10 scale, not experimentally established scores. They assume our original full AccessPath scope and Kathy's current attached proposal, for a two-person course team.
+
+    
+      **Criterion**
+    
+    
+      **AccessPath**
+    
+    
+      **Kathy's current proposal**
+    
+  
+  {#each [
+    ["Semester feasibility",4,9],
+    ["Dataset availability",6,10],
+    ["Evaluation clarity",5,9],
+    ["Research novelty",7,5],
+    ["Technical AI substance",8,6],
+    ["Social-impact potential",9,7],
+    ["Social-impact evidence attainable this term",4,4],
+    ["Methodological rigor achievable",6,8],
+    ["Reproducibility",6,9],
+    ["Ethical/privacy manageability",6,9],
+    ["Two-person workload",4,9],
+    ["Potential for useful research artifact",7,8],
+    ["Fit for AI for Social Impact",8,7]
+  ] as item}
+    
+      {item[0]}
+      =8?"success":item[1]<=4?"danger":"default"} weight="medium" tabularNums>{item[1]}/10
+      =8?"success":item[2]<=4?"danger":"default"} weight="medium" tabularNums>{item[2]}/10
+    
+  {/each}
+
+  
+
+
+  
+    
+      Original AccessPath — overall
+      6.5/10
+      More ambitious intervention, but high scope and evaluation risk
+    
+  
+  
+    
+      Kathy's proposal — overall
+      8.0/10
+      Better likelihood of completing a rigorous, defensible project
+    
+  
+
+
+I would rate a revised version of Kathy's project at about 8.7/10, provided it includes a clear prior-art comparison, stronger mathematical-preservation labels, and ideally an intervention that detects or reduces rewriting errors.
+This isn't a weighted numerical average. I'm prioritizing the likelihood of producing credible evidence by the end of the course.
+4. Audit of Kathy's actual proposal
+I read the attached proposal closely. It is already better scoped than the original full-tutor design. The research questions, separation of fidelity from presentation compliance, and willingness to accept a negative result are particularly good.
+Here are the changes I would make.
+
+
+
+Proposal component
+Assessment
+Suggested change
+
+
+
+Main research question
+Strong
+Keep. Mathematical preservation is the central contribution.
+
+
+Two LLMs × two formats
+Good experimental starting point
+Keep, but avoid making model ranking the main finding.
+
+
+GSM8K
+Suitable and easily accessible
+Add a small out-of-domain validation set if possible.
+
+
+100 problems
+Reasonable pilot scale
+Report uncertainty; do not claim a representative estimate across all math problems.
+
+
+10 development examples
+Good separation
+Freeze prompts and rubric before evaluating the 100 held-out cases.
+
+
+Deterministic chunking baseline
+Particularly strong
+Keep, and consider a conservative plain-language baseline as well.
+
+
+Human fidelity annotation
+Essential
+Strengthen with structured mathematical facts and better independent review.
+
+
+25% double annotation
+Acceptable minimum
+Aim for 40–50%, or full double annotation of the primary fidelity outcome if feasible.
+
+
+Numeric and readability checks
+Useful diagnostics
+Never let them replace semantic or mathematical evaluation.
+
+
+Social-impact framing
+Promising but indirect
+Identify the actual barrier, beneficiaries, and future deployment decision.
+
+
+Novelty positioning
+Main weakness
+Explicitly differentiate from Norberg et al. and related math-generation benchmarks.
+
+
+References
+Missing the closest prior art
+Add Norberg 2025, Almoubayyed 2023, and meaning-preservation literature.
+
+
+Five substantive methodological issues
+A. Mathematical equivalence needs more than matching numbers.
+Suppose an original problem says:
+
+Mia has four boxes with six pencils in each box. How many pencils does she have altogether?
+
+A valid chunked version could say:
+
+Mia has four boxes. Each box contains six pencils. How many pencils does Mia have altogether?
+
+But the following version would violate the intended preservation criterion:
+
+Mia has four boxes. Each box contains six pencils. Multiply four by six to find the total.
+
+It preserves the correct answer but adds an operation hint.
+The evaluation should therefore distinguish four outcomes:
+
+
+
+Outcome
+Meaning
+
+
+
+Answer preserved
+Same numerical answer
+
+
+Mathematical structure preserved
+Same quantities, entities, relationships, conditions, and target
+
+
+Instructional demand preserved
+No added strategy, intermediate result, or answer cue
+
+
+Presentation requirement satisfied
+Genuinely simpler wording or better chunking
+
+
+The first is necessary in many cases but not sufficient.
+B. A rewrite can preserve mathematics while changing cognitive difficulty.
+This is especially important for chunking. Organizing information under “Given,” “Step 1,” and “Step 2” could unintentionally tell the learner what mathematical operations to perform.
+Chunking the problem statement is different from chunking the solution process. Kathy recognizes this in the proposal; I would make it a prominent evaluation category.
+C. The project needs a rule for when no rewrite is necessary.
+A short, clear problem may not need simplification. The correct model behavior might be to leave it unchanged.
+I would add an annotation label:
+Adaptation needed? Yes / No / Unclear
+Then evaluate whether the model makes unnecessary edits. This creates a valuable additional research question: Can the system recognize when not to modify educational content?
+D. One hundred problems are enough for an informative benchmark, but not rare-error guarantees.
+There are 400 generated versions, but only 100 distinct source problems. Outcomes from different transformations of the same source are related, so the apparent sample size should not be treated as 400 independent problems.
+The proposal's plan to resample at the original-problem level is correct. I would also report per-model/per-format raw counts and confidence intervals. Failure-type comparisons should remain exploratory.
+E. GSM8K is a convenience benchmark, not an accessibility dataset.
+The official dataset has 7,473 training and 1,319 test problems in its main configuration and is MIT-licensed. It provides mathematical questions and worked solutions, but no labels for reading barriers or learner preferences. 
+Furthermore, GSM8K is widely used in model development and evaluation. Familiarity with these problems is a possible confound, so I would add 20–30 openly licensed, previously unused school-style problems as a small external check, if time permits.
+That additional set would meaningfully strengthen generalizability without turning the project into a full data-collection study.
+5. How I would make the project more novel
+I see three versions of Kathy's idea, with increasing ambition.
+
+  
+    
+      
+        **Version A — Benchmark only**
+        7.5/10
+      
+      Generate rewrites with two LLMs, annotate mathematical fidelity, presentation compliance, and leakage, then compare error rates.
+      Safest scope. Useful replication/benchmark contribution, but novelty is modest.
+    
+  
+  
+  
+    
+      
+        **Version B — Benchmark + fidelity verifier**
+        9/10
+      
+      Add a lightweight verification stage that attempts to detect changed mathematical relationships or unintended solution hints before accepting the rewrite.
+      The best balance of research novelty, AI depth, feasibility, and practical usefulness.
+    
+  
+  
+  
+    
+      
+        **Version C — Benchmark + user evaluation**
+        8/10
+      
+      Add a small teacher or learner evaluation asking whether preserved rewrites are actually clearer and easier to use.
+      Stronger direct social-impact evidence, but introduces recruitment, approval, and experimental-design work.
+    
+  
+
+
+I recommend Version B as the primary plan, with a small educator review as an optional extension.
+Proposed architecture
+flowchart TD
+    A["Original math word problem"] --> B["LLM 1 / LLM 2"]
+    B --> C["Plain language / Chunked"]
+    C --> D["Mathematical fidelity verifier"]
+    A --> D
+    D --> E{"Passes checks?"}
+    E -->|Yes| F["Candidate approved for human review"]
+    E -->|No| G["Flag error / attempt constrained revision"]
+    G --> H["Revised candidate"]
+    H --> I["Independent human evaluation"]
+    F --> I
+    I --> J["Benchmark + failure taxonomy + analysis"]
+
+The verifier could combine structured extraction and conservative checks:
+
+identify quantities, units, entities, comparison relations, temporal ordering, and conditions;
+compare source versus rewrite;
+detect potential added operation instructions or intermediate calculations;
+optionally use an independent LLM critic for semantic concerns;
+flag suspicious rewrites for review rather than declaring them mathematically safe.
+
+The research contribution then becomes more interesting:
+Does a verifier or constrained revision stage improve the rate of safe, useful adaptations, and at what additional cost?
+It is testable, technical, and produces a reusable safety mechanism.
+One important caveat: a verifier built from an LLM can make correlated mistakes with the generator. It is not ground truth. Human-adjudicated labels should remain the reference, and the verifier should be evaluated on its ability to detect unsafe rewrites—including false alarms.
+6. Stronger experimental design
+I would keep Kathy's experiment largely intact and make one targeted extension.
+
+
+
+Condition
+Purpose
+
+
+
+Original problem
+Content reference and no-rewrite baseline
+
+
+Deterministic formatting
+Tests whether simple formatting is sufficient
+
+
+Model A: plain language
+Tests linguistic simplification
+
+
+Model A: chunked
+Tests LLM-based restructuring
+
+
+Model B: plain language
+Model comparison
+
+
+Model B: chunked
+Model comparison
+
+
+Verified/revised output
+Tests whether checking can reduce failures
+
+
+The core four generated conditions remain the main experiment. The verifier can be tested on those same outputs, so a completely new round of generation is not necessarily required.
+Recommended primary metric
+Strict safe-adaptation rate
+A rewritten problem counts as a safe adaptation only if all of the following hold:
+
+mathematical conditions and requested quantity are preserved;
+no ambiguity that changes the task is introduced;
+no solution steps, operation cues, intermediate results, or answers are leaked;
+the requested presentation transformation is achieved, unless the original was appropriately left unchanged.
+
+I would still report each underlying dimension separately so the composite does not hide where failures occur.
+For Version B, add the verifier's recall for unsafe adaptations and false-positive rate. Since undetected corruption is the important downstream risk, high overall accuracy alone is insufficient.
+Suggested analysis
+Use paired comparisons within each original problem. Report:
+
+safe-adaptation rate, by model and format;
+fidelity-failure rate and categories;
+instructional-leakage rate;
+percentage of unnecessary changes;
+presentation compliance;
+verifier detection recall and precision;
+cost and latency per accepted safe rewrite.
+
+For statistical inference, use paired differences with confidence intervals, clustered by source problem. Avoid elaborate significance claims from small failure subgroups.
+7. Does it have a genuine social-impact justification?
+Yes—but the claim must be carefully bounded.
+Research provides evidence that reading and language processing are relevant to mathematical word-problem performance. For example, Fuchs et al. studied 325 second graders and found that language and text comprehension were important predictors of word-problem outcomes. This supports the existence of a language-related educational barrier; it does not show that Kathy's exact simplifications help neurodivergent learners. 
+There is also a credible institutional use case: teachers cannot manually verify every automatically generated version of every problem.
+The social-impact story becomes:
+
+Students may face unnecessary language and presentation barriers in mathematics. LLMs could help educators produce accessible alternatives at scale, but inaccurate rewrites can silently change what learners are asked to solve. We will investigate how reliably these adaptations preserve mathematical and instructional meaning, and whether automated verification can make them safer for educator review.
+
+This is an education-equity and responsible-AI problem, but the deliverable is an upstream safety evaluation, not a demonstrated accessibility intervention.
+What about neurodivergence?
+I would absolutely retain neurodivergent learners as part of the motivation, particularly the importance of choice and variation in reading and information-processing needs.
+But I would not describe the benchmark as “validated for neurodivergent learners” or claim it improves ADHD, dyslexia, or autism outcomes. The planned study includes no such users or outcome measures, and neither plain language nor chunking is universally beneficial to people with those diagnoses.
+A better framing is neurodiversity-informed and accessibility-motivated, without diagnosis-specific efficacy claims.
+8. Title, dataset, and source recommendations
+My preferred title is:
+When Does Simplification Change the Math? Evaluating and Verifying LLM-Generated Accessible Word Problems
+Other good choices are Preserving Mathematical Meaning in AI-Adapted Educational Content and SafeMathAdapt: A Benchmark for Mathematical Fidelity and Instructional Leakage in LLM Rewrites.
+For the October 14 teaching-staff discussion, I would keep GSM8K as the primary dataset because the license, scale, and available solutions make it a pragmatic choice. However, the proposal needs to explain that the benchmark measures fidelity, not comprehension or accessibility effectiveness.
+I would also add the following highly relevant recent source to the essential reading set:
+Mirzadeh et al., GSM-Symbolic: Understanding the Limitations of Mathematical Reasoning in Large Language Models (2024). It shows that model performance can be sensitive to changes in numerical values and wording/context around GSM-style math problems. This is relevant background for why mathematical semantics matter, though solver instability should not itself be treated as proof that a rewrite changed the problem. 
+For the teaching staff, the critical three papers to foreground are Norberg et al. (2025), Agrawal & Carpuat (2024), and EDUMATH (2026). Together they demonstrate the prior work on actual math rewriting, meaning-preservation evaluation, and teacher-reviewed math-generation benchmarks.
+
+9. What I would recommend we tell Kathy
+I would say that we should move ahead with her narrower proposal, while strengthening three parts before finalizing it.
+First, cite Norberg et al. (2025) prominently and clearly state what is different. Second, make mathematical-task preservation and unwanted assistance the central contribution—not just readability or which model wins. Third, add a lightweight verification/revision component if time permits, since that turns the project from measuring known risks into investigating how to mitigate them.
+I would not insist on building AccessPath at the same time. A polished benchmark plus failure detector, rigorous evaluation, and a small optional demo is a far better two-person deliverable than two partially completed projects.
+My final call: Kathy's direction is the right practical choice for this course, but I would rename and reposition it around trustworthy educational adaptation. Its strongest question is not whether LLMs can make a problem sound simpler. It is whether they can do so without corrupting the learning task—and whether we can reliably catch failures before students encounter them.
+
+
+ChatGPT:
+4. Audit of Kathy's actual proposal
+I read the attached proposal closely. It is already better scoped than the original full-tutor design. The research questions, separation of fidelity from presentation compliance, and willingness to accept a negative result are particularly good.
+Here are the changes I would make.
+
+
+
+Proposal component
+Assessment
+Suggested change
+
+
+
+Main research question
+Strong
+Keep. Mathematical preservation is the central contribution.
+
+
+Two LLMs × two formats
+Good experimental starting point
+Keep, but avoid making model ranking the main finding.
+
+
+GSM8K
+Suitable and easily accessible
+Add a small out-of-domain validation set if possible.
+
+
+100 problems
+Reasonable pilot scale
+Report uncertainty; do not claim a representative estimate across all math problems.
+
+
+10 development examples
+Good separation
+Freeze prompts and rubric before evaluating the 100 held-out cases.
+
+
+Deterministic chunking baseline
+Particularly strong
+Keep, and consider a conservative plain-language baseline as well.
+
+
+Human fidelity annotation
+Essential
+Strengthen with structured mathematical facts and better independent review.
+
+
+25% double annotation
+Acceptable minimum
+Aim for 40–50%, or full double annotation of the primary fidelity outcome if feasible.
+
+
+Numeric and readability checks
+Useful diagnostics
+Never let them replace semantic or mathematical evaluation.
+
+
+Social-impact framing
+Promising but indirect
+Identify the actual barrier, beneficiaries, and future deployment decision.
+
+
+Novelty positioning
+Main weakness
+Explicitly differentiate from Norberg et al. and related math-generation benchmarks.
+
+
+References
+Missing the closest prior art
+Add Norberg 2025, Almoubayyed 2023, and meaning-preservation literature.
+
+
+Five substantive methodological issues
+A. Mathematical equivalence needs more than matching numbers.
+Suppose an original problem says:
+
+Mia has four boxes with six pencils in each box. How many pencils does she have altogether?
+
+A valid chunked version could say:
+
+Mia has four boxes. Each box contains six pencils. How many pencils does Mia have altogether?
+
+But the following version would violate the intended preservation criterion:
+
+Mia has four boxes. Each box contains six pencils. Multiply four by six to find the total.
+
+It preserves the correct answer but adds an operation hint.
+The evaluation should therefore distinguish four outcomes:
+
+
+
+Outcome
+Meaning
+
+
+
+Answer preserved
+Same numerical answer
+
+
+Mathematical structure preserved
+Same quantities, entities, relationships, conditions, and target
+
+
+Instructional demand preserved
+No added strategy, intermediate result, or answer cue
+
+
+Presentation requirement satisfied
+Genuinely simpler wording or better chunking
+
+
+The first is necessary in many cases but not sufficient.
+B. A rewrite can preserve mathematics while changing cognitive difficulty.
+This is especially important for chunking. Organizing information under “Given,” “Step 1,” and “Step 2” could unintentionally tell the learner what mathematical operations to perform.
+Chunking the problem statement is different from chunking the solution process. Kathy recognizes this in the proposal; I would make it a prominent evaluation category.
+C. The project needs a rule for when no rewrite is necessary.
+A short, clear problem may not need simplification. The correct model behavior might be to leave it unchanged.
+I would add an annotation label:
+Adaptation needed? Yes / No / Unclear
+Then evaluate whether the model makes unnecessary edits. This creates a valuable additional research question: Can the system recognize when not to modify educational content?
+D. One hundred problems are enough for an informative benchmark, but not rare-error guarantees.
+There are 400 generated versions, but only 100 distinct source problems. Outcomes from different transformations of the same source are related, so the apparent sample size should not be treated as 400 independent problems.
+The proposal's plan to resample at the original-problem level is correct. I would also report per-model/per-format raw counts and confidence intervals. Failure-type comparisons should remain exploratory.
+E. GSM8K is a convenience benchmark, not an accessibility dataset.
+The official dataset has 7,473 training and 1,319 test problems in its main configuration and is MIT-licensed. It provides mathematical questions and worked solutions, but no labels for reading barriers or learner preferences. 
+Furthermore, GSM8K is widely used in model development and evaluation. Familiarity with these problems is a possible confound, so I would add 20–30 openly licensed, previously unused school-style problems as a small external check, if time permits.
+That additional set would meaningfully strengthen generalizability without turning the project into a full data-collection study.
+5. How I would make the project more novel
+I see three versions of Kathy's idea, with increasing ambition.
+
+  
+    
+      
+        **Version A — Benchmark only**
+        7.5/10
+      
+      Generate rewrites with two LLMs, annotate mathematical fidelity, presentation compliance, and leakage, then compare error rates.
+      Safest scope. Useful replication/benchmark contribution, but novelty is modest.
+    
+  
+  
+  
+    
+      
+        **Version B — Benchmark + fidelity verifier**
+        9/10
+      
+      Add a lightweight verification stage that attempts to detect changed mathematical relationships or unintended solution hints before accepting the rewrite.
+      The best balance of research novelty, AI depth, feasibility, and practical usefulness.
+    
+  
+  
+  
+    
+      
+        **Version C — Benchmark + user evaluation**
+        8/10
+      
+      Add a small teacher or learner evaluation asking whether preserved rewrites are actually clearer and easier to use.
+      Stronger direct social-impact evidence, but introduces recruitment, approval, and experimental-design work.
+    
+  
+
+
+I recommend Version B as the primary plan, with a small educator review as an optional extension.
+Proposed architecture
+flowchart TD
+    A["Original math word problem"] --> B["LLM 1 / LLM 2"]
+    B --> C["Plain language / Chunked"]
+    C --> D["Mathematical fidelity verifier"]
+    A --> D
+    D --> E{"Passes checks?"}
+    E -->|Yes| F["Candidate approved for human review"]
+    E -->|No| G["Flag error / attempt constrained revision"]
+    G --> H["Revised candidate"]
+    H --> I["Independent human evaluation"]
+    F --> I
+    I --> J["Benchmark + failure taxonomy + analysis"]
+
+The verifier could combine structured extraction and conservative checks:
+
+identify quantities, units, entities, comparison relations, temporal ordering, and conditions;
+compare source versus rewrite;
+detect potential added operation instructions or intermediate calculations;
+optionally use an independent LLM critic for semantic concerns;
+flag suspicious rewrites for review rather than declaring them mathematically safe.
+
+The research contribution then becomes more interesting:
+Does a verifier or constrained revision stage improve the rate of safe, useful adaptations, and at what additional cost?
+It is testable, technical, and produces a reusable safety mechanism.
+One important caveat: a verifier built from an LLM can make correlated mistakes with the generator. It is not ground truth. Human-adjudicated labels should remain the reference, and the verifier should be evaluated on its ability to detect unsafe rewrites—including false alarms.
+6. Stronger experimental design
+I would keep Kathy's experiment largely intact and make one targeted extension.
+
+
+
+Condition
+Purpose
+
+
+
+Original problem
+Content reference and no-rewrite baseline
+
+
+Deterministic formatting
+Tests whether simple formatting is sufficient
+
+
+Model A: plain language
+Tests linguistic simplification
+
+
+Model A: chunked
+Tests LLM-based restructuring
+
+
+Model B: plain language
+Model comparison
+
+
+Model B: chunked
+Model comparison
+
+
+Verified/revised output
+Tests whether checking can reduce failures
+
+
+The core four generated conditions remain the main experiment. The verifier can be tested on those same outputs, so a completely new round of generation is not necessarily required.
+Recommended primary metric
+Strict safe-adaptation rate
+A rewritten problem counts as a safe adaptation only if all of the following hold:
+
+mathematical conditions and requested quantity are preserved;
+no ambiguity that changes the task is introduced;
+no solution steps, operation cues, intermediate results, or answers are leaked;
+the requested presentation transformation is achieved, unless the original was appropriately left unchanged.
+
+I would still report each underlying dimension separately so the composite does not hide where failures occur.
+For Version B, add the verifier's recall for unsafe adaptations and false-positive rate. Since undetected corruption is the important downstream risk, high overall accuracy alone is insufficient.
+Suggested analysis
+Use paired comparisons within each original problem. Report:
+
+safe-adaptation rate, by model and format;
+fidelity-failure rate and categories;
+instructional-leakage rate;
+percentage of unnecessary changes;
+presentation compliance;
+verifier detection recall and precision;
+cost and latency per accepted safe rewrite.
+
+For statistical inference, use paired differences with confidence intervals, clustered by source problem. Avoid elaborate significance claims from small failure subgroups.
+7. Does it have a genuine social-impact justification?
+Yes—but the claim must be carefully bounded.
+Research provides evidence that reading and language processing are relevant to mathematical word-problem performance. For example, Fuchs et al. studied 325 second graders and found that language and text comprehension were important predictors of word-problem outcomes. This supports the existence of a language-related educational barrier; it does not show that Kathy's exact simplifications help neurodivergent learners. 
+There is also a credible institutional use case: teachers cannot manually verify every automatically generated version of every problem.
+The social-impact story becomes:
+
+Students may face unnecessary language and presentation barriers in mathematics. LLMs could help educators produce accessible alternatives at scale, but inaccurate rewrites can silently change what learners are asked to solve. We will investigate how reliably these adaptations preserve mathematical and instructional meaning, and whether automated verification can make them safer for educator review.
+
+This is an education-equity and responsible-AI problem, but the deliverable is an upstream safety evaluation, not a demonstrated accessibility intervention.
+What about neurodivergence?
+I would absolutely retain neurodivergent learners as part of the motivation, particularly the importance of choice and variation in reading and information-processing needs.
+But I would not describe the benchmark as “validated for neurodivergent learners” or claim it improves ADHD, dyslexia, or autism outcomes. The planned study includes no such users or outcome measures, and neither plain language nor chunking is universally beneficial to people with those diagnoses.
+A better framing is neurodiversity-informed and accessibility-motivated, without diagnosis-specific efficacy claims.
+8. Title, dataset, and source recommendations
+My preferred title is:
+When Does Simplification Change the Math? Evaluating and Verifying LLM-Generated Accessible Word Problems
+Other good choices are Preserving Mathematical Meaning in AI-Adapted Educational Content and SafeMathAdapt: A Benchmark for Mathematical Fidelity and Instructional Leakage in LLM Rewrites.
+For the October 14 teaching-staff discussion, I would keep GSM8K as the primary dataset because the license, scale, and available solutions make it a pragmatic choice. However, the proposal needs to explain that the benchmark measures fidelity, not comprehension or accessibility effectiveness.
+I would also add the following highly relevant recent source to the essential reading set:
+Mirzadeh et al., GSM-Symbolic: Understanding the Limitations of Mathematical Reasoning in Large Language Models (2024). It shows that model performance can be sensitive to changes in numerical values and wording/context around GSM-style math problems. This is relevant background for why mathematical semantics matter, though solver instability should not itself be treated as proof that a rewrite changed the problem. 
+For the teaching staff, the critical three papers to foreground are Norberg et al. (2025), Agrawal & Carpuat (2024), and EDUMATH (2026). Together they demonstrate the prior work on actual math rewriting, meaning-preservation evaluation, and teacher-reviewed math-generation benchmarks.
+
+9. What I would recommend we tell Kathy
+I would say that we should move ahead with her narrower proposal, while strengthening three parts before finalizing it.
+First, cite Norberg et al. (2025) prominently and clearly state what is different. Second, make mathematical-task preservation and unwanted assistance the central contribution—not just readability or which model wins. Third, add a lightweight verification/revision component if time permits, since that turns the project from measuring known risks into investigating how to mitigate them.
+I would not insist on building AccessPath at the same time. A polished benchmark plus failure detector, rigorous evaluation, and a small optional demo is a far better two-person deliverable than two partially completed projects.
+My final call: Kathy's direction is the right practical choice for this course, but I would rename and reposition it around trustworthy educational adaptation. Its strongest question is not whether LLMs can make a problem sound simpler. It is whether they can do so without corrupting the learning task—and whether we can reliably catch failures before students encounter them.
+
+
+You:
+prof asked us concrete examples which we didnt have. like actual llm outputs and what we want to achieve. i want you to refine the idea and $deep-research and create new document containing everything. detailed doc like we had before. also list related readings we should do.like, our premise that llm omits or changes, do we even have examples or papers saying that etc
+
+
+ChatGPT:
+Deep Research has started and will present its research plan before proceeding.
+I've included Kathy's proposal, your team discussion, and the earlier project research. The main priority is addressing the professor's feedback: showing concrete math problems, actual LLM rewrites, and credible evidence of mathematical changes, omissions, or unintended hints.
+The research will distinguish verified model outputs and documented failures from illustrative examples, check the closest existing papers, and develop a refined project with a detailed methodology, evaluation architecture, reproducible examples, and essential readings.
+It will also prepare a comprehensive Markdown project document and a shorter, professor-ready discussion brief.
+
+
+You:
+dossier link is broken in report. fix it and give correct link or zip file. make sure the same dossier from research is used and nothing left out or omitted
+
+
+ChatGPT:
+I've sent the broken-link issue back to Deep Research for correction.
+The request is to recover the exact original SafeAdapt-Math dossier, not generate a shortened or rewritten version, and provide a working Markdown download or ZIP file.
+I've also requested an integrity check to ensure that every section, example, methodology, prompt, and reference is preserved.
+Deep Research will provide the corrected download in its response. I can't verify the original file or give you a working link until that recovery is complete.
+
+
+You:
+tell the deep research that the links are all blank. give the full dossier and the briefs and everything else in its own report or multiple md files downloadable in chat. all files from zip are needed. if possible, can add all files or zip to this link https://drive.google.com/drive/folders/1IpddYTSki53Qq7ozTEVW1hawV_5qz_69?usp=sharing which is open to edit and add
+
+
+ChatGPT:
+I've sent Deep Research the updated instructions, emphasizing that all previous download links are blank.
+I've requested the complete original dossier, the professor-ready brief, and all 18 supporting files—not summaries or shortened replacements. I've also provided your Google Drive folder as a possible upload destination.
+Deep Research will update you on file recovery and delivery. The files have not yet been verified or uploaded to Google Drive.
+
+
+You:
+can you please tell the deep research to upload all to the drive link! its own sandbox links are not working when it stops! no link working! just tell it to upload
+
+
+ChatGPT:
+I've told Deep Research to upload the complete SafeAdapt-Math package directly to your Google Drive folder.
+I explicitly instructed it to upload the ZIP and all 33 individual files, verify that they're accessible in Drive, and provide Google Drive links—not more broken sandbox links.
+The upload is not yet confirmed. Deep Research will report whether it can access and write to your folder.
+
+If you want, I can:
+
+Suggest next steps to refine the proposal
+Propose a lightweight verifier architecture
+Outline a plan for an educator review extension

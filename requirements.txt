@@ -1,0 +1,13 @@
+# core (offline: sampling, baseline, deterministic checks, analysis, tests)
+numpy>=2.0
+pandas>=2.2
+pyyaml>=6.0
+tabulate>=0.9          # markdown tables in evaluate.py
+jsonschema>=4.20
+# providers (only needed for real runs)
+openai>=2.0            # Responses API, reasoning effort "none"
+google-genai>=1.40     # ThinkingConfig(thinking_level=...)
+anthropic>=1.0         # output_config effort / json_schema
+# optional
+datasets>=3.0          # GSM1K fetch
+streamlit>=1.40        # demo

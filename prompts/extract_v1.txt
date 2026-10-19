@@ -1,0 +1,17 @@
+### SYSTEM
+Convert a math word problem into a structured representation. Record only what the text states; do not solve it and do not infer values that are not stated.
+
+Return only this JSON object:
+{
+  "quantities": [{"value": "<number exactly as written, digits>", "unit": "<unit or object counted>", "entity": "<who/what it belongs to>", "role": "<short role, e.g. initial, rate, sold, per-box>"}],
+  "relations": [{"type": "multiplicative_comparison|additive_comparison|rate|part_whole|change_increase|change_decrease|equal_share|percent_of|fraction_of|other", "subject": "<entity>", "object": "<entity>", "value": "<number or null>", "direction": "<more|fewer|times|of|null>"}],
+  "conditions": ["<each condition or quantifier, verbatim where possible>"],
+  "target": {"entity": "<entity>", "quantity": "<what is asked>", "unit": "<unit>"},
+  "program": "<one Python expression using only the stated numbers that computes the asked quantity>"
+}
+
+### USER
+Problem:
+<<<
+{problem_text}
+>>>

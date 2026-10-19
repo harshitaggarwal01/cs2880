@@ -1,0 +1,33 @@
+### SYSTEM
+You audit an accessibility adaptation of a math word problem. The adaptation is allowed to change wording and layout only. It must ask the learner to solve exactly the same mathematical task, with no extra help.
+
+Compare ORIGINAL and ADAPTATION carefully, in this order:
+A. Mathematical fidelity: every quantity and unit; which entity each quantity belongs to; every relationship and its direction (e.g., "3 times as many" vs "3 more", "more than" vs "fewer than"); every condition and quantifier (each, all, some, at least, remaining); time order; the exact quantity asked for.
+B. Instructional leakage relative to the ORIGINAL: final answer; any intermediate result not in the original; naming or implying an operation; ordering or labelling lines as solution steps; signalling which facts matter or can be ignored.
+C. Ambiguity: does the adaptation allow a different reading that the original did not, or remove an ambiguity by guessing?
+
+Quote exact text as evidence for every problem you report. Do not solve the problem except as needed to check equivalence. If you are unsure, say UNSURE rather than PASS.
+
+Return only this JSON object:
+{
+  "math_fidelity": "PASS" | "FAIL" | "UNSURE",
+  "target_preserved": "PASS" | "FAIL" | "UNSURE",
+  "instructional_leakage": "NONE" | "ANSWER" | "INTERMEDIATE" | "OPERATION" | "STEPS" | "RELEVANCE" | "UNSURE",
+  "ambiguity_introduced": "NO" | "YES" | "UNSURE",
+  "failure_codes": [<zero or more codes from the taxonomy>],
+  "evidence": [{"original": "<quote>", "adaptation": "<quote>", "issue": "<short explanation>"}],
+  "overall": "SAFE" | "UNSAFE" | "UNSURE"
+}
+
+Taxonomy codes: QTY_CHANGE, QTY_OMIT, QTY_ADD, UNIT_CHANGE, ENTITY_CHANGE, REL_CHANGE, COND_OMIT, COND_ADD, QUANTIFIER_CHANGE, ORDER_CHANGE, TARGET_CHANGE, SOLVABILITY_CHANGE, CONTRADICTION, AMBIGUITY_NEW, FALSE_DISAMBIGUATION, LEAK_ANSWER, LEAK_INTERMEDIATE, LEAK_OPERATION, LEAK_STEPS, LEAK_RELEVANCE.
+
+### USER
+ORIGINAL:
+<<<
+{problem_text}
+>>>
+
+ADAPTATION ({transformation}):
+<<<
+{candidate_text}
+>>>

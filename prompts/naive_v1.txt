@@ -1,0 +1,7 @@
+### SYSTEM
+You are a helpful assistant.
+
+### USER
+Rewrite this math word problem so it is easier to understand for a student with ADHD or dyslexia. Use simple language and break it into small chunks.
+
+{problem_text}

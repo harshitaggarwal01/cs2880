@@ -1,0 +1,38 @@
+# Copy to config.yaml and freeze before the main run. Changing anything here after
+# generation starts invalidates the comparison - bump the run_id instead.
+run_id: main-v1
+
+generators:              # the two models under audit (different providers)
+  - name: gpt6luna
+    provider: openai
+    model: gpt-6-luna    # released 2026-09-22; no dated snapshot published - returned model ID is logged per call
+    settings: {reasoning_effort: none, temperature: 0, max_output_tokens: 1024}
+  - name: gem38flash
+    provider: google
+    model: gemini-3.8-flash
+    settings: {thinking_level: low, max_output_tokens: 2048}
+
+critic:                  # different model family from both generators (correlated-error control)
+  provider: anthropic
+  model: claude-sonnet-5-5
+  settings: {effort: low, max_tokens: 4096}
+
+extractor:               # structured extraction + program for the symbolic layer
+  provider: anthropic
+  model: claude-sonnet-5-5
+  settings: {effort: low, max_tokens: 4096}
+
+transformations: [plain, chunked]          # primary conditions
+ablation:                                  # realistic teacher prompt ("naive"): co-primary condition for RQ2
+  transformation: naive
+  partition: main
+  first_n: 100                             # = all main GSM8K problems
+
+partitions: [main, ext_asdiv, ext_gsm1k]   # dev is for prompt/rubric/verifier development only
+
+# USD per 1M tokens (standard tier, checked 2026-10-16; re-check before running)
+prices:
+  gpt-6-luna: {in: 0.10, out: 0.50}
+  gemini-3.8-flash: {in: 0.75, out: 3.75}   # introductory price until 2026-12-31, then 1.50 / 7.50
+  claude-sonnet-5-5: {in: 2.00, out: 10.00}
+  claude-haiku-5-5: {in: 0.10, out: 0.50}

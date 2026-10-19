@@ -1,0 +1,34 @@
+{
+  "seed": 2880,
+  "counts": {
+    "dev": 10,
+    "main": 100,
+    "ext_asdiv": 12,
+    "ext_gsm1k": 12
+  },
+  "main_allocation": {
+    "s<=2|rel=False": 17,
+    "s<=2|rel=True": 15,
+    "s=4|rel=True": 12,
+    "s>=5|rel=True": 11,
+    "s=3|rel=True": 14,
+    "s>=5|rel=False": 7,
+    "s=4|rel=False": 10,
+    "s=3|rel=False": 14
+  },
+  "main_tag_coverage": {
+    "time": 42,
+    "measure": 23,
+    "money": 35,
+    "conditional": 41,
+    "comparison": 22,
+    "fraction": 29,
+    "percent": 10
+  },
+  "main_step_buckets": {
+    "s<=2": 32,
+    "s=3": 28,
+    "s=4": 22,
+    "s>=5": 18
+  }
+}

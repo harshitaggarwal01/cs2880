@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "safeadapt-math/annotation/v1",
+  "title": "SafeAdapt-Math human annotation of one adaptation",
+  "description": "One row per (annotator, adaptation). Annotators see the ORIGINAL, the ADAPTATION and the requested transformation; never the model name, the verifier decision, or whether the item was repaired. The GSM8K worked solution is shown only during adjudication.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["annotation_id", "annotator", "adaptation_needed", "math_fidelity", "target_preserved",
+               "solvability_changed", "ambiguity", "leakage_level", "leakage_type", "presentation", "failure_codes"],
+  "properties": {
+    "annotation_id": {"type": "string", "description": "Blinded ID from the annotation sheet."},
+    "annotator": {"type": "string", "enum": ["A", "B", "ADJ"], "description": "ADJ = adjudicated final label."},
+    "adaptation_needed": {"enum": ["YES", "NO", "UNCLEAR"],
+      "description": "Judged on the ORIGINAL only: would this learner-facing problem plausibly benefit from the requested transformation?"},
+    "math_fidelity": {"enum": ["PASS", "FAIL", "UNSURE"],
+      "description": "PASS iff every quantity, unit, entity binding, relation (with direction), condition/quantifier, and temporal dependency of the original is present and unchanged."},
+    "target_preserved": {"enum": ["PASS", "FAIL", "UNSURE"],
+      "description": "The adaptation asks for the same unknown, in the same unit, as the original."},
+    "solvability_changed": {"enum": ["NO", "YES", "UNSURE"],
+      "description": "YES if the adaptation became unsolvable, gained a different unique answer, or became solvable when the original was not."},
+    "ambiguity": {"enum": ["NONE", "NEW", "RESOLVED"],
+      "description": "NEW: a reading the original did not allow. RESOLVED: the adaptation picked one reading of an ambiguity in the original (record whether it matches the reference solution in notes)."},
+    "leakage_level": {"type": "integer", "minimum": 0, "maximum": 3,
+      "description": "0 none; 1 structural cue (layout or labels that mirror the solution order, e.g. 'Step 1: purple beads'); 2 strategy (names an operation, sets up an equation, gives a solution plan, or says which facts matter/do not matter); 3 value (states an intermediate result or the answer)."},
+    "leakage_type": {"enum": ["NONE", "STRUCTURE", "STEPS", "OPERATION", "RELEVANCE", "INTERMEDIATE", "ANSWER"],
+      "description": "Most severe kind present."},
+    "presentation": {"type": ["integer", "null"], "minimum": 0, "maximum": 3,
+      "description": "Requested transformation achieved? 0 worse than original; 1 negligible or flawed (fragments, near-copy); 2 clearly improved; 3 substantially improved. null for a NO_REWRITE_NEEDED abstention."},
+    "abstention_appropriate": {"enum": ["YES", "NO", "NA"],
+      "description": "Only for NO_REWRITE_NEEDED outputs: was leaving the problem unchanged the right call?"},
+    "failure_codes": {"type": "array", "uniqueItems": true, "items": {"enum": [
+      "QTY_CHANGE", "QTY_OMIT", "QTY_ADD", "UNIT_CHANGE", "ENTITY_CHANGE", "REL_CHANGE", "COND_OMIT", "COND_ADD",
+      "QUANTIFIER_CHANGE", "ORDER_CHANGE", "TARGET_CHANGE", "SOLVABILITY_CHANGE", "CONTRADICTION",
+      "AMBIGUITY_NEW", "FALSE_DISAMBIGUATION", "DISAMBIGUATION",
+      "LEAK_ANSWER", "LEAK_INTERMEDIATE", "LEAK_OPERATION", "LEAK_STEPS", "LEAK_RELEVANCE", "LEAK_STRUCTURE",
+      "NO_ADAPT", "OVER_EDIT", "HARMFUL_FRAGMENT", "ENTITY_GROUPING", "FORMAT_FAIL", "EXTRA_TEXT"]}},
+    "evidence": {"type": "string", "description": "Quote the exact span(s) that justify any FAIL, leakage, or ambiguity label."},
+    "confidence": {"enum": ["HIGH", "MEDIUM", "LOW"]},
+    "notes": {"type": "string"}
+  },
+  "x-derived": {
+    "SAFE": "math_fidelity == PASS and target_preserved == PASS and solvability_changed == NO and ambiguity != NEW and leakage_level == 0",
+    "SAFE_AND_USEFUL": "SAFE and ((presentation >= 2 and 'NO_ADAPT' not in failure_codes and 'HARMFUL_FRAGMENT' not in failure_codes) or abstention_appropriate == YES)",
+    "UNSAFE (verifier positive class)": "not SAFE"
+  }
+}

@@ -1,0 +1,26 @@
+### SYSTEM
+You fix an accessibility adaptation of a math word problem that an automatic checker flagged. Make the smallest edits that resolve the listed concerns. The fixed version must ask exactly the same mathematical question as the original, with no added help.
+
+Rules:
+1. Use only information that is in the original.
+2. Keep every quantity, unit, relationship, condition, time order, and the exact quantity asked for.
+3. Do not solve, hint, compute, name operations, or add solution steps.
+4. Keep the requested format ({transformation}).
+5. If a concern is wrong, leave that part unchanged.
+
+Return only this JSON object:
+{"adapted_problem": "<text>", "changes": ["<short description of each edit>"]}
+
+### USER
+ORIGINAL:
+<<<
+{problem_text}
+>>>
+
+FLAGGED ADAPTATION:
+<<<
+{candidate_text}
+>>>
+
+CHECKER CONCERNS:
+{concerns}

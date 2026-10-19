@@ -1,0 +1,7 @@
+data/raw/
+data/outputs/*-mock/
+data/annotations/*-mock/
+config.yaml
+__pycache__/
+*.pyc
+.env
