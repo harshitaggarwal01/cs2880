@@ -133,7 +133,87 @@ Dense math text is a barrier  →  teachers use AI to adapt it  →  AI sometime
 
 ---
 
-## 8. What we already found (small pilot, 10 problems, 70 real outputs)
+## 8. Who it is for, how it fits in, and how it helps
+
+### Who it is for
+
+| Who | Where they meet the problem today | How our work helps them |
+|---|---|---|
+| **Students who use adapted materials** (struggling readers, students with dyslexia or ADHD, English learners, anyone who prefers shorter text) | They get a "simplified" worksheet or app screen and have no way to know it was changed | They get versions that are easier to read **and** still fair: same question, same thinking required, so the work they do and the grade they get mean the same as everyone else's |
+| **Teachers and special-education staff** | They paste problems into an AI tool, get a rewrite, and have to decide whether to trust it | Instead of re-reading every rewrite, they only check the ones flagged REVIEW or REJECT, and the flag says *why* (e.g. "adds solution steps", "number 6 is missing") |
+| **Ed-tech companies** (Diffit-, MagicSchool-type tools; adaptive tutors like MATHia) | Their AI produces the rewrites, and they carry the risk if those rewrites are wrong | The checker is a ready-made guardrail they can run before showing a rewrite; the benchmark lets them measure and compare their own system |
+| **Curriculum publishers and test makers** | They need many accessible versions of the same items, and accommodations must not change what is being measured | Batch-check whole problem banks and get a report of which adapted items are safe to publish |
+| **Researchers** | No public benchmark exists for "did the rewrite keep the same math task?" | The labelled dataset, rubric and code are reusable |
+
+### How it fits into an existing tool (integration)
+
+The checker only needs two pieces of text: **the original problem and the rewrite**. It returns a verdict and a reason. Because it is that simple, it can sit inside any tool without changing how the tool works:
+
+```text
+Teacher clicks "Make it easier" in their usual tool
+        │
+        ▼
+Tool's AI writes the easier version
+        │
+        ▼
+Our checker compares original vs. rewrite  ──►  PASS    → shown to the teacher as normal
+                                           ──►  REVIEW  → shown with a yellow note:
+                                           │              "check this: the word 'remaining' was dropped"
+                                           ──►  REJECT  → repaired once and re-checked, or the tool falls back
+                                                          to the simple sentence-split version (no AI)
+```
+
+What a tool would get back, illustratively:
+
+```text
+verdict: REJECT
+reasons: - adds solution steps ("Steps to try", numbered steps)
+         - adds operation words not in the original ("find", "subtract")
+safe alternative: the original sentences split one per line (no rewording)
+```
+
+**Practical points that make it easy to adopt:**
+- **Free, instant layer.** The basic layer is plain code. It needs no AI, runs instantly, costs nothing, and catches the obvious cases (added steps, missing or new numbers).
+- **Cheap AI layer.** The deeper layer (the AI critic) costs roughly a cent per problem, and a tool can decide when to use it.
+- **No student data.** It never needs student data or diagnoses. It only looks at the problem text.
+- **Three ways to use it:**
+  - **Live**, one problem at a time inside an app;
+  - **In bulk**, over a whole worksheet or question bank;
+  - **For testing**, by a company measuring its own AI before release.
+
+### How it helps, in one line each
+- **Student:** "My version is easier to read, but it's still my work."
+- **Teacher:** "I only double-check the few the system warns me about, and it tells me what to look for."
+- **Tool builder:** "We can prove our 'simplify' button doesn't change the math or give away answers."
+- **School or test maker:** "Our accommodations stay accommodations, not easier tests."
+
+---
+
+## 9. Where it can go later (future ideas, not part of this semester)
+
+*Everything in this section is a possible next step. None of it is built or promised in this project.*
+
+### Research next steps
+1. **Test with real students.** Do safe adapted versions actually help struggling readers, without helping everyone else the same amount? Testing researchers call this the "differential boost". It would show the adaptation is a fair accommodation. This needs ethics approval (IRB) and a school partner.
+2. **Other subjects.** Science and physics word problems have the same issue (units, conditions, the question being asked). So do reading-comprehension questions, where a rewrite can give away the answer.
+3. **Other languages.** Many tools translate and simplify at the same time, for English learners. That's another place meaning can drift.
+4. **Other kinds of adaptation.** Read-aloud scripts, diagrams generated from text, and step-by-step *practice* versions where hints are intended. The checker would need a "how much help is allowed" setting.
+5. **Smaller, cheaper checker.** Train a small, open model on our labelled data so schools can run the checker for free, even offline.
+
+### Things that could be built from it (product ideas)
+| Idea | What it would be | Who would use it |
+|---|---|---|
+| **"Safe Simplify" add-on** | A Google Docs / Google Classroom add-on: select a problem, get an easier version that has already been checked, with warnings shown inline | Teachers |
+| **Checker API** | A simple web service ed-tech companies call before showing any AI-rewritten problem | Ed-tech companies |
+| **Question-bank auditor** | Upload a whole worksheet or test bank and get a report: which adapted items are safe, which need review, and why | Publishers, districts, test makers |
+| **Public benchmark and leaderboard** | Rank AI tools and models on "keeps the same problem" vs. "gives the answer away", so schools can compare before buying | Schools choosing tools; researchers |
+| **Back into an adaptive tutor** | Our original idea (AccessPath): a math tutor where each student picks how problems are shown (shorter sentences, chunks, read-aloud), with this checker guaranteeing every version is still the same problem | Students directly |
+
+**Why this matters for the future:** AI-adapted learning materials are going to become normal. If nobody checks them, the students who rely on accommodations will quietly get different, often easier, work. A shared, open standard for "is this still the same problem?" is the kind of public good that makes the whole category safer. That is a bigger impact than any single app.
+
+---
+
+## 10. What we already found (small pilot, 10 problems, 70 real outputs)
 
 | How the AI was asked | Result |
 |---|---|
@@ -145,7 +225,7 @@ Dense math text is a barrier  →  teachers use AI to adapt it  →  AI sometime
 
 ---
 
-## 9. Questions the professor might ask, with short answers
+## 11. Questions the professor might ask, with short answers
 
 **"Isn't this just evaluating LLMs? Where's the social impact?"**
 The impact is in deployment. These tools are already in classrooms and are used for the students who most need fair treatment. We are building and testing the safety gate that should sit between the AI and the student, and we measure whether it's good enough to trust.
@@ -178,6 +258,6 @@ It is the motivation. Many neurodivergent students benefit from clearer language
 
 ---
 
-## 10. The 30-second version (say this first)
+## 12. The 30-second version (say this first)
 
 > "Teachers are using AI to rewrite math problems in simpler language for students with reading or attention difficulties. We found that when you ask the AI the way a teacher normally would, it often adds solution steps or gives away part of the answer. In our pilot, one model did it 10 out of 10 times. Those students end up with an easier, different problem than their classmates, and nobody notices. Our project measures how often this happens across two major AI models, builds an automatic checker that flags unsafe rewrites before they reach a student, and tests whether fixing them, or skipping AI entirely, works better. The output is a labelled benchmark, an open-source checker, and clear guidance for teachers and tool builders."
