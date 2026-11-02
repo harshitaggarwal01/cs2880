@@ -61,18 +61,18 @@ Footer: *Human labels are the ground truth: every rewrite is labelled blind, and
 
 Four big-number cards:
 
-| **4 / 4** | **108** | **40** | **$1.19** |
+| **124** | **108** | **40** | **$1.19** |
 |---|---|---|---|
-| project phases coded: core study, methods, real-world audit, write-up | automated tests passing; the whole pipeline runs end to end | real AI rewrites produced and checked this week | total cost of that pilot, including checking: about 3¢ per rewrite |
+| real math problems chosen and locked for the study, from three public datasets | automated tests passing; the whole pipeline runs end to end | real AI rewrites produced and checked this week | total cost of that pilot, including checking: about 3¢ per rewrite |
 
 Below the cards, a short list:
-- **Core study pipeline:** sample → rewrite → check → repair → blind labelling sheets → cost ledger → analysis → report, in one command.
+- **Core study pipeline:** pick problems → rewrite → check → repair → blind labelling sheets → cost tracking → analysis → report, in one command.
 - **Methods (coded, tested on simulated data):**
   - a guaranteed PASS ("of what we pass, at most X% is unsafe")
   - cost-aware checking (cheapest mix of rules, AI reviewer and human)
   - honest failure rates from fewer human labels
   - a rule for picking the safest useful rewrite style
-- **Real-world pieces:** a harness to audit actual classroom AI tools, a teacher prompt survey, a demo app.
+- **Real-world pieces:** a way to test actual classroom AI tools with the same checks, a survey of how teachers prompt, and a demo app.
 - **Quality:** the statistics were reviewed and two methods were fixed before any results are reported.
 
 **Speaker notes:** All the code that doesn't need human labels is done and tested, including the methods that make this more than a better prompt. Labelling is now the bottleneck, so that is where the time goes next.
