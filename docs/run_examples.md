@@ -85,6 +85,8 @@ Question: How much money, in dollars, does Vikki take home after deductions?
 - AI reviewer (layer 2, Claude Opus 5.5): **SAFE**
 - Answer recompute (layer 3): MATCH, original 310 vs rewrite 310
 
+**Our read: the right way to chunk it.** Sonnet repeated "From her weekly earnings" on every deduction line, which keeps the meaning that Haiku's version lost. Same layout, and this time the math is unchanged.
+
 **Claude Haiku 5.5 · plain language** (status `NO_REWRITE_NEEDED`)
 
 ```text
@@ -96,7 +98,9 @@ Vikki worked 42 hours in one week. Her hourly pay rate is $10. From her weekly e
 - AI reviewer (layer 2, Claude Opus 5.5): **SAFE**
 - Answer recompute (layer 3): MATCH, original 310 vs rewrite 310
 
-**Takeaway.** Same problem, four outputs, three different checker outcomes. This is why the checker has layers.
+**Our read: correct abstention.** Haiku judged the problem already clear and returned it unchanged.
+
+**Takeaway.** Same problem, four outputs: a false alarm, a real catch, the fix done right, and a safe no-change. The checker needs every layer, and the review step needs to stay.
 
 ---
 
