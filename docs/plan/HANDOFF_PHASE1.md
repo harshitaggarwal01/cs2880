@@ -65,6 +65,7 @@ make conformal && make cascade && make ppi && make policy   # Phase 2 on real la
 Resume a partial run with `python src/run_phase1.py --config config.anthropic.yaml --from <step> --until <step>`; `.done/<step>` markers skip finished steps; `--force` reruns.
 
 ## Open decisions
+- [ ] Which rewriters go into the main run (Haiku, Sonnet, Qwen, and GPT/Gemini if keys arrive)? Full or 50% + PPI labelling for the open rewriter? (Task A2)
 - [ ] Add `ext_gsmic` to `partitions` in the config before main generation? (adds ~48 annotation items; supplies relevance-leakage positives)
 - [ ] Choose λ, μ for the cascade objective, or report the frontier only
 - [ ] Which external tools pass the ToS check for Phase 3A

@@ -87,19 +87,28 @@ Details: `docs/plan/ROADMAP.md`, `docs/plan/HANDOFF_PHASE1.md`.
 
 ## 6. Future method plans
 
-**This semester, after labels:**
-- Run all four methods on the real labels.
-- Report the guarantee curve (α vs. review rate) and the cascade Pareto frontier rather than a single point.
-- Use PPI to size the classroom-tool audit (about 30 labels per tool).
-- Run the cross-family generators when keys arrive.
+All of these are planned to be **coded now with synthetic tests** and run on real data once labels exist (Tasks A2 and H in `docs/plan/AGENT_PROMPT_NEXT.md`).
 
-**Future work (not this semester):**
-1. **Live bandit:** learn the rewrite-style policy from real teacher feedback instead of offline labels.
-2. **Small open checker:** train a small model on our labels so schools can run checking free or offline.
-3. **Audit game (Stackelberg inspection):** with limited manual audits and vendors choosing how careful to be, which audit plan minimises unsafe content reaching students? In the style of Tambe-lab security games; a simulation/policy study, because vendors don't yet respond to audits.
-4. **Iterated red-team:** run attacker vs. checker over several rounds to harden it.
-5. **Student study:** test for a "differential boost" (safe rewrites help struggling readers more). Needs IRB and a school partner.
-6. **Broader scope:** other subjects (science, reading comprehension), other languages (translate + simplify), other adaptations (read-aloud scripts, diagrams, hint levels).
+**Model matrix with an open model (before the main run):**
+- Add a cheap open-weight **Qwen** model, via an OpenAI-compatible host or run locally, as a third rewriter and as a critic.
+- Run **every available critic on every rewrite**: Opus, Sonnet, Qwen, and GPT/Gemini when keys exist. Critics reuse the same human labels, so this costs API dollars only.
+- What it answers:
+  - Is a free model a school could run as safe as paid ones?
+  - Can a free critic pre-filter for the expensive one?
+  - How large is the same-family self-preference bias? It becomes measured, not just disclosed.
+
+**Methods, coded now:**
+
+| Module | What it does |
+|---|---|
+| `policy_online.py` | Live contextual bandit (Thompson sampling, LinUCB) with a replay simulator, plus off-policy evaluation (IPS, SNIPS, doubly robust) for future logged deployments; a teacher-feedback hook in the demo |
+| `audit_game.py` | Stackelberg audit game: how a district or platform should spread a limited audit budget across tools and conditions (multiple-LPs SSE, a robust variant), vs. uniform and proportional allocation. A policy simulation |
+| `train_checker.py` | Small open checker: a CPU classifier on features + embeddings; an optional LoRA fine-tune of a small Qwen judge on GPU |
+| `critic_ensemble.py` | Dawid–Skene: estimates each critic's accuracy without labels; a label-free UNSAFE score for PPI and conformal |
+| `redteam.py --rounds` | Iterated attacker vs. checker, with a held-out attack set |
+| `conformal.py` (weighted) | Carries the PASS guarantee to a new tool's outputs under distribution shift |
+| Adapters | Multilingual (translate + simplify), science word problems, hint-level settings (practice vs. assessment) |
+| `STUDENT_STUDY.md` | Design only: the differential-boost study (needs IRB and a school partner) |
 
 **Considered and not pursued:**
 - Restless bandits: they fit decisions about people over time, not about problems.

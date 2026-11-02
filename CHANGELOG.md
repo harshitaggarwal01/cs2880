@@ -25,7 +25,7 @@ All phases coded and tested offline (108 tests after the Nov 2 statistical revie
 - "Updates and Progress" deck, 11 slides with speaker notes (`docs/SafeAdapt-Math_updates_progress.pptx`), and its source text for the design tool (`docs/slides_updates_progress.md`)
 - `docs/run_examples.md`: verbatim real outputs and checker evidence (real pilot + earlier pilot), with all 40 decisions
 - `docs/PROJECT_OVERVIEW.md`: structure, methods, code map, future method plans
-- `docs/plan/AGENT_PROMPT_NEXT.md`: detailed hand-off prompt for the next agent (remaining code and steps)
+- `docs/plan/AGENT_PROMPT_NEXT.md`: detailed hand-off prompt for the next agent (remaining code and steps). Now includes Task A2 (open model Qwen + full generator × critic matrix, self-preference test, critic ensembles) and Task H (code every future method: online bandit + OPE, Stackelberg audit game, small open checker, Dawid–Skene, iterated red-team, weighted conformal, broader-scope adapters, student-study design)
 
 ### Changed
 - Statistical review of Phase 2 modules and the exploratory logit (2026-11-02):
