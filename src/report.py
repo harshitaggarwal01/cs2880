@@ -416,8 +416,9 @@ def labelled_sections(doc: Doc, run_dir: Path, labels: Path, key: Path | None, f
 
     lg = ev.logit_unsafe(first, sources)
     doc.h("Exploratory logistic regression of UNSAFE")
-    doc.p(f"n = {lg['n']}; standard errors clustered by source; penalized fallback used: {lg['penalized']}; unpenalized fit "
-          f"converged: {lg['converged']}. Exploratory only.")
+    how = ("Firth bias-reduced logit (separation in the ordinary fit); SE, CI and p from a source-cluster bootstrap"
+           if lg["penalized"] else "ordinary logit; standard errors clustered by source")
+    doc.p(f"**Exploratory, not one of the prespecified tests.** n = {lg['n']}; {how}.")
     doc.table(lg["table"], "_Model not estimable (too few rows or only one outcome class)._")
 
     sheet_a, sheet_b = labels.parent / "sheet_A.csv", labels.parent / "sheet_B.csv"

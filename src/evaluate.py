@@ -422,45 +422,107 @@ def _design(df: pd.DataFrame, sources: dict) -> tuple[pd.Series, pd.DataFrame, n
     return d["UNSAFE"], X, pd.factorize(d["source_id"])[0]
 
 
-def logit_unsafe(df: pd.DataFrame, sources: dict) -> dict:
-    """Logit of UNSAFE on n_steps, length (words/10), tag, dataset and condition dummies; SEs clustered by source.
+def firth_logit(y: np.ndarray, X: np.ndarray, maxiter: int = 100, tol: float = 1e-8) -> tuple[np.ndarray, bool]:
+    """Firth (1993) bias-reduced logistic regression: maximise loglik + 0.5 log|X'WX| (Jeffreys prior).
 
-    The deterministic baseline (safe by construction) and repair rows are excluded. If the unpenalised fit fails
-    (separation, non-convergence, non-finite SEs or |coef| > 15) the model is refit with an L1 penalty (alpha = 1,
-    intercept unpenalised); then `penalized` is True and se/z/p/CI are NaN. Returns
-    {"table", "n", "penalized", "converged"}; `converged` refers to the unpenalised fit.
+    Estimates stay finite under complete or quasi-complete separation (Heinze & Schemper 2002). Newton steps on the
+    modified score sum_i (y_i - p_i + h_i (1/2 - p_i)) x_i, h = hat-matrix diagonal, with step halving. X must
+    include the intercept column. Returns (beta, converged).
+    """
+    y, X = np.asarray(y, float), np.asarray(X, float)
+    beta = np.zeros(X.shape[1])
+
+    def penalised(b):
+        eta = X @ b
+        p = 1 / (1 + np.exp(-eta))
+        info = X.T @ (X * (p * (1 - p))[:, None])
+        sign, logdet = np.linalg.slogdet(info)
+        ll = float(np.sum(y * eta - np.logaddexp(0, eta)))
+        return ll + 0.5 * (logdet if sign > 0 else -np.inf), p, info
+
+    obj, p, info = penalised(beta)
+    for _ in range(maxiter):
+        w = p * (1 - p)
+        inv = np.linalg.pinv(info)
+        h = np.einsum("ij,jk,ik->i", X, inv, X) * w
+        step = inv @ (X.T @ (y - p + h * (0.5 - p)))
+        t = 1.0
+        while True:
+            new_obj, new_p, new_info = penalised(beta + t * step)
+            if new_obj >= obj - 1e-12 or t < 1e-4:
+                break
+            t /= 2
+        beta = beta + t * step
+        obj, p, info = new_obj, new_p, new_info
+        if np.max(np.abs(t * step)) < tol:
+            return beta, True
+    return beta, False
+
+
+def logit_unsafe(df: pd.DataFrame, sources: dict, n_boot: int = 400, seed: int = 0) -> dict:
+    """EXPLORATORY logit of UNSAFE on n_steps, length (words/10), tag, dataset and condition dummies.
+
+    Not part of the three prespecified test families. The deterministic baseline (safe by construction) and repair
+    rows are excluded. First an ordinary MLE with SEs clustered by source. If that fit shows separation (statsmodels
+    raises or warns, does not converge, gives non-finite SEs, max SE >= 10 or |coef| >= 15), the model is refit by
+    Firth's bias-reduced logit (`firth_logit`) and inference comes from a source-cluster bootstrap of the Firth fit:
+    se = bootstrap SD, CI = percentile interval, p = two-sided bootstrap sign p-value, z = coef / se. Separation is
+    likely here (constrained prompts can have no unsafe items at all). Returns {"table", "n", "penalized", "converged",
+    "method"}; `penalized` means the Firth fallback was used and `converged` refers to the unpenalised fit.
     """
     import statsmodels.api as sm
-    from statsmodels.tools.sm_exceptions import PerfectSeparationError
+    from statsmodels.tools.sm_exceptions import ConvergenceWarning, PerfectSeparationError
 
     y, X, groups = _design(df, sources)
     cols = ["term", "coef", "se", "z", "p", "odds_ratio", "or_lo", "or_hi"]
     if len(y) < 10 or y.nunique() < 2 or X.shape[1] == 0:
-        return {"table": pd.DataFrame(columns=cols), "n": int(len(y)), "penalized": False, "converged": False}
+        return {"table": pd.DataFrame(columns=cols), "n": int(len(y)), "penalized": False, "converged": False,
+                "method": "none"}
     Xc = sm.add_constant(X, has_constant="add")
     ok = False
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
         try:
             res = sm.Logit(y, Xc).fit(disp=0, maxiter=200, cov_type="cluster", cov_kwds={"groups": groups})
-            ok = (bool(res.mle_retvals.get("converged", True)) and bool(np.all(np.isfinite(res.bse)))
+            bad_warn = any(issubclass(w.category, ConvergenceWarning) or "separation" in str(w.message).lower()
+                           for w in caught)
+            ok = (not bad_warn and bool(res.mle_retvals.get("converged", True))
+                  and bool(np.all(np.isfinite(res.bse))) and float(np.max(res.bse)) < 10
                   and float(np.abs(res.params).max()) < 15)
         except (PerfectSeparationError, np.linalg.LinAlgError, ValueError):
             ok = False
-        if ok:
-            ci = res.conf_int()
-            table = pd.DataFrame({"term": Xc.columns, "coef": res.params.values, "se": res.bse.values,
-                                  "z": res.tvalues.values, "p": res.pvalues.values,
-                                  "odds_ratio": np.exp(res.params.values), "or_lo": np.exp(ci[0].values),
-                                  "or_hi": np.exp(ci[1].values)})
-            return {"table": table, "n": int(len(y)), "penalized": False, "converged": True}
-        alpha = np.r_[0.0, np.ones(Xc.shape[1] - 1)]
-        pen = sm.Logit(y, Xc).fit_regularized(alpha=alpha, disp=0, maxiter=500)
-    coef = np.asarray(pen.params, dtype=float)
-    nan = np.full(len(coef), np.nan)
-    table = pd.DataFrame({"term": Xc.columns, "coef": coef, "se": nan, "z": nan, "p": nan,
-                          "odds_ratio": np.exp(coef), "or_lo": nan, "or_hi": nan})
-    return {"table": table, "n": int(len(y)), "penalized": True, "converged": False}
+    if ok:
+        ci = res.conf_int()
+        table = pd.DataFrame({"term": Xc.columns, "coef": res.params.values, "se": res.bse.values,
+                              "z": res.tvalues.values, "p": res.pvalues.values,
+                              "odds_ratio": np.exp(res.params.values), "or_lo": np.exp(ci[0].values),
+                              "or_hi": np.exp(ci[1].values)})
+        return {"table": table, "n": int(len(y)), "penalized": False, "converged": True, "method": "mle-cluster"}
+
+    yv, Xv = y.to_numpy(float), Xc.to_numpy(float)
+    coef, _ = firth_logit(yv, Xv)
+    rng = np.random.default_rng(seed)
+    k = int(groups.max()) + 1
+    members = [np.flatnonzero(groups == g) for g in range(k)]
+    draws = []
+    for _ in range(n_boot):
+        idx = np.concatenate([members[g] for g in rng.integers(0, k, k)])
+        if np.unique(yv[idx]).size < 2:
+            continue
+        b, _ = firth_logit(yv[idx], Xv[idx], maxiter=50)
+        draws.append(b)
+    draws = np.asarray(draws)
+    if len(draws) >= 20:
+        se = draws.std(axis=0, ddof=1)
+        lo, hi = np.percentile(draws, [2.5, 97.5], axis=0)
+        pval = np.minimum(1.0, 2 * np.minimum((draws <= 0).mean(axis=0), (draws >= 0).mean(axis=0)))
+    else:
+        se = lo = hi = pval = np.full(len(coef), np.nan)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        z = coef / se
+    table = pd.DataFrame({"term": Xc.columns, "coef": coef, "se": se, "z": z, "p": pval,
+                          "odds_ratio": np.exp(coef), "or_lo": np.exp(lo), "or_hi": np.exp(hi)})
+    return {"table": table, "n": int(len(y)), "penalized": True, "converged": False, "method": "firth-bootstrap"}
 
 
 # ------------------------------------------------------------------ verifier layer ablations (RQ3)

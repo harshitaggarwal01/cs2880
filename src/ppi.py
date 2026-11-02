@@ -5,16 +5,23 @@
   python src/ppi.py --run ... --labels adjudicated.csv --key KEY_DO_NOT_OPEN.csv --verify a.jsonl b.jsonl
   python src/ppi.py --synthetic --out /tmp/ppi_synth.csv             # planted data, no run needed
 
-The human label y (UNSAFE = 1 - SAFE from evaluate.derive) exists on a labelled subset; the predictor f
-(verifier decision != PASS, or critic overall != SAFE) exists on every item. For a binary outcome:
+The human label y (UNSAFE = 1 - SAFE from evaluate.derive) exists on a labelled subset of n items; the
+predictor f (verifier decision != PASS, or critic overall != SAFE) exists on every item, including the N
+unlabelled ones. For a binary outcome:
   classical   mean(y_lab)                                            labelled subset only
-  PPI         mean(f_all) + mean(y_lab - f_lab)                      Angelopoulos et al. (2023) Science 382:669
-  PPI++       mean(y_lab) + lam * (mean(f_all) - mean(f_lab))        Angelopoulos, Duchi & Zrnic (2023) arXiv:2311.01453
-The second term of PPI is the *rectifier*: the predictor's average error where it can be checked. PPI++
-tunes lam in [0, 1] so a useless predictor falls back to the classical estimate.
+  PPI         mean(f_unlab) + mean(y_lab - f_lab)                    Angelopoulos et al. (2023) Science 382:669
+  PPI++       mean(y_lab) + lam * (mean(f_unlab) - mean(f_lab))      Angelopoulos, Duchi & Zrnic (2023) arXiv:2311.01453
+The second term of PPI is the *rectifier*: the predictor's average error where it can be checked. The f term
+uses the unlabelled items only, so the two terms come from disjoint items (the standard PPI split). PPI++
+tunes lam in [0, 1] (variance-minimising weight with N = number of unlabelled items) so a useless predictor
+falls back to the classical estimate. With no unlabelled items all three estimators equal the classical one.
 
-Intervals are percentile bootstraps that resample source problems (clusters), the labelled set and the
-full set independently, so the ~5 adaptations of one source are never treated as independent.
+Intervals are percentile bootstraps that resample source problems (clusters), so the ~5 adaptations of one
+source are never treated as independent. When no source has both labelled and unlabelled items (labels are
+assigned per source, as in label_budget_curve), the labelled and unlabelled clusters are resampled
+separately (stratified); otherwise the union of sources is resampled jointly, so a source's labelled and
+unlabelled items move together. lam is estimated once and held fixed inside the bootstrap (asymptotically
+valid; Angelopoulos, Duchi & Zrnic 2023, Sec. 2).
 Writes <run>/analysis/ppi.csv (per-condition rates, three estimators) and ppi_budget.csv (CI width and
 coverage against the labelled fraction).
 """
@@ -95,51 +102,77 @@ def classical_mean(y: np.ndarray, cluster: np.ndarray | None = None, alpha: floa
     return est, lo, hi
 
 
-def ppi_mean(y_lab, f_lab, f_all, alpha: float = 0.05, cluster_lab=None, cluster_all=None, n_boot: int = B,
-             seed: int = SEED) -> tuple[float, float, float]:
-    """PPI mean: mean(f_all) + rectifier, rectifier = mean(y_lab - f_lab). Unbiased for any predictor.
+def _draws(rng: np.random.Generator, y_lab, f_lab, f_unlab, cluster_lab, cluster_unlab, lam: float,
+           n_boot: int) -> np.ndarray:
+    """Bootstrap draws of mean(y_lab) + lam * (mean(f_unlab) - mean(f_lab)).
 
-    CI: bootstrap the labelled set (rectifier) and the full set (mean of f) independently, at cluster level
-    when clusters are given, and take percentiles of their sum.
+    Stratified (labelled and unlabelled clusters resampled separately) when the two sets share no cluster or
+    clusters are not given; joint resampling of the union of clusters otherwise.
     """
-    y_lab, f_lab, f_all = _arr(y_lab, f_lab, f_all)
-    rect = y_lab - f_lab
-    if len(y_lab) < 2 or len(f_all) < 2:
-        return (float(f_all.mean() + rect.mean()) if len(y_lab) and len(f_all) else np.nan), np.nan, np.nan
-    est = float(f_all.mean() + rect.mean())
+    shared = (cluster_lab is not None and cluster_unlab is not None
+              and len(set(np.asarray(cluster_lab)) & set(np.asarray(cluster_unlab))) > 0)
+    if not shared:
+        lab = boot_means(rng, [y_lab, f_lab], cluster_lab, n_boot)
+        unl = boot_means(rng, [f_unlab], cluster_unlab, n_boot)[:, 0]
+        return lab[:, 0] + lam * (unl - lab[:, 1])
+    n, m = len(y_lab), len(f_unlab)
+    codes = pd.factorize(np.concatenate([np.asarray(cluster_lab), np.asarray(cluster_unlab)]))[0]
+    k = int(codes.max()) + 1
+    is_lab = np.r_[np.ones(n), np.zeros(m)]
+    cols = [is_lab, np.r_[y_lab, np.zeros(m)], np.r_[f_lab, np.zeros(m)], 1 - is_lab, np.r_[np.zeros(n), f_unlab]]
+    sums = np.stack([np.bincount(codes, weights=c, minlength=k) for c in cols], axis=1)
+    w = rng.multinomial(k, np.full(k, 1.0 / k), size=n_boot).astype(float)
+    t = w @ sums                                  # (n_boot, 5): n_lab, sum y, sum f_lab, n_unlab, sum f_unlab
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return (t[:, 1] - lam * t[:, 2]) / t[:, 0] + lam * t[:, 4] / t[:, 3]
+
+
+def _ci_nan(vals: np.ndarray, alpha: float) -> tuple[float, float]:
+    vals = vals[np.isfinite(vals)]
+    return _ci(vals, alpha) if len(vals) else (np.nan, np.nan)
+
+
+def ppi_pp_mean(y_lab, f_lab, f_unlab, alpha: float = 0.05, lam: float | None = None, cluster_lab=None,
+                cluster_unlab=None, n_boot: int = B, seed: int = SEED) -> tuple[float, float, float, float]:
+    """PPI++ mean: mean(y_lab) + lam * (mean(f_unlab) - mean(f_lab)); lam tuned unless given. Returns (est, lo, hi, lam).
+
+    lam = 0 is the classical estimate, lam = 1 is PPI. `f_unlab` holds the predictor on the unlabelled items
+    only (disjoint from the labelled ones). With no unlabelled items the classical estimate is returned (lam 0).
+    """
+    y_lab, f_lab, f_unlab = _arr(y_lab, f_lab, f_unlab)
+    if len(f_unlab) == 0:
+        return (*classical_mean(y_lab, cluster_lab, alpha, n_boot, seed), 0.0)
+    lam = ppi_lambda(y_lab, f_lab, len(f_unlab)) if lam is None else float(lam)
+    if len(y_lab) == 0:
+        return np.nan, np.nan, np.nan, lam
+    est = float(y_lab.mean() + lam * (f_unlab.mean() - f_lab.mean()))
+    if len(y_lab) < 2 or len(f_unlab) < 2:
+        return est, np.nan, np.nan, lam
     rng = np.random.default_rng(seed)
-    draws = boot_means(rng, [f_all], cluster_all, n_boot)[:, 0] + boot_means(rng, [rect], cluster_lab, n_boot)[:, 0]
-    lo, hi = _ci(draws, alpha)
-    return est, lo, hi
+    lo, hi = _ci_nan(_draws(rng, y_lab, f_lab, f_unlab, cluster_lab, cluster_unlab, lam, n_boot), alpha)
+    return est, lo, hi, lam
 
 
-def ppi_lambda(y_lab, f_lab, n_all: int) -> float:
-    """Variance-minimising PPI++ weight cov(y, f) / (var(f) (1 + n_lab / n_all)), clipped to [0, 1]."""
+def ppi_mean(y_lab, f_lab, f_unlab, alpha: float = 0.05, cluster_lab=None, cluster_unlab=None, n_boot: int = B,
+             seed: int = SEED) -> tuple[float, float, float]:
+    """PPI mean: mean(f_unlab) + rectifier, rectifier = mean(y_lab - f_lab). Unbiased for any predictor.
+
+    `f_unlab` is the predictor on the unlabelled items only. With no unlabelled items this is the classical mean.
+    """
+    return ppi_pp_mean(y_lab, f_lab, f_unlab, alpha, 1.0, cluster_lab, cluster_unlab, n_boot, seed)[:3]
+
+
+def ppi_lambda(y_lab, f_lab, n_unlab: int) -> float:
+    """Variance-minimising PPI++ weight cov(y, f) / (var(f) (1 + n_lab / n_unlab)), clipped to [0, 1].
+
+    n_unlab is the number of unlabelled items the f term averages over; 0 gives lam = 0 (classical).
+    """
     y_lab, f_lab = _arr(y_lab, f_lab)
     n = len(y_lab)
-    if n < 2 or f_lab.var(ddof=1) == 0:
+    if n < 2 or n_unlab <= 0 or f_lab.var(ddof=1) == 0:
         return 0.0
     cov = np.cov(y_lab, f_lab, ddof=1)[0, 1]
-    return float(np.clip(cov / (f_lab.var(ddof=1) * (1 + n / n_all)), 0.0, 1.0))
-
-
-def ppi_pp_mean(y_lab, f_lab, f_all, alpha: float = 0.05, lam: float | None = None, cluster_lab=None,
-                cluster_all=None, n_boot: int = B, seed: int = SEED) -> tuple[float, float, float, float]:
-    """PPI++ mean: mean(y_lab) + lam * (mean(f_all) - mean(f_lab)); lam tuned unless given. Returns (est, lo, hi, lam).
-
-    lam = 0 is the classical estimate, lam = 1 is PPI; lam is fixed at its point value inside the bootstrap.
-    """
-    y_lab, f_lab, f_all = _arr(y_lab, f_lab, f_all)
-    lam = ppi_lambda(y_lab, f_lab, len(f_all)) if lam is None else float(lam)
-    if len(y_lab) < 2 or len(f_all) < 2:
-        est = float(y_lab.mean() + lam * (f_all.mean() - f_lab.mean())) if len(y_lab) and len(f_all) else np.nan
-        return est, np.nan, np.nan, lam
-    est = float(y_lab.mean() + lam * (f_all.mean() - f_lab.mean()))
-    rng = np.random.default_rng(seed)
-    lab = boot_means(rng, [y_lab, f_lab], cluster_lab, n_boot)
-    whole = boot_means(rng, [f_all], cluster_all, n_boot)[:, 0]
-    lo, hi = _ci(lab[:, 0] + lam * (whole - lab[:, 1]), alpha)
-    return est, lo, hi, lam
+    return float(np.clip(cov / (f_lab.var(ddof=1) * (1 + n / n_unlab)), 0.0, 1.0))
 
 
 # ------------------------------------------------------------------ tables
@@ -154,12 +187,12 @@ def _groups(df: pd.DataFrame, group_cols: list[str]) -> list[tuple[dict, np.ndar
     return out
 
 
-def _three(y, f_lab, f_all, cl, ca, alpha, n_boot, seed) -> dict:
+def _three(y, f_lab, f_unl, cl, cu, alpha, n_boot, seed) -> dict:
     """Classical, PPI and PPI++ estimates with CI and width for one group."""
     nan3 = (np.nan, np.nan, np.nan)
     c = classical_mean(y, cl, alpha, n_boot, seed) if len(y) else nan3
-    p = ppi_mean(y, f_lab, f_all, alpha, cl, ca, n_boot, seed) if len(y) else nan3
-    q = ppi_pp_mean(y, f_lab, f_all, alpha, None, cl, ca, n_boot, seed) if len(y) else (*nan3, np.nan)
+    p = ppi_mean(y, f_lab, f_unl, alpha, cl, cu, n_boot, seed) if len(y) else nan3
+    q = ppi_pp_mean(y, f_lab, f_unl, alpha, None, cl, cu, n_boot, seed) if len(y) else (*nan3, np.nan)
     row = {}
     for name, (est, lo, hi) in (("classical", c), ("ppi", p), ("ppipp", q[:3])):
         row.update({name: est, f"{name}_lo": lo, f"{name}_hi": hi, f"{name}_width": hi - lo})
@@ -178,11 +211,12 @@ def estimate_rates(df_all: pd.DataFrame, labeled_mask: np.ndarray, y_col: str = 
     rows = []
     for key, idx in _groups(df, list(group_cols)):
         d, m = df.iloc[idx], lab[idx]
-        y, fl, fa = d.loc[m, y_col].to_numpy(float), d.loc[m, f_col].to_numpy(float), d[f_col].to_numpy(float)
-        cl = d.loc[m, cluster_col].to_numpy() if cluster_col and cluster_col in d else None
-        ca = d[cluster_col].to_numpy() if cluster_col and cluster_col in d else None
-        rows.append({**key, "n_lab": int(m.sum()), "n_all": len(d), "f_rate_all": float(fa.mean()),
-                     **_three(y, fl, fa, cl, ca, alpha, n_boot, seed)})
+        y, fl, fu = d.loc[m, y_col].to_numpy(float), d.loc[m, f_col].to_numpy(float), d.loc[~m, f_col].to_numpy(float)
+        has_cl = bool(cluster_col) and cluster_col in d
+        cl = d.loc[m, cluster_col].to_numpy() if has_cl else None
+        cu = d.loc[~m, cluster_col].to_numpy() if has_cl else None
+        rows.append({**key, "n_lab": int(m.sum()), "n_all": len(d), "f_rate_all": float(d[f_col].mean()),
+                     **_three(y, fl, fu, cl, cu, alpha, n_boot, seed)})
     return pd.DataFrame(rows)
 
 
@@ -192,7 +226,9 @@ def label_budget_curve(df_all: pd.DataFrame, y_col: str = "UNSAFE", f_col: str =
     """Mean CI width and coverage of the full-data mean(y) when only a fraction of sources is labelled.
 
     Every row of df_all needs y (it is the population whose mean the intervals must cover). For each fraction
-    and repetition a random subset of sources is 'labelled'; f is used on all rows. With `group_cols` the
+    and repetition a random subset of sources is 'labelled'; the f term averages the remaining (unlabelled) rows.
+    Coverage is against this finite-population mean, so it is conservative at large fractions (no finite-population
+    correction); at fraction 1.0 nothing is unlabelled and all three estimators are classical. With `group_cols` the
     curve is also computed within each group.
     """
     df = df_all.reset_index(drop=True)
@@ -209,11 +245,12 @@ def label_budget_curve(df_all: pd.DataFrame, y_col: str = "UNSAFE", f_col: str =
             lams, n_labs = [], []
             for _ in range(n_rep):
                 take = np.concatenate([by[u] for u in rng.choice(units, k, replace=False)])
-                yl, fl, cll = y[take], f[take], cl[take]
+                rest = np.setdiff1d(np.arange(len(d)), take)
+                yl, fl, cll, fu, clu = y[take], f[take], cl[take], f[rest], cl[rest]
                 s = int(rng.integers(2**31 - 1))
                 ests = {"classical": classical_mean(yl, cll, alpha, n_boot, s),
-                        "ppi": ppi_mean(yl, fl, f, alpha, cll, cl, n_boot, s)}
-                q = ppi_pp_mean(yl, fl, f, alpha, None, cll, cl, n_boot, s)
+                        "ppi": ppi_mean(yl, fl, fu, alpha, cll, clu, n_boot, s)}
+                q = ppi_pp_mean(yl, fl, fu, alpha, None, cll, clu, n_boot, s)
                 ests["ppipp"], lams = q[:3], lams + [q[3]]
                 n_labs.append(len(take))
                 for name, (est, lo, hi) in ests.items():

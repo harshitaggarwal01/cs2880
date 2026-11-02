@@ -83,6 +83,22 @@ class ThresholdCase(unittest.TestCase):
         c = guarantee_curve(df, rows, alphas=(0.2,), n_splits=40, method="ltt", seed=3).iloc[0]
         self.assertGreaterEqual(c["frac_splits_risk_below_alpha"], 0.85)
 
+    def test_ltt_valid_without_monotone_scores(self):
+        """Conditional risk P(unsafe | score <= lam) is NOT monotone here (dips, then rises); FWER must still be <= delta."""
+        levels = np.arange(6)
+        p_level = np.array([0.01, 0.02, 0.0, 0.25, 0.02, 0.6])      # unsafe rate by score level
+        w = np.full(6, 1 / 6)
+        cum_risk = np.cumsum(w * p_level) / np.cumsum(w)            # true P(unsafe | score <= lam)
+        self.assertFalse(np.all(np.diff(cum_risk) >= 0))
+        alpha, delta, errors, rng = 0.06, 0.1, 0, np.random.default_rng(21)
+        for _ in range(400):
+            sc = rng.choice(levels, 400)
+            un = (rng.random(400) < p_level[sc]).astype(int)
+            lam = ltt_threshold(sc.astype(float), un, alpha, delta)
+            if lam != NEG_INF and cum_risk[int(lam)] > alpha:
+                errors += 1
+        self.assertLessEqual(errors / 400, delta + 0.03)
+
     def test_split_by_source_disjoint(self):
         df, _ = synthetic(n_sources=30)
         cal, test = split_by_source(df, 0.5, seed=1)

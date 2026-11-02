@@ -110,8 +110,10 @@ def ltt_threshold(scores: np.ndarray, unsafe: np.ndarray, alpha: float, delta: f
     score <= lambda and k of them are unsafe. Walk up the sequence while p <= delta; stop at the first lambda with
     p > delta and return the previous lambda (-inf if the first fails). Testing in a fixed order and stopping at the
     first non-rejection controls the family-wise error rate at delta without any multiplicity correction, so with
-    probability >= 1 - delta every returned lambda truly has risk <= alpha. (The risk is monotone in lambda, which is
-    why the strict-to-lenient order is the natural one; the grid depends on scores only, not on labels.)
+    probability >= 1 - delta every returned lambda truly has risk <= alpha. Validity needs only that the order is fixed
+    before the labels are seen (the grid depends on scores only); it does not need the risk to be monotone in lambda,
+    and the conditional risk P(unsafe | PASS) need not be. Strict-to-lenient is chosen for power: the strictest
+    thresholds are the ones most likely to be rejected, so the walk gets furthest.
 
     With `groups`, a conservative cluster version: each group's pass-set is one Bernoulli trial of "contains an unsafe
     item" (groups with an empty pass-set are not trials). This controls P(a passed group contains an unsafe item),
@@ -173,7 +175,9 @@ def guarantee_curve(df: pd.DataFrame, verify_rows: list[dict], alphas=ALPHAS, n_
     Per alpha: mean lambda (finite splits only), review rate (score > lambda) with 2.5/97.5 percentiles over splits,
     realized_risk_* = mean(unsafe among PASSed) on test (0 if nothing passed), realized_unsafe_pass_* = share of ALL
     test items that are unsafe and passed (the quantity CRC controls), and the fraction of splits at or below alpha
-    for each. `by` adds a per-condition breakdown (thresholds are still calibrated on the pooled half).
+    for each. `by` adds a per-condition breakdown (thresholds are still calibrated on the pooled half). These rows are
+    DESCRIPTIVE: the guarantee holds for the pooled population, not within each condition. For a per-condition
+    guarantee, calibrate separately on each condition (fewer sources each, so more conservative).
     """
     data = attach_scores(df, verify_rows)
     by = list(by or [])

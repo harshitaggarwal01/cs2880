@@ -122,14 +122,39 @@ class Logit(unittest.TestCase):
         self.assertAlmostEqual(row["odds_ratio"], np.exp(row["coef"]))
         self.assertTrue(np.isfinite(row["se"]))
 
-    def test_penalized_fallback_on_separable_data(self):
+    def test_logit_firth_on_separated_data(self):
         sources, df = self.sources_and_labels(deterministic=True)
-        res = ev.logit_unsafe(df, sources)
+        res = ev.logit_unsafe(df, sources, n_boot=100)
         self.assertTrue(res["penalized"])
         self.assertFalse(res["converged"])
+        self.assertEqual(res["method"], "firth-bootstrap")
         t = res["table"].set_index("term")
         self.assertGreater(t.loc["n_steps", "coef"], 0)
-        self.assertTrue(np.isnan(t.loc["n_steps", "se"]))
+        self.assertTrue(np.isfinite(t["coef"]).all())
+        self.assertTrue(np.isfinite(t.loc["n_steps", ["se", "or_lo", "or_hi"]].astype(float)).all())
+        self.assertLess(t.loc["n_steps", "or_lo"], t.loc["n_steps", "or_hi"])
+
+    def test_logit_flags_quasi_separation(self):
+        """One condition with no unsafe items at all (quasi-separation) must trigger the Firth fallback."""
+        sources, df = self.sources_and_labels(deterministic=False)
+        df = df.copy()
+        df.loc[df["transformation"] == "chunked", "SAFE"] = 1
+        res = ev.logit_unsafe(df, sources, n_boot=100)
+        self.assertTrue(res["penalized"])
+        t = res["table"].set_index("term")
+        cond = [c for c in t.index if c.startswith("cond_")]
+        self.assertEqual(len(cond), 1)
+        self.assertTrue(np.isfinite(t.loc[cond[0], "coef"]))
+        self.assertLess(abs(t.loc[cond[0], "coef"]), 10)
+
+    def test_firth_matches_mle_on_well_posed_data(self):
+        rng = np.random.default_rng(5)
+        X = np.c_[np.ones(4000), rng.normal(size=4000)]
+        y = (rng.random(4000) < 1 / (1 + np.exp(-(-0.5 + 1.0 * X[:, 1])))).astype(float)
+        b, conv = ev.firth_logit(y, X)
+        self.assertTrue(conv)
+        self.assertAlmostEqual(b[1], 1.0, delta=0.12)
+        self.assertAlmostEqual(b[0], -0.5, delta=0.12)
 
 
 def verify_row(oid, det_flags, critic, program) -> dict:

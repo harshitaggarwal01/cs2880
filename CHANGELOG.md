@@ -8,7 +8,7 @@ and this project uses semantic versioning where applicable.
 ## [Unreleased]
 
 ### Summary (2026-11-02, branch dev-phases)
-All phases coded and tested offline (101 tests); mock pipeline runs end to end; real run blocked on API key.
+All phases coded and tested offline (108 tests after the Nov 2 statistical review); mock pipeline runs end to end; real run blocked on API key.
 
 ### Added
 - Phase plan docs (docs/plan/)
@@ -21,7 +21,11 @@ All phases coded and tested offline (101 tests); mock pipeline runs end to end; 
 - Phase 4: final report skeleton, release packaging
 
 ### Changed
-- (none yet)
+- Statistical review of Phase 2 modules and the exploratory logit (2026-11-02):
+  - `ppi.py`: predictor term now uses the unlabelled items only (standard PPI split); PPI++ λ uses the unlabelled count; stratified or joint source bootstrap; reduces to classical at 100% labelled. Coverage on synthetic data ≈ 0.95 (was 0.995–1.0).
+  - `evaluate.logit_unsafe`: separation fallback is now Firth bias-reduced logit with source-cluster bootstrap SE/CI/p (was L1 with no inference); quasi-separation detected via warnings, max SE and |coef|; table labelled exploratory in the report.
+  - `conformal.py`: LTT docstring no longer claims risk monotonicity (not needed for fixed-sequence validity); per-condition `--by` rows marked descriptive.
+  - New tests: PPI all-labelled = classical, λ uses unlabelled n, super-population coverage, joint bootstrap; Firth on separated / quasi-separated data and agreement with MLE; LTT FWER under non-monotone risk.
 
 ## [0.1.0] - 2026-10-19
 

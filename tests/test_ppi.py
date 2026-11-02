@@ -35,8 +35,8 @@ def _runs(df, frac, n_rep, seed=0, n_boot=BOOT):
     for r in range(n_rep):
         m = _subset(df, frac, rng)
         out.append((classical_mean(y[m], cl[m], n_boot=n_boot, seed=r),
-                    ppi_mean(y[m], f[m], f, cluster_lab=cl[m], cluster_all=cl, n_boot=n_boot, seed=r),
-                    ppi_pp_mean(y[m], f[m], f, cluster_lab=cl[m], cluster_all=cl, n_boot=n_boot, seed=r)))
+                    ppi_mean(y[m], f[m], f[~m], cluster_lab=cl[m], cluster_unlab=cl[~m], n_boot=n_boot, seed=r),
+                    ppi_pp_mean(y[m], f[m], f[~m], cluster_lab=cl[m], cluster_unlab=cl[~m], n_boot=n_boot, seed=r)))
     return out
 
 
@@ -63,22 +63,23 @@ class Estimators(unittest.TestCase):
         for acc, bias, seed in ((0.95, 0.03, 3), (0.85, 0.1, 4), (0.7, 0.2, 5), (0.5, 0.0, 6)):
             df = synthetic(predictor_acc=acc, predictor_bias=bias, seed=seed)
             m = _subset(df, 0.3, np.random.default_rng(seed))
-            lam = ppi_lambda(df.loc[m, "UNSAFE"], df.loc[m, "f"], len(df))
+            lam = ppi_lambda(df.loc[m, "UNSAFE"], df.loc[m, "f"], int((~m).sum()))
             self.assertGreaterEqual(lam, 0.0)
             self.assertLessEqual(lam, 1.0)
         # useless predictor: lam ~ 0 and PPI++ collapses to the classical estimate
         df = synthetic(predictor_acc=0.5, predictor_bias=0.0, seed=7)
         m = _subset(df, 0.3, np.random.default_rng(7))
         y, f, cl = df["UNSAFE"].to_numpy(float), df["f"].to_numpy(float), df["source_id"].to_numpy()
-        est, lo, hi, lam = ppi_pp_mean(y[m], f[m], f, cluster_lab=cl[m], cluster_all=cl, n_boot=BOOT)
+        est, lo, hi, lam = ppi_pp_mean(y[m], f[m], f[~m], cluster_lab=cl[m], cluster_unlab=cl[~m], n_boot=BOOT)
         c_est, c_lo, c_hi = classical_mean(y[m], cl[m], n_boot=BOOT)
         self.assertLess(lam, 0.05)
         self.assertAlmostEqual(est, c_est, delta=0.01)
         self.assertAlmostEqual(hi - lo, c_hi - c_lo, delta=0.02)
         # explicit lam = 0 is exactly classical, lam = 1 is exactly PPI
-        self.assertAlmostEqual(ppi_pp_mean(y[m], f[m], f, lam=0.0, n_boot=10)[0], y[m].mean())
-        self.assertAlmostEqual(ppi_pp_mean(y[m], f[m], f, lam=1.0, n_boot=10)[0],
-                               ppi_mean(y[m], f[m], f, n_boot=10)[0])
+        self.assertAlmostEqual(ppi_pp_mean(y[m], f[m], f[~m], lam=0.0, n_boot=10)[0], y[m].mean())
+        self.assertAlmostEqual(ppi_pp_mean(y[m], f[m], f[~m], lam=1.0, n_boot=10)[0],
+                               ppi_mean(y[m], f[m], f[~m], n_boot=10)[0])
+        self.assertAlmostEqual(ppi_mean(y[m], f[m], f[~m], n_boot=10)[0], f[~m].mean() + (y[m] - f[m]).mean())
 
     def test_coverage_near_nominal(self):
         df = synthetic(n_sources=150, predictor_acc=0.9, predictor_bias=0.08, seed=8)
@@ -86,6 +87,59 @@ class Estimators(unittest.TestCase):
         self.assertEqual(len(curve), 1)
         for name in ("classical", "ppi", "ppipp"):
             self.assertGreaterEqual(curve[f"cov_{name}"].iloc[0], 0.88, name)
+
+    def test_ppi_all_labelled_equals_classical(self):
+        df = synthetic(n_sources=60, seed=11)
+        y, f, cl = df["UNSAFE"].to_numpy(float), df["f"].to_numpy(float), df["source_id"].to_numpy()
+        c = classical_mean(y, cl, n_boot=BOOT, seed=3)
+        p = ppi_mean(y, f, f[:0], cluster_lab=cl, cluster_unlab=cl[:0], n_boot=BOOT, seed=3)
+        q = ppi_pp_mean(y, f, f[:0], cluster_lab=cl, cluster_unlab=cl[:0], n_boot=BOOT, seed=3)
+        for a, b in zip(c, p):
+            self.assertAlmostEqual(a, b)
+        for a, b in zip(c, q[:3]):
+            self.assertAlmostEqual(a, b)
+        self.assertEqual(q[3], 0.0)
+        t = estimate_rates(df, np.ones(len(df), bool), n_boot=BOOT)
+        self.assertAlmostEqual(t.iloc[0]["ppi"], t.iloc[0]["classical"])
+        self.assertAlmostEqual(t.iloc[0]["ppi_width"], t.iloc[0]["classical_width"])
+
+    def test_ppipp_lambda_uses_unlabelled_n(self):
+        df = synthetic(n_sources=100, predictor_acc=0.9, predictor_bias=0.05, seed=12)
+        m = _subset(df, 0.3, np.random.default_rng(12))
+        y, f = df.loc[m, "UNSAFE"], df.loc[m, "f"]
+        n = int(m.sum())
+        self.assertEqual(ppi_lambda(y, f, 0), 0.0)
+        # larger unlabelled pool -> weight closer to the unshrunk cov/var
+        self.assertLess(ppi_lambda(y, f, n), ppi_lambda(y, f, 100 * n))
+        ratio = ppi_lambda(y, f, n) / ppi_lambda(y, f, 100 * n)
+        self.assertAlmostEqual(ratio, (1 + 1 / 100) / 2, delta=0.02)
+
+    def test_ppi_coverage_near_nominal_synthetic(self):
+        """Super-population coverage: a fresh dataset per repetition, CI must cover the planted (super-population)
+        mean ~95% of the time; the old f_all scheme over-covered (0.995-1.0)."""
+        true = synthetic(n_sources=40000, predictor_acc=0.9, predictor_bias=0.08, seed=999)["UNSAFE"].mean()
+        hits = {"classical": [], "ppi": [], "ppipp": []}
+        for r in range(200):
+            df = synthetic(n_sources=80, predictor_acc=0.9, predictor_bias=0.08, seed=1000 + r)
+            m = _subset(df, 0.3, np.random.default_rng(r))
+            y, f, cl = df["UNSAFE"].to_numpy(float), df["f"].to_numpy(float), df["source_id"].to_numpy()
+            c = classical_mean(y[m], cl[m], n_boot=BOOT, seed=r)
+            p = ppi_mean(y[m], f[m], f[~m], cluster_lab=cl[m], cluster_unlab=cl[~m], n_boot=BOOT, seed=r)
+            q = ppi_pp_mean(y[m], f[m], f[~m], cluster_lab=cl[m], cluster_unlab=cl[~m], n_boot=BOOT, seed=r)
+            for name, (_, lo, hi) in (("classical", c), ("ppi", p), ("ppipp", q[:3])):
+                hits[name].append(lo <= true <= hi)
+        for name, h in hits.items():
+            self.assertGreaterEqual(np.mean(h), 0.88, name)
+            self.assertLessEqual(np.mean(h), 0.995, name)
+
+    def test_ppi_joint_bootstrap_when_sources_overlap(self):
+        df = synthetic(n_sources=60, seed=13)
+        rng = np.random.default_rng(13)
+        m = rng.random(len(df)) < 0.4                     # item-level labels: sources split across both sets
+        y, f, cl = df["UNSAFE"].to_numpy(float), df["f"].to_numpy(float), df["source_id"].to_numpy()
+        est, lo, hi = ppi_mean(y[m], f[m], f[~m], cluster_lab=cl[m], cluster_unlab=cl[~m], n_boot=BOOT)
+        self.assertTrue(np.isfinite(lo) and np.isfinite(hi))
+        self.assertTrue(lo <= est <= hi)
 
     def test_classical_normal_vs_cluster(self):
         y = np.array([0, 1, 1, 0, 1, 0, 0, 0, 1, 1], float)
@@ -177,7 +231,7 @@ class Tables(unittest.TestCase):
             self.assertEqual(df2["f"].sum(), 2)
             t = estimate_rates(df, mask, n_boot=20)
             self.assertAlmostEqual(t.iloc[0]["classical"], 0.5)
-            self.assertAlmostEqual(t.iloc[0]["ppi"], 4 / 6 + (2 - 2) / 4)   # mean(f_all) + mean(y - f) on labelled
+            self.assertAlmostEqual(t.iloc[0]["ppi"], 2 / 2 + (2 - 2) / 4)   # mean(f_unlab) + mean(y - f) on labelled
 
 
 if __name__ == "__main__":

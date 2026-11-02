@@ -5,7 +5,7 @@
 - Commit SHA: see `git log -1` on `dev-phases`; this document was written at `c192f6a` plus the PPI commit that follows it
 - run_id: `anthropic-v1` (real run not started); `anthropic-v1-mock` runs end to end offline
 - Config: `config.anthropic.yaml` (SHA-256 prefix `10dd8ddccdd13230`); becomes `config.frozen.yaml` inside the run folder on first use
-- Tests: 101 passed / 0 failed (`make test`), covering Phase 1–4 code
+- Tests: 108 passed / 0 failed (`make test`), covering Phase 1–4 code
 - API keys: **none in this environment**. `ANTHROPIC_API_KEY` is required for the real run.
 
 ## What was run
@@ -25,7 +25,7 @@
 
 ## Known issues / caveats
 - **Same-family models.** With only an Anthropic key, generators (`claude-haiku-5-5`, `claude-sonnet-5-5`) and critic/extractor (`claude-opus-5-5`) share a family. Disclosed in `docs/plan/PHASE1.md`; the cross-family run (`config.example.yaml`, run_id `main-v1`) is a config swap when OpenAI and Gemini keys arrive.
-- **Conformal guarantee wording.** `conformal.py` reports two quantities: CRC controls the *marginal* unsafe-and-passed rate; Learn-then-Test controls the *conditional* P(unsafe | PASS) that the headline claim needs, but is conservative at 60 calibration sources (on synthetic data it passes almost nothing at α ≤ 0.10). Quote the LTT row for "of what we pass, at most α is unsafe". **Pending a second review** of 2A, 2C and the clustered logit before any number is quoted.
+- **Conformal guarantee wording.** `conformal.py` reports two quantities: CRC controls the *marginal* unsafe-and-passed rate; Learn-then-Test controls the *conditional* P(unsafe | PASS) that the headline claim needs, but is conservative at 60 calibration sources (on synthetic data it passes almost nothing at α ≤ 0.10). Quote the LTT row for "of what we pass, at most α is unsafe"; per-condition `--by` rows are descriptive. **Second review done (Nov 2):** CRC and LTT correct as coded (wording fixed); PPI fixed to the standard labelled/unlabelled split; logit separation fallback replaced by Firth + cluster bootstrap. See CHANGELOG.
 - **Cascade weights.** With the default `--mu 1` (one human minute weighed like one unsafe item), the calibrated cascade never chooses human review. Choose λ, μ deliberately and report the Pareto frontier, not one point.
 - **GSM-IC and GSM1K text** stay local (no licence declared); `data/frozen/ext_gsmic.jsonl` and `ext_gsm1k.jsonl` are gitignored. `release.py` ships ids and labels only for both.
 - **Demo policy panel** is not wired until a policy is learned from real labels (`demo/README.md`).

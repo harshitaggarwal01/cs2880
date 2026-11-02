@@ -49,8 +49,8 @@ Detailed phase docs: [PHASE1.md](PHASE1.md) · [PHASE2.md](PHASE2.md) · [PHASE3
 | Item | Status |
 |---|---|
 | Plan docs, Makefile, CHANGELOG, Anthropic config | done (Nov 2) |
-| Phase 1 code: gap fixes, ledger, orchestrator, calibration, prespecified analysis, report, variance, GSM-IC fetch | done (Nov 2); mock end-to-end passes all 12 steps; 101 tests green |
-| Phase 2 code: conformal, cascade, PPI, policy, red-team (synthetic tests, method notes) | done (Nov 2); **second review of 2A/2C/logit pending** before results are quoted |
+| Phase 1 code: gap fixes, ledger, orchestrator, calibration, prespecified analysis, report, variance, GSM-IC fetch | done (Nov 2); mock end-to-end passes all 12 steps; 108 tests green |
+| Phase 2 code: conformal, cascade, PPI, policy, red-team (synthetic tests, method notes) | done (Nov 2); second review of 2A/2C/logit done (Nov 2): PPI split fixed, Firth fallback for the logit, conformal wording |
 | Phase 3 code: external-audit harness + protocol, teacher survey + loader, demo, distilled layer | done (Nov 2); collection and CUHS determination pending |
 | Phase 4 code: release packaging, failure gallery, reproducibility doc, final-report skeleton | done (Nov 2) |
 | Real pilot with Anthropic key | **blocked: `ANTHROPIC_API_KEY` not in the environment** |
