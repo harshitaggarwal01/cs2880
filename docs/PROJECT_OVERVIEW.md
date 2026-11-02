@@ -42,7 +42,7 @@ Method notes with citations: `docs/methods/{conformal,cascade,ppi,policy,redteam
 config.anthropic.yaml   Anthropic-only run (anthropic-v1)     config.example.yaml  cross-family run (main-v1)
 Makefile                make test | calibrate | pilot | phase1 | evaluate | report | conformal | cascade | ppi | policy | demo | release
 prompts/                plain_v1, chunked_v1, naive_v1 (realistic), critic_v1, extract_v1, repair_v1, attacker_v1
-schemas/                JSON schemas for model outputs
+schemas/                annotation_schema.json (label fields and allowed values)
 data/frozen/            frozen sample + MANIFEST      data/outputs/<run>/  generations, verify, repairs, ledger, analysis
 data/calibration/pilot/ 70-item calibration sheets    data/annotations/<run>/  blind sheets + adjudicated labels
 pilot/                  first 70-output pilot (preliminary labels)
