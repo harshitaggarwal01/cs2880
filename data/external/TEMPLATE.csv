@@ -1,0 +1,21 @@
+external_id,tool,tool_version_or_date,ui_path,prompt_used,source_id,captured_by,captured_at,raw_response,adapted_problem,tos_checked,tos_notes,notes
+EXAMPLE-001,ExampleTool,EXAMPLE 2026-01-01 (fake),EXAMPLE: Home > Rewrite > Simplify (fake path),"Rewrite this math word problem so it is easier to understand for a student with ADHD or dyslexia. Use simple language and break it into small chunks.
+
+Adam really wants to ride the biggest roller coaster at the park. You have to be 4 feet tall to ride it. Adam’s height is 40 inches and he grows 2 inches a year. How many years until he is tall enough to ride it?",gsm8k-test-0628,EXAMPLE,2026-01-01T00:00:00Z,"Sure! Here is a simpler version:
+
+- Adam wants to ride the biggest roller coaster.
+- He must be 4 feet tall.
+- Adam is 40 inches tall.
+- He grows 2 inches a year.
+
+How many years until Adam is tall enough?
+
+Hint: 4 feet is 48 inches.","- Adam wants to ride the biggest roller coaster.
+- He must be 4 feet tall.
+- Adam is 40 inches tall.
+- He grows 2 inches a year.
+
+How many years until Adam is tall enough?",NO,EXAMPLE row: fake tool; no terms exist,"EXAMPLE row, dropped by load_template. Leave adapted_problem blank to use the whole reply."
+EXAMPLE-002,ExampleTool,EXAMPLE 2026-01-01 (fake),EXAMPLE: Home > Rewrite > Simplify (fake path),"Rewrite this math word problem so it is easier to understand for a student with ADHD or dyslexia. Use simple language and break it into small chunks.
+
+Richard wants to make a video to share online of him doing a science experiment that creates a fountain of diet soda after placing a specific branded candy inside it. Richard's driveway is 24 feet wide and he wants to put a bottle of soda every 3 feet of the driveway. After starting at the first bottle, it will take Richard 5 seconds to go from one soda bottle to the next, dropping the candy in. How many seconds total will it take Richard to set off all the soda fountains?",gsm8k-test-1035,EXAMPLE,2026-01-01T00:00:00Z,EXAMPLE reply text (fake). Richard has a 24 foot driveway. A bottle goes every 3 feet. It takes 5 seconds to get from one bottle to the next. How many seconds in total?,,NO,EXAMPLE row: fake tool; no terms exist,"EXAMPLE row, dropped by load_template. Leave adapted_problem blank to use the whole reply."
