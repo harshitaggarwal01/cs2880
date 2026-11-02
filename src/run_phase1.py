@@ -9,7 +9,8 @@
 Each finished step leaves data/outputs/<run_id>/.done/<step>; reruns skip marked steps (the
 underlying scripts are append-only and resume on their own, so --force is also safe).
 config.frozen.yaml is written once per run and never overwritten unless --force.
-The evaluate and report steps wait for data/annotations/<run_id>/adjudicated.csv (human labels).
+The evaluate step waits for data/annotations/<run_id>/adjudicated.csv (human labels); report runs in
+pipeline-only mode until then.
 """
 from __future__ import annotations
 
@@ -124,12 +125,12 @@ def evaluate(c: Ctx) -> str | None:
     ver = _existing(c, f"generations.{FULL}.jsonl", f"ablation_generations.{FULL}.jsonl",
                     "baseline.verify-det.jsonl", f"repairs.{FULL}.jsonl")
     print(c.sh("evaluate.py", "--labels", str(c.ann_dir / "adjudicated.csv"), "--key",
-               str(c.ann_dir / "KEY_DO_NOT_OPEN.csv"), "--verify", *map(str, ver), mock_flag=False))
+               str(c.ann_dir / "KEY_DO_NOT_OPEN.csv"), "--verify", *map(str, ver),
+               "--analysis-dir", str(c.run_dir / "analysis"), mock_flag=False))
 
 
 def report(c: Ctx) -> str | None:
-    if reason := _need_labels(c):
-        return reason
+    # report.py auto-detects adjudicated labels; without them it writes the pipeline-only report
     if not (ROOT / "src" / "report.py").exists():
         return "src/report.py not found"
     print(c.sh("report.py", "--run", str(c.run_dir), mock_flag=False))

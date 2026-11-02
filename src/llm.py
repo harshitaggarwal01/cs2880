@@ -132,7 +132,8 @@ class MockProvider(Provider):
 
     def _call(self, system, user, json_schema):
         src = re.search(r"<<<\n(.*?)\n>>>", user, re.S)
-        text = src.group(1) if src else user
+        # prompts without delimiters (the realistic teacher prompt) put the problem after the last blank line
+        text = src.group(1) if src else user.strip().split("\n\n")[-1]
         if "audit an accessibility adaptation" in system:
             out = json.dumps({"math_fidelity": "PASS", "target_preserved": "PASS", "instructional_leakage": "NONE",
                               "ambiguity_introduced": "NO", "failure_codes": [], "evidence": [], "overall": "SAFE"})

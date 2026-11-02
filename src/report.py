@@ -38,7 +38,7 @@ GEN_FILES = [("generations.jsonl", "main"), ("ablation_generations.jsonl", "abla
 
 def load_generations(run_dir: Path) -> pd.DataFrame:
     """All generation-like rows in the run folder with columns kind, output_id, generator, transformation, ..."""
-    paths = [(run_dir / f, kind) for f, kind in GEN_FILES] + [(p, "baseline") for p in sorted(run_dir.glob("baseline*.jsonl"))]
+    paths = [(run_dir / f, kind) for f, kind in GEN_FILES] + [(p, "baseline") for p in sorted(run_dir.glob("baseline*.jsonl")) if ".verify-" not in p.name]
     rows = []
     for path, kind in paths:
         if path.exists():
