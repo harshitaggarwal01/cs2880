@@ -53,7 +53,8 @@ Detailed phase docs: [PHASE1.md](PHASE1.md) · [PHASE2.md](PHASE2.md) · [PHASE3
 | Phase 2 code: conformal, cascade, PPI, policy, red-team (synthetic tests, method notes) | done (Nov 2); second review of 2A/2C/logit done (Nov 2): PPI split fixed, Firth fallback for the logit, conformal wording |
 | Phase 3 code: external-audit harness + protocol, teacher survey + loader, demo, distilled layer | done (Nov 2); collection and CUHS determination pending |
 | Phase 4 code: release packaging, failure gallery, reproducibility doc, final-report skeleton | done (Nov 2) |
-| Real pilot with Anthropic key | **blocked: `ANTHROPIC_API_KEY` not in the environment** |
+| Real pilot with Anthropic key | done (Nov 2): 40 generations verified, $1.19; two verifier false-alarm sources found (see HANDOFF_PHASE1) |
+| Calibration sheets (70 items) | made (Nov 2); both teammates label blind |
 | Rubric v1 frozen | pending calibration relabel by both teammates |
 | Main generation, annotation, adjudication | pending |
 | Phase 2–4 on real labels | pending |

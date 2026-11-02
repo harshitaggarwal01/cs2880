@@ -6,15 +6,15 @@
 - run_id: `anthropic-v1` (real run not started); `anthropic-v1-mock` runs end to end offline
 - Config: `config.anthropic.yaml` (SHA-256 prefix `10dd8ddccdd13230`); becomes `config.frozen.yaml` inside the run folder on first use
 - Tests: 108 passed / 0 failed (`make test`), covering Phase 1–4 code
-- API keys: **none in this environment**. `ANTHROPIC_API_KEY` is required for the real run.
+- API keys: an Anthropic key was supplied in-session on Nov 2 (not stored in the repo). For a new session, add `ANTHROPIC_API_KEY` to the environment's secrets.
 
 ## What was run
 
 | step | command | output path | done? |
 |---|---|---|---|
 | mock end-to-end | `python src/run_phase1.py --config config.anthropic.yaml --mock --until report` | `data/outputs/anthropic-v1-mock/` (gitignored) | yes — all 12 steps; `evaluate` skips until labels exist; `report` writes the pipeline-only report |
-| real pilot | `make pilot` | `data/outputs/anthropic-v1/pilot_generations.jsonl` | **no** — needs the key |
-| calibration sheets | `make calibrate` | `data/calibration/pilot/{sheet_A,sheet_B,KEY_DO_NOT_OPEN}.csv` | **no** — run once, then both teammates label |
+| real pilot | `make pilot` + `python src/verify.py data/outputs/anthropic-v1/pilot_generations.jsonl --config config.anthropic.yaml` + `python src/ledger.py --run data/outputs/anthropic-v1 --config config.anthropic.yaml` | `data/outputs/anthropic-v1/{pilot_generations,pilot_generations.verify-critic-det-program,extractions}.jsonl`, `ledger.csv` | **yes (Nov 2)** — 40 generations, 123 calls, $1.19 |
+| calibration sheets | `make calibrate` | `data/calibration/pilot/{sheet_A,sheet_B,KEY_DO_NOT_OPEN}.csv` | **yes (Nov 2)** — both teammates now label blind; do not open the key |
 | main generation … sheets | `make phase1` | `data/outputs/anthropic-v1/…`, `data/annotations/anthropic-v1/…` | **no** — after rubric v1 is frozen |
 
 ## Artifacts (code, not data)
@@ -32,6 +32,16 @@
 - **Mock provider** echoes the source problem; mock runs test plumbing only, never behaviour.
 - **PPI commit.** `src/ppi.py` was swept into `c192f6a` mid-edit by a broad `git add`; the agent's final version is committed separately right after. Use the later commit.
 - Interim snapshot of `pilot_annotations_PRELIMINARY.csv` labels are AI-proposed; **both teammates must relabel** via the calibration sheets before any rate is quoted.
+
+## Real pilot results (Nov 2; verifier decisions only, no human labels; not rates)
+
+- 40 generations: `claude-haiku-5-5` and `claude-sonnet-5-5` × {plain, chunked} × 10 dev problems. 3 plain outputs returned `NO_REWRITE_NEEDED`. All `returned_model` values match the requested models.
+- Verifier: 17 PASS, 22 REVIEW, 1 REJECT. Critic: 39 SAFE, 1 UNSURE. Program layer: 40/40 answers MATCH.
+- Cost: $1.19 total (gen $0.05, critic $0.59, extract $0.56), about $0.03 per output. Extrapolates to about $20 for the main run, in line with the budget.
+- **Verifier precision issues to resolve before the main run:**
+  1. `program:RELATIONS_DIFFER` fires on 18/40 even though every recomputed answer matches. Relation-type comparison is too strict; it alone drives most REVIEWs. Options: drop it from `decide` when the values MATCH, or keep it as a logged feature only.
+  2. The one REJECT (`sonnet55|plain|gsm8k-train-2016`, the Vikki pay problem) is a false alarm. The rewrite says "taken out in three ways", and "three" equals a value derivable from the source. Counting words ("three ways", "two steps") should not count as leaked derived values.
+  Both are verifier-tuning decisions. Make them on the dev set only, before main generation, and record them in the decision log.
 
 ## How to resume
 ```bash
@@ -57,6 +67,6 @@ Resume a partial run with `python src/run_phase1.py --config config.anthropic.ya
 - [ ] Submit the teacher survey for a CUHS determination this semester, or defer
 
 ## Next owner's first three actions
-1. Put `ANTHROPIC_API_KEY` in the environment, run `make test`, then `make calibrate`.
+1. Decide the two verifier-precision fixes above (dev set only); re-verify the pilot.
 2. Both teammates label the calibration sheets blind; run the agreement and disagreement commands; freeze rubric v1.
-3. `make pilot`, inspect `data/outputs/anthropic-v1/pilot_generations.jsonl` and the det-layer verify output, then `make phase1`.
+3. With rubric v1 frozen and the key in the environment: `make phase1` (≈ $20; ask first).
