@@ -7,6 +7,7 @@ Harvard COMPSCI 2880 (AI for Social Impact), Fall 2026.
 
 | If you want… | Read |
 |---|---|
+| Latest check-in (Nov 3): progress and first real results | [`docs/checkin_1.md`](docs/checkin_1.md) · slides [`docs/SafeAdapt-Math_checkin1.pptx`](docs/SafeAdapt-Math_checkin1.pptx) |
 | The plan in one page | [`docs/one_page_brief.md`](docs/one_page_brief.md) |
 | Real LLM outputs to show the professor | [`docs/professor_examples.md`](docs/professor_examples.md) |
 | The full project plan | [`docs/dossier.md`](docs/dossier.md) |
@@ -24,13 +25,20 @@ Harvard COMPSCI 2880 (AI for Social Impact), Fall 2026.
   - real pilot run on the 10 dev problems (`pilot/`, 70 outputs, preliminary labels);
   - code for generation, verification, repair, annotation sheets and analysis;
   - passing offline tests, including a mock end-to-end run.
-- **In progress (Phase 1 tooling, on `dev-phases`):** one-command pipeline (`src/run_phase1.py`, `Makefile`),
-  rubric calibration sheets (`src/calibrate.py`), optional GSM-IC distractor partition (`src/fetch_data.py --gsmic`),
-  ledger, report and variance-check scripts, Anthropic-only config (`config.anthropic.yaml`).
+- **Done on `dev-phases` (Nov 2):**
+  - all four phases coded: one-command pipeline (`src/run_phase1.py`, `Makefile`), ledger, report, variance check,
+    calibration tooling, GSM-IC option, Anthropic-only config; Phase 2 methods, Phase 3 audit harness/survey/demo,
+    Phase 4 release packaging;
+  - 108 offline tests pass; statistical review of conformal, PPI and the logit done (fixes in `CHANGELOG.md`);
+  - **real Anthropic pilot** (`data/outputs/anthropic-v1/`): 40 rewrites (Haiku, Sonnet × plain, chunked) on the
+    10 dev problems, fully verified: 17 PASS / 22 REVIEW / 1 REJECT, 40/40 answers recompute equal, $1.19 total.
+    Two checker false-alarm sources were found (see `docs/plan/HANDOFF_PHASE1.md`);
+  - calibration sheets for the 70-item relabel (`data/calibration/pilot/`).
+- **In progress:** both teammates label the calibration sheets blind; tune the two false-alarm rules on dev only.
 - **Next:**
-  1. Both teammates re-label the pilot blind (`src/calibrate.py --make-sheets`), adjudicate, and freeze rubric v1.
-  2. Add API keys and run the dev pilot on the real generators.
-  3. Run the main generation.
+  1. Tune the two checker false-alarm rules on the dev problems; re-verify the pilot (about $1).
+  2. Both teammates label `data/calibration/pilot/sheet_{A,B}.csv` blind, check agreement, freeze rubric v1.
+  3. Main generation `make phase1` (about $20), then annotation.
 
 ## Branches and runs
 `main` holds the check-in state (what was reviewed and shown); `dev-phases` is active development and may be

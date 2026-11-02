@@ -1,6 +1,6 @@
 # Phase 3 — Real-world: tools teachers use, teachers' own prompts, a demo
 
-**Status:** pending · **Owner:** harness by Person 1, collection by Person 2 · **Dates:** Nov 10 – Dec 1 · **Effort:** ≈ 20 h
+**Status:** code done (Nov 2); tool collection and CUHS determination pending · **Owner:** harness by Person 1, collection by Person 2 · **Dates:** Nov 10 – Dec 1 · **Effort:** ≈ 20 h
 
 ## Objective
 

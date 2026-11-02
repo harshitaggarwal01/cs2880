@@ -1,6 +1,6 @@
 # Phase 1 — MVP: run the study end to end
 
-**Status:** in progress · **Owner:** both · **Dates:** Nov 2 – Nov 29 · **Code effort:** ≈ 31 h · **Annotation:** ≈ 16 h per person
+**Status:** in progress (code done; real pilot done Nov 2; calibration relabel and checker tuning next) · **Owner:** both · **Dates:** Nov 2 – Nov 29 · **Code effort:** ≈ 31 h · **Annotation:** ≈ 16 h per person
 
 ## Objective
 

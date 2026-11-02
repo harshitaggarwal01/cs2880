@@ -2,8 +2,8 @@
 
 ## State
 - Branch: `dev-phases` (off `main` at `5d02d64`)
-- Commit SHA: see `git log -1` on `dev-phases`; this document was written at `c192f6a` plus the PPI commit that follows it
-- run_id: `anthropic-v1` (real run not started); `anthropic-v1-mock` runs end to end offline
+- Commit SHA: see `git log -1` on `dev-phases`; last updated after `c80d402` (check-in 1 materials)
+- run_id: `anthropic-v1`: real pilot done (dev set only), main run not started; `anthropic-v1-mock` runs end to end offline
 - Config: `config.anthropic.yaml` (SHA-256 prefix `10dd8ddccdd13230`); becomes `config.frozen.yaml` inside the run folder on first use
 - Tests: 108 passed / 0 failed (`make test`), covering Phase 1–4 code
 - API keys: an Anthropic key was supplied in-session on Nov 2 (not stored in the repo). For a new session, add `ANTHROPIC_API_KEY` to the environment's secrets.
@@ -42,6 +42,8 @@
   1. `program:RELATIONS_DIFFER` fires on 18/40 even though every recomputed answer matches. Relation-type comparison is too strict; it alone drives most REVIEWs. Options: drop it from `decide` when the values MATCH, or keep it as a logged feature only.
   2. The one REJECT (`sonnet55|plain|gsm8k-train-2016`, the Vikki pay problem) is a false alarm. The rewrite says "taken out in three ways", and "three" equals a value derivable from the source. Counting words ("three ways", "two steps") should not count as leaked derived values.
   Both are verifier-tuning decisions. Make them on the dev set only, before main generation, and record them in the decision log.
+- **One real catch:** `haiku55|chunked|gsm8k-train-2016` (Vikki as bullets). "From her weekly earnings" no longer governs the 5% line, so it can be read as 5% of what's left after tax. The critic returned UNSURE → REVIEW. Keep this as a positive example for the rubric discussion.
+- Cosmetic: the det flag detail prints regex-derived cue names (e.g. "addinged" for `add(?:ing|ed)?`). It affects display only, not decisions; fix `readable()` in `src/deterministic_checks.py` when tuning.
 
 ## How to resume
 ```bash

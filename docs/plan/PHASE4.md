@@ -1,6 +1,6 @@
 # Phase 4 — Write-up, reproducibility, release
 
-**Status:** pending · **Owner:** both · **Dates:** Nov 30 – Dec 5 · **Effort:** ≈ 20 h
+**Status:** skeletons and release code done (Nov 2); write-up pending · **Owner:** both · **Dates:** Nov 30 – Dec 5 · **Effort:** ≈ 20 h
 
 ## Objective
 

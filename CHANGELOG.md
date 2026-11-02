@@ -8,7 +8,7 @@ and this project uses semantic versioning where applicable.
 ## [Unreleased]
 
 ### Summary (2026-11-02, branch dev-phases)
-All phases coded and tested offline (108 tests after the Nov 2 statistical review); mock pipeline runs end to end; real run blocked on API key.
+All phases coded and tested offline (108 tests after the Nov 2 statistical review); mock pipeline runs end to end; real Anthropic pilot run and verified ($1.19); check-in 1 materials.
 
 ### Added
 - Phase plan docs (docs/plan/)
@@ -19,6 +19,9 @@ All phases coded and tested offline (108 tests after the Nov 2 statistical revie
 - Phase 2 methods: conformal, cascade, ppi, policy, redteam
 - Phase 3: external audit harness, teacher prompt survey, demo, distill stub
 - Phase 4: final report skeleton, release packaging
+- Real pilot `anthropic-v1` (Nov 2): 40 generations on the dev set (claude-haiku-5-5, claude-sonnet-5-5 × plain, chunked), 3-layer verify (Opus critic and extractor), ledger: 123 calls, $1.19. Verifier decisions 17 PASS / 22 REVIEW / 1 REJECT; 40/40 program answers match
+- Calibration sheets for the 70-item pilot relabel (`data/calibration/pilot/`)
+- Check-in 1 note (`docs/checkin_1.md`) and 6-slide deck (`docs/SafeAdapt-Math_checkin1.pptx`)
 
 ### Changed
 - Statistical review of Phase 2 modules and the exploratory logit (2026-11-02):

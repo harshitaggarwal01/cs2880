@@ -1,6 +1,6 @@
 # Phase 2 — Methods: what makes this more than a better prompt
 
-**Status:** pending · **Owner:** code by Person 1, review by both · **Dates:** coded Nov 7–20 on synthetic data; run on real labels Nov 23–29 · **Effort:** ≈ 40 h
+**Status:** code done with synthetic tests (Nov 2); statistical review done; real-label runs pending · **Owner:** code by Person 1, review by both · **Dates:** coded Nov 7–20 on synthetic data; run on real labels Nov 23–29 · **Effort:** ≈ 40 h
 
 ## Objective
 
@@ -53,7 +53,7 @@ Turn the verifier and the comparison into things a school or vendor can rely on:
 - An attacker prompt rewrites 50 main sources to leak *subtly* while passing the det layer; measure verifier recall under attack; blind-label 30 to confirm they leak. Outputs quarantined under `redteam/` and never enter main sheets.
 - **Cite:** Perez et al. (2022) *Red Teaming Language Models with Language Models*, EMNLP; Ganguli et al. (2022) arXiv:2209.07858; Zhao, Knežević & Käser (2026) ACL.
 
-## Review gate before "done"
+## Review gate before "done" (passed Nov 2; see CHANGELOG)
 
 The statistical modules (2A, 2C, and the clustered logit from Phase 1) get a second review focused on correctness of the guarantee and the estimators, before results are quoted. Checklist: exchangeability unit = source; calibration/test split by source; loss monotone in the threshold; PPI rectifier uses the same predictor on labelled and unlabelled items; intervals respect clustering.
 

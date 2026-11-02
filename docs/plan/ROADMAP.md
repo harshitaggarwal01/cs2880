@@ -55,6 +55,8 @@ Detailed phase docs: [PHASE1.md](PHASE1.md) · [PHASE2.md](PHASE2.md) · [PHASE3
 | Phase 4 code: release packaging, failure gallery, reproducibility doc, final-report skeleton | done (Nov 2) |
 | Real pilot with Anthropic key | done (Nov 2): 40 generations verified, $1.19; two verifier false-alarm sources found (see HANDOFF_PHASE1) |
 | Calibration sheets (70 items) | made (Nov 2); both teammates label blind |
+| Check-in 1 materials | done (Nov 2): `docs/checkin_1.md`, `docs/SafeAdapt-Math_checkin1.pptx` |
+| Verifier tuning (2 false-alarm rules) | pending; dev set only, before the main run |
 | Rubric v1 frozen | pending calibration relabel by both teammates |
 | Main generation, annotation, adjudication | pending |
 | Phase 2–4 on real labels | pending |
