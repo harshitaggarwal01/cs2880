@@ -22,6 +22,10 @@ All phases coded and tested offline (108 tests after the Nov 2 statistical revie
 - Real pilot `anthropic-v1` (Nov 2): 40 generations on the dev set (claude-haiku-5-5, claude-sonnet-5-5 × plain, chunked), 3-layer verify (Opus critic and extractor), ledger: 123 calls, $1.19. Verifier decisions 17 PASS / 22 REVIEW / 1 REJECT; 40/40 program answers match
 - Calibration sheets for the 70-item pilot relabel (`data/calibration/pilot/`)
 - Check-in 1 note (`docs/checkin_1.md`) and 6-slide deck (`docs/SafeAdapt-Math_checkin1.pptx`)
+- "Updates and Progress" deck, 11 slides with speaker notes (`docs/SafeAdapt-Math_updates_progress.pptx`), and its source text for the design tool (`docs/slides_updates_progress.md`)
+- `docs/run_examples.md`: verbatim real outputs and checker evidence (real pilot + earlier pilot), with all 40 decisions
+- `docs/PROJECT_OVERVIEW.md`: structure, methods, code map, future method plans
+- `docs/plan/AGENT_PROMPT_NEXT.md`: detailed hand-off prompt for the next agent (remaining code and steps)
 
 ### Changed
 - Statistical review of Phase 2 modules and the exploratory logit (2026-11-02):

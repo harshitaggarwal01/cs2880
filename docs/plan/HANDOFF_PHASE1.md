@@ -2,7 +2,8 @@
 
 ## State
 - Branch: `dev-phases` (off `main` at `5d02d64`)
-- Commit SHA: see `git log -1` on `dev-phases`; last updated after `c80d402` (check-in 1 materials)
+- Commit SHA: see `git log -1` on `dev-phases`; last updated after `33e930a` (run examples doc)
+- **Next agent:** start from [`AGENT_PROMPT_NEXT.md`](AGENT_PROMPT_NEXT.md) (tasks A–G with rules and commands)
 - run_id: `anthropic-v1`: real pilot done (dev set only), main run not started; `anthropic-v1-mock` runs end to end offline
 - Config: `config.anthropic.yaml` (SHA-256 prefix `10dd8ddccdd13230`); becomes `config.frozen.yaml` inside the run folder on first use
 - Tests: 108 passed / 0 failed (`make test`), covering Phase 1–4 code
@@ -20,7 +21,8 @@
 ## Artifacts (code, not data)
 - `src/`: 24 modules. Phase 1: `run_phase1`, `ledger`, `calibrate`, `variance_check`, `report`, plus extended `baseline`, `verify`, `evaluate`, `fetch_data`. Phase 2: `conformal`, `cascade`, `ppi`, `policy`, `redteam`. Phase 3: `import_external`, `realistic_prompts`, `distill`, `demo/`. Phase 4: `release`, `failure_gallery`.
 - `docs/methods/`: one note per Phase 2/3 method with citations.
-- `docs/plan/`: roadmap, four phase docs, this handoff.
+- `docs/plan/`: roadmap, four phase docs, this handoff, `AGENT_PROMPT_NEXT.md`.
+- Presentation and reference docs: `docs/PROJECT_OVERVIEW.md`, `docs/run_examples.md`, `docs/checkin_1.md`, `docs/SafeAdapt-Math_updates_progress.pptx` (+ `docs/slides_updates_progress.md`), `docs/SafeAdapt-Math_checkin1.pptx`.
 - `docs/final_report.md` (skeleton), `docs/REPRODUCIBILITY.md`, `docs/external_collection_protocol.md`, `docs/survey/teacher_prompt_survey.md`, `data/external/TEMPLATE.csv`.
 
 ## Known issues / caveats
