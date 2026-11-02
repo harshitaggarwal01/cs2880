@@ -16,18 +16,32 @@ Harvard COMPSCI 2880 (AI for Social Impact), Fall 2026.
 | Which models and settings, and why | [`docs/model_selection.md`](docs/model_selection.md) |
 | The earlier ChatGPT documents (superseded) | [`docs/archive/`](docs/archive/) |
 
-## Status (2026-10-16)
+## Status (2026-11-02)
 - **Done:**
   - design frozen;
   - 134 source problems sampled and frozen (`data/frozen/`);
   - prompts v1 frozen;
   - real pilot run on the 10 dev problems (`pilot/`, 70 outputs, preliminary labels);
   - code for generation, verification, repair, annotation sheets and analysis;
-  - 12 passing tests, including an offline end-to-end run.
+  - passing offline tests, including a mock end-to-end run.
+- **In progress (Phase 1 tooling, on `dev-phases`):** one-command pipeline (`src/run_phase1.py`, `Makefile`),
+  rubric calibration sheets (`src/calibrate.py`), optional GSM-IC distractor partition (`src/fetch_data.py --gsmic`),
+  ledger, report and variance-check scripts, Anthropic-only config (`config.anthropic.yaml`).
 - **Next:**
-  1. Both teammates re-label the pilot and freeze rubric v1.
+  1. Both teammates re-label the pilot blind (`src/calibrate.py --make-sheets`), adjudicate, and freeze rubric v1.
   2. Add API keys and run the dev pilot on the real generators.
   3. Run the main generation.
+
+## Branches and runs
+`main` holds the check-in state (what was reviewed and shown); `dev-phases` is active development and may be
+mid-change. Two run ids are defined: `main-v1` is the cross-family design in `config.example.yaml` (GPT-6 Luna and
+Gemini 3.8 Flash under audit, Claude as critic; needs `OPENAI_API_KEY` and `GEMINI_API_KEY`), and `anthropic-v1`
+(`config.anthropic.yaml`) is an Anthropic-only run that can start now with just `ANTHROPIC_API_KEY`. The caveat on
+`anthropic-v1`: generators, critic and extractor come from the same model family, so correlated errors are not
+controlled and verifier results from it are a dry run, not the audit.
+
+## Roadmap
+Phase-by-phase plan and open decisions: [`docs/plan/ROADMAP.md`](docs/plan/ROADMAP.md).
 
 ## Quick start
 ```bash
@@ -42,13 +56,37 @@ python src/collect_outputs.py --config config.yaml              # main + externa
 python src/collect_outputs.py --config config.yaml --ablation   # realistic teacher prompt, 100 main problems
 python src/baseline.py data/frozen/main.jsonl > data/outputs/main-v1/baseline_main.jsonl
 python src/verify.py data/outputs/main-v1/generations.jsonl --config config.yaml
-python src/repair.py data/outputs/main-v1/generations.jsonl data/outputs/main-v1/generations.verify-critic-det-program.jsonl
+python src/repair.py data/outputs/main-v1/generations.jsonl data/outputs/main-v1/generations.verify-critic-det-program.jsonl --config config.yaml
 python src/make_annotation_sheets.py data/outputs/main-v1/generations.jsonl data/outputs/main-v1/ablation_generations.jsonl data/outputs/main-v1/repairs.jsonl
 python src/evaluate.py --labels <adjudicated.csv> --key data/annotations/main-v1/KEY_DO_NOT_OPEN.csv --verify <verify.jsonl>
 ```
 **Offline dry run.** Add `--mock` to `collect_outputs.py`, `verify.py` or `repair.py`. Mock runs write to `*-mock` folders only.
 
 **GSM1K text.** Run `python src/fetch_data.py --gsm1k` (needs `datasets`). The GSM1K card declares no license, so keep the text local.
+
+**GSM-IC (optional).** `python src/fetch_data.py --gsmic` downloads the two GSM-IC splits (Shi et al., ICML 2023), prints the
+repository's licence status (no LICENSE file; citation requested), and freezes 12 distractor problems to
+`data/frozen/ext_gsmic.jsonl`, spread over the role × number × topic labels. Add `ext_gsmic` to `partitions:` in your config
+*before* the main generation if you want it; the text is local only, like GSM1K.
+
+## One-command pipeline
+```bash
+make help                                                    # every target, with what it writes
+make phase1 MOCK=--mock                                      # offline: fetch -> generate -> verify -> repair -> sheets
+python src/run_phase1.py --config config.anthropic.yaml --until sheets   # real Anthropic-only run, stop at the sheets
+```
+Each step is skipped when its output already exists, so a run can be resumed after an interruption.
+
+## Calibration
+Both teammates label all 70 pilot outputs blind, then compare, adjudicate and freeze rubric v1.
+```bash
+python src/calibrate.py --make-sheets                        # data/calibration/pilot/{sheet_A,sheet_B,KEY_DO_NOT_OPEN}.csv
+python src/calibrate.py --agreement A.csv B.csv              # kappa / Gwet AC1 per label (markdown)
+python src/calibrate.py --disagreements A.csv B.csv data/calibration/pilot/KEY_DO_NOT_OPEN.csv   # -> disagreements.csv
+python src/calibrate.py --compare-preliminary adjudicated.csv data/calibration/pilot/KEY_DO_NOT_OPEN.csv
+```
+`--compare-preliminary` scores the AI preliminary labels in `pilot/` against the human adjudicated ones; it is a rubric
+sanity check, not a result. Open the key only after both sheets are complete.
 
 ## Rules that protect the result
 1. Never resample `data/frozen/`. Never touch `main` while developing prompts or the rubric: use `dev`.

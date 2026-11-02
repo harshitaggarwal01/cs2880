@@ -29,6 +29,7 @@ ablation:                                  # realistic teacher prompt ("naive"):
   first_n: 100                             # = all main GSM8K problems
 
 partitions: [main, ext_asdiv, ext_gsm1k]   # dev is for prompt/rubric/verifier development only
+# add ext_gsmic here after `python src/fetch_data.py --gsmic` (optional; decide before main generation)
 
 # USD per 1M tokens (standard tier, checked 2026-10-16; re-check before running)
 prices:

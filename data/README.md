@@ -8,9 +8,11 @@
 | `frozen/main.jsonl` | 100 GSM8K **test** problems, stratified (see `MANIFEST.json`) | MIT |
 | `frozen/ext_asdiv.jsonl` | 12 ASDiv problems, one per solution type, grades 3–6 | CC BY-NC 4.0 |
 | `frozen/ext_gsm1k_ids.jsonl` | 12 GSM1K **row indices only** (Hugging Face `ScaleAI/gsm1k`, test split, 1,205 rows) | No license declared: text is fetched locally by `src/fetch_data.py --gsm1k` and must not be redistributed |
+| `frozen/ext_gsmic.jsonl` | Optional: 12 GSM-IC problems (Shi et al., ICML 2023; github.com/google-research-datasets/GSM-IC), GSM8K dev problems with one distractor sentence, spread over role × number × topic labels; written by `src/fetch_data.py --gsmic` | No LICENSE file in the repo (checked 2026-11-02; README asks for a citation, arXiv:2302.00093). Base problems are GSM8K (MIT); the additions carry no declared license: keep local, do not redistribute |
 | `frozen/MANIFEST.json` | Seed (2880), allocation, tag coverage | |
 | `outputs/<run_id>/` | Append-only generation, verification and repair logs | |
 | `annotations/<run_id>/` | Blinded sheets plus key | |
+| `calibration/pilot/` | Rubric calibration: `sheet_A.csv` and `sheet_B.csv` (all 70 pilot outputs, blinded, one sheet per annotator), `KEY_DO_NOT_OPEN.csv`, later `disagreements.csv`; from `src/calibrate.py --make-sheets` | Pilot text is GSM8K train (MIT) |
 
 **Checksums** (2026-10-16): GSM8K test `3730d312…9d14`, ASDiv `ef890406…4929`. Full values are in `src/fetch_data.py`.
 

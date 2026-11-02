@@ -97,6 +97,8 @@ class MockEndToEnd(unittest.TestCase):
         ver = next(out_dir.glob("pilot_generations.verify-*.jsonl"))
         decisions = {r["decision"] for r in read_jsonl(ver)}
         self.assertTrue(decisions <= {"PASS", "REVIEW", "REJECT"})
+        self.assertTrue(all(set(r["extract_meta"]) == {"source", "candidate"} for r in read_jsonl(ver)))
+        self.assertTrue((out_dir / "extractions.jsonl").exists())
         run("src/repair.py", str(gens), str(ver), "--config", "config.example.yaml", "--mock")
         run("src/make_annotation_sheets.py", str(gens))
         key = ROOT / "data" / "annotations" / "main-v1-mock" / "KEY_DO_NOT_OPEN.csv"
