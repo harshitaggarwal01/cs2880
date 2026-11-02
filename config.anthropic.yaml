@@ -1,0 +1,42 @@
+# Anthropic-only Phase 1 config used while OpenAI/Gemini keys are unavailable. Same-family caveat: generators and critic are all Claude models; see docs/plan/PHASE1.md. Switch to config.example.yaml (run_id main-v1) for the cross-family run.
+# Copy to config.yaml and freeze before the main run. Changing anything here after
+# generation starts invalidates the comparison - bump the run_id instead.
+run_id: anthropic-v1
+
+generators:              # the two models under audit (both Anthropic; same family as critic)
+  - name: haiku55
+    provider: anthropic
+    model: claude-haiku-5-5
+    settings: {effort: low, max_tokens: 1024}
+  - name: sonnet55
+    provider: anthropic
+    model: claude-sonnet-5-5
+    settings: {effort: low, max_tokens: 1024}
+
+critic:                  # same family as both generators (correlated-error caveat; see header)
+  provider: anthropic
+  model: claude-opus-5-5
+  settings: {effort: low, max_tokens: 4096}
+
+extractor:               # structured extraction + program for the symbolic layer
+  provider: anthropic
+  model: claude-opus-5-5
+  settings: {effort: low, max_tokens: 4096}
+
+transformations: [plain, chunked]          # primary conditions
+ablation:                                  # realistic teacher prompt ("naive"): co-primary condition for RQ2
+  transformation: naive
+  partition: main
+  first_n: 100                             # = all main GSM8K problems
+
+partitions: [main, ext_asdiv, ext_gsm1k]   # dev is for prompt/rubric/verifier development only
+
+minutes_per_review: 1.5
+
+# USD per 1M tokens (standard tier, checked 2026-10-16; re-check before running)
+prices:
+  gpt-6-luna: {in: 0.10, out: 0.50}
+  gemini-3.8-flash: {in: 0.75, out: 3.75}   # introductory price until 2026-12-31, then 1.50 / 7.50
+  claude-sonnet-5-5: {in: 2.00, out: 10.00}
+  claude-haiku-5-5: {in: 0.10, out: 0.50}
+  claude-opus-5-5: {in: 4.00, out: 20.00}   # Anthropic pricing table, Oct 2026
