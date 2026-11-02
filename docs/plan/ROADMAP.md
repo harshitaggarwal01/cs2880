@@ -60,6 +60,7 @@ Detailed phase docs: [PHASE1.md](PHASE1.md) · [PHASE2.md](PHASE2.md) · [PHASE3
 | Check-in 1 materials | done (Nov 2): `docs/checkin_1.md`, `docs/SafeAdapt-Math_checkin1.pptx` |
 | Presentation docs | done (Nov 2): updates deck (11 slides), `run_examples.md`, `PROJECT_OVERVIEW.md` |
 | Next-agent hand-off | done (Nov 2): `docs/plan/AGENT_PROMPT_NEXT.md` |
+| Data backup to Hugging Face | done (Nov 2): private dataset `harshitaggarwal/safeadapt-math`; re-run `make hf-backup` after each milestone |
 | Verifier tuning v1.1 (RELATIONS_DIFFER, number words, synonyms, cue names) | pending; dev set only, before the main run (Task A in the agent prompt) |
 | Rubric v1 frozen | pending calibration relabel by both teammates |
 | Main generation, annotation, adjudication | pending |

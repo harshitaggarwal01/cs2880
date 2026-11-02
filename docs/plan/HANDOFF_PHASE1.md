@@ -51,7 +51,7 @@
 `src/push_hf.py` stages everything hard to reproduce into `data/hf_staging/` (gitignored): frozen sample, real run outputs, extraction cache, ledger, labels and keys, the earlier pilot, calibration sheets, prompts, configs, checksums and a dataset card. It then uploads to the **private** dataset repo `harshitaggarwal/safeadapt-math`.
 - It drops GSM1K/GSM-IC text rows, skips mock runs and `data/raw`, aborts if anything looks like a secret, and refuses to upload to a public repo.
 - Usage: `make hf-stage` (dry run) or `make hf-backup` (needs `HF_TOKEN` with write scope in the environment's secrets).
-- **Status (Nov 2): staged, not uploaded.** This session's Hugging Face connector is read-only and no `HF_TOKEN` is set.
+- **Status (Nov 2): uploaded.** https://huggingface.co/datasets/harshitaggarwal/safeadapt-math (private, 44 files, HF commit `44c952e`, from git `64082d2`). Re-run `make hf-backup` after each real run or labelling milestone.
 
 ## How to resume
 ```bash
