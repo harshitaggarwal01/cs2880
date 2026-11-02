@@ -12,7 +12,7 @@ You are taking over **SafeAdapt-Math**, a Harvard COMPSCI 2880 (AI for Social Im
 5. `docs/dossier.md` §7–§15 (design and prespecified analysis) and `docs/annotation_guide.md` (rubric).
 6. Skim `CHANGELOG.md` and `docs/methods/*.md`.
 
-Then run `pip install -r requirements.txt && make test`. Expect **108 tests passing**. If not, fix that before anything else.
+Then run `pip install -r requirements.txt && make test`. Expect **112 tests passing**. If not, fix that before anything else.
 
 ## 1. Hard rules (do not break these)
 - **Git authorship:** every commit is authored *and* committed as `Harshit Aggarwal <51515489+harshitaggarwal01@users.noreply.github.com>`.
@@ -39,6 +39,7 @@ Then run `pip install -r requirements.txt && make test`. Expect **108 tests pass
   - Same-family caveat: rewriters and critic are all Claude. Disclose it everywhere results appear.
 - **Statistics:** do not change `src/conformal.py`, `src/ppi.py` or `evaluate.logit_unsafe` semantics without a written justification and new tests. These were reviewed on Nov 2 (see CHANGELOG).
 - **Tests stay green.** Every change comes with tests. Run `make test` before each commit. Keep the mock end-to-end passing: `python src/run_phase1.py --config config.anthropic.yaml --mock --until report --force`.
+- **Backups:** after every real-API step and every labelling milestone, run `make hf-backup`. It uploads to the private Hugging Face dataset repo `harshitaggarwal/safeadapt-math`, needs `HF_TOKEN` with write access in the environment, and refuses a public repo. If the token is missing, run `make hf-stage` and tell the owner.
 - **Docs:** after each step, update `docs/plan/HANDOFF_PHASE1.md` (or a new `HANDOFF_PHASE<n>.md` from `HANDOFF_TEMPLATE.md`), the `ROADMAP.md` status table and decision log, and `CHANGELOG.md`.
 
 ## 2. Where things stand (Nov 2)

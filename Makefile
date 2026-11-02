@@ -79,3 +79,9 @@ release: ## Package the release into data/release
 
 clean-mock: ## Delete all *-mock output and annotation folders
 	rm -rf data/outputs/*-mock data/annotations/*-mock
+
+hf-stage: ## Stage the Hugging Face backup in data/hf_staging (no network)
+	$(PY) src/push_hf.py
+
+hf-backup: ## Upload the backup to the private HF dataset repo (needs HF_TOKEN with write access)
+	$(PY) src/push_hf.py --push

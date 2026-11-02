@@ -6,7 +6,7 @@
 - **Next agent:** start from [`AGENT_PROMPT_NEXT.md`](AGENT_PROMPT_NEXT.md) (tasks A–G with rules and commands)
 - run_id: `anthropic-v1`: real pilot done (dev set only), main run not started; `anthropic-v1-mock` runs end to end offline
 - Config: `config.anthropic.yaml` (SHA-256 prefix `10dd8ddccdd13230`); becomes `config.frozen.yaml` inside the run folder on first use
-- Tests: 108 passed / 0 failed (`make test`), covering Phase 1–4 code
+- Tests: 112 passed / 0 failed (`make test`), covering Phase 1–4 code
 - API keys: an Anthropic key was supplied in-session on Nov 2 (not stored in the repo). For a new session, add `ANTHROPIC_API_KEY` to the environment's secrets.
 
 ## What was run
@@ -46,6 +46,12 @@
   Both are verifier-tuning decisions. Make them on the dev set only, before main generation, and record them in the decision log.
 - **One real catch:** `haiku55|chunked|gsm8k-train-2016` (Vikki as bullets). "From her weekly earnings" no longer governs the 5% line, so it can be read as 5% of what's left after tax. The critic returned UNSURE → REVIEW. Keep this as a positive example for the rubric discussion.
 - Cosmetic: the det flag detail prints regex-derived cue names (e.g. "addinged" for `add(?:ing|ed)?`). It affects display only, not decisions; fix `readable()` in `src/deterministic_checks.py` when tuning.
+
+## Backup to Hugging Face
+`src/push_hf.py` stages everything hard to reproduce into `data/hf_staging/` (gitignored): frozen sample, real run outputs, extraction cache, ledger, labels and keys, the earlier pilot, calibration sheets, prompts, configs, checksums and a dataset card. It then uploads to the **private** dataset repo `harshitaggarwal/safeadapt-math`.
+- It drops GSM1K/GSM-IC text rows, skips mock runs and `data/raw`, aborts if anything looks like a secret, and refuses to upload to a public repo.
+- Usage: `make hf-stage` (dry run) or `make hf-backup` (needs `HF_TOKEN` with write scope in the environment's secrets).
+- **Status (Nov 2): staged, not uploaded.** This session's Hugging Face connector is read-only and no `HF_TOKEN` is set.
 
 ## How to resume
 ```bash

@@ -15,3 +15,4 @@ anthropic>=1.0         # output_config effort / json_schema
 # optional
 datasets>=3.0          # GSM1K fetch
 streamlit>=1.40        # demo
+huggingface_hub>=0.25    # src/push_hf.py (backup to a private HF dataset repo)
