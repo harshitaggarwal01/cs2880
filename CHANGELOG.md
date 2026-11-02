@@ -7,6 +7,9 @@ and this project uses semantic versioning where applicable.
 
 ## [Unreleased]
 
+### Summary (2026-11-02, branch dev-phases)
+All phases coded and tested offline (101 tests); mock pipeline runs end to end; real run blocked on API key.
+
 ### Added
 - Phase plan docs (docs/plan/)
 - Makefile
