@@ -1,0 +1,478 @@
+annotation_id,transformation_requested,model_status,original,adaptation,adaptation_needed,math_fidelity,target_preserved,solvability_changed,ambiguity,leakage_level,leakage_type,presentation,abstention_appropriate,failure_codes,evidence,confidence,notes
+a53c17c77b4,plain,REWRITTEN,James builds a 20 story building.  The first 10 stories are each 12 feet tall each.  The remaining floors are each 3 feet taller.  How tall is the building?,James builds a building with 20 stories. The first 10 stories are each 12 feet tall. The remaining floors are each 3 feet taller. How tall is the building?,,,,,,,,,,,,,
+a7fddd9ee68,plain,NO_REWRITE_NEEDED,"Lisa has 18 more dresses than Ana. If the number of their dresses combined is 48, how many dresses does Ana have?","Lisa has 18 more dresses than Ana. If the number of their dresses combined is 48, how many dresses does Ana have?",,,,,,,,,,,,,
+af08dd77766,naive,,"Vikki worked 42 hours in one week. Her hourly pay rate is $10. From her weekly earnings, 20% is deducted as tax, 5% is deducted as insurance cover, and $5 is deducted for union dues. How much money, in dollars, does Vikki take home after deductions?","Here's an easier-to-read version:
+
+**Vikki's Paycheck**
+
+Vikki worked **42 hours** this week.
+
+She earns **$10** for each hour.
+
+Some money is taken out of her pay:
+- **20%** for tax
+- **5%** for insurance
+- **$5** for union dues
+
+**Question:** How much money does Vikki get to keep?
+
+---
+
+**Steps to try:**
+1. Find how much Vikki earned in total.
+2. Find 20% of her pay (tax).
+3. Find 5% of her pay (insurance).
+4. Subtract the tax, the insurance, and the $5 from her total pay.
+
+Note: The percentages are taken from her full weekly pay, before anything is subtracted.",,,,,,,,,,,,,
+a47e1fa1446,naive,,"Out of the 200 cookies that Javier baked from the recipe he learned online, his wife took 30%, and his daughter took 40 from the remaining cookies. If he ate half of the remaining cookies, how many cookies did they not eat?","Javier baked 200 cookies. He used a recipe he learned online.
+
+Step 1: His wife took 30% of the 200 cookies.
+Step 2: His daughter took 40 cookies from the cookies that were left.
+Step 3: Javier ate half of the cookies that were left.
+
+Question: How many cookies did they not eat?",,,,,,,,,,,,,
+acedbaaf076,naive,,James builds a 20 story building.  The first 10 stories are each 12 feet tall each.  The remaining floors are each 3 feet taller.  How tall is the building?,"James builds a building that has 20 stories (floors).
+
+Stories 1 to 10:
+- Each story is 12 feet tall.
+
+Stories 11 to 20:
+- Each story is 3 feet taller than each of the first 10 stories.
+
+Question: How tall is the whole building?",,,,,,,,,,,,,
+a2b75f01b8e,plain,REWRITTEN,"Karl, Ryan, and Ben are fond of collecting stickers. Karl has 25 stickers. Ryan has 20 more stickers than Karl. Ben has 10 fewer stickers than Ryan. They placed all their stickers in one sticker book. How many stickers did they place altogether?","Karl, Ryan, and Ben like to collect stickers. Karl has 25 stickers. Ryan has 20 more stickers than Karl. Ben has 10 fewer stickers than Ryan. They put all their stickers in one sticker book. How many stickers did they put in the sticker book altogether?",,,,,,,,,,,,,
+ad4347bab58,naive,,"As a freelancer, Katherine takes 20 hours to develop a website for her clients. Her junior, Naomi, takes 1/4 times more time to complete creating a similar website. If many clients required her to build their websites in a particular year, and she gave her junior 30 websites to develop, calculate the total number of hours Katherine's junior took to create the 30 websites.","Katherine is a freelancer. She makes websites for her clients.
+
+Facts about Katherine:
+- Katherine takes 20 hours to make one website.
+
+Facts about her junior, Naomi:
+- Naomi takes 1/4 times more time than Katherine to make a similar website.
+- In one year, many clients asked Katherine to build their websites.
+- Katherine gave Naomi 30 websites to make.
+
+Question: What is the total number of hours that Naomi took to make the 30 websites?",,,,,,,,,,,,,
+a64cc925a2c,chunked,REWRITTEN,James builds a 20 story building.  The first 10 stories are each 12 feet tall each.  The remaining floors are each 3 feet taller.  How tall is the building?,"- James builds a 20 story building.
+- The first 10 stories are each 12 feet tall.
+- The remaining floors are each 3 feet taller.
+Question: How tall is the building?",,,,,,,,,,,,,
+a9023d5f17a,naive,,"As a freelancer, Katherine takes 20 hours to develop a website for her clients. Her junior, Naomi, takes 1/4 times more time to complete creating a similar website. If many clients required her to build their websites in a particular year, and she gave her junior 30 websites to develop, calculate the total number of hours Katherine's junior took to create the 30 websites.","Here's a simpler version in small chunks:
+
+**Building Websites**
+
+Katherine builds websites.
+
+It takes Katherine **20 hours** to build **1** website.
+
+Naomi works for Katherine.
+
+Naomi is slower. She takes **1/4 more time** than Katherine to build 1 website.
+(That means 20 hours, plus an extra 1/4 of 20 hours.)
+
+One year, Katherine gives Naomi **30** websites to build.
+
+**Question:** How many hours in total does Naomi take to build all 30 websites?
+
+---
+
+**Steps to try:**
+1. Find 1/4 of 20 hours.
+2. Add that to 20 hours. This is Naomi's time for 1 website.
+3. Multiply Naomi's time for 1 website by 30.
+
+Note: I clarified the phrase ""1/4 times more time"" from the original, since it can be confusing. If you want students to practice interpreting that wording, you could leave the parenthetical line out.",,,,,,,,,,,,,
+a08f80cffc9,plain,NO_REWRITE_NEEDED,"Lisa has 18 more dresses than Ana. If the number of their dresses combined is 48, how many dresses does Ana have?","Lisa has 18 more dresses than Ana. If the number of their dresses combined is 48, how many dresses does Ana have?",,,,,,,,,,,,,
+a6c7f199bbe,plain,REWRITTEN,"Cora started reading a 158-page book on Monday, and she decided she wanted to finish it by the end of Friday. She read 23 pages on Monday, 38 pages on Tuesday, and 61 pages on Wednesday. She knows she will have time to read twice as much on Friday as she does on Thursday. How many pages does she have to read on Thursday to finish the book in time?","Cora started reading a 158-page book on Monday. She wanted to finish it by the end of Friday. She read 23 pages on Monday, 38 pages on Tuesday, and 61 pages on Wednesday. She will have time to read twice as much on Friday as on Thursday. How many pages does she have to read on Thursday to finish the book in time?",,,,,,,,,,,,,
+a5a2be97ba5,chunked,REWRITTEN,"As a freelancer, Katherine takes 20 hours to develop a website for her clients. Her junior, Naomi, takes 1/4 times more time to complete creating a similar website. If many clients required her to build their websites in a particular year, and she gave her junior 30 websites to develop, calculate the total number of hours Katherine's junior took to create the 30 websites.","- As a freelancer, Katherine takes 20 hours to develop a website for her clients.
+- Her junior, Naomi, takes 1/4 times more time to complete creating a similar website.
+- If many clients required her to build their websites in a particular year, and she gave her junior 30 websites to develop.
+Question: Calculate the total number of hours Katherine's junior took to create the 30 websites.",,,,,,,,,,,,,
+ab7efb82819,plain,REWRITTEN,James builds a 20 story building.  The first 10 stories are each 12 feet tall each.  The remaining floors are each 3 feet taller.  How tall is the building?,James builds a 20-story building. The first 10 stories are each 12 feet tall. The remaining floors are each 3 feet taller. How tall is the building?,,,,,,,,,,,,,
+ad4d9631c4d,plain,REWRITTEN,"Out of the 200 cookies that Javier baked from the recipe he learned online, his wife took 30%, and his daughter took 40 from the remaining cookies. If he ate half of the remaining cookies, how many cookies did they not eat?",Javier baked 200 cookies from a recipe he learned online. Javier's wife took 30% of the 200 cookies. Javier's daughter took 40 from the remaining cookies. Javier ate half of the remaining cookies. How many cookies did they not eat?,,,,,,,,,,,,,
+ac85357ea2d,plain,REWRITTEN,"Karl, Ryan, and Ben are fond of collecting stickers. Karl has 25 stickers. Ryan has 20 more stickers than Karl. Ben has 10 fewer stickers than Ryan. They placed all their stickers in one sticker book. How many stickers did they place altogether?","Karl, Ryan, and Ben like to collect stickers. Karl has 25 stickers. Ryan has 20 more stickers than Karl. Ben has 10 fewer stickers than Ryan. They put all their stickers in one sticker book. How many stickers did they place altogether?",,,,,,,,,,,,,
+a41ee31f54b,chunked,REWRITTEN,"Karl, Ryan, and Ben are fond of collecting stickers. Karl has 25 stickers. Ryan has 20 more stickers than Karl. Ben has 10 fewer stickers than Ryan. They placed all their stickers in one sticker book. How many stickers did they place altogether?","- Karl, Ryan, and Ben are fond of collecting stickers.
+- Karl has 25 stickers.
+- Ryan has 20 more stickers than Karl.
+- Ben has 10 fewer stickers than Ryan.
+- They placed all their stickers in one sticker book.
+Question: How many stickers did they place altogether?",,,,,,,,,,,,,
+aa378d94e6d,chunked,REWRITTEN,"Cora started reading a 158-page book on Monday, and she decided she wanted to finish it by the end of Friday. She read 23 pages on Monday, 38 pages on Tuesday, and 61 pages on Wednesday. She knows she will have time to read twice as much on Friday as she does on Thursday. How many pages does she have to read on Thursday to finish the book in time?","- Cora started reading a 158-page book on Monday.
+- She decided she wanted to finish it by the end of Friday.
+- She read 23 pages on Monday.
+- She read 38 pages on Tuesday.
+- She read 61 pages on Wednesday.
+- She knows she will have time to read twice as much on Friday as she does on Thursday.
+Question: How many pages does she have to read on Thursday to finish the book in time?",,,,,,,,,,,,,
+addc657d2b7,plain,REWRITTEN,"Carly is making a beaded corset. She's going to add 50 rows of purple beads with 20 beads per row, 40 rows of blue beads with 18 beads per row, and 80 gold beads. If beads cost $1 per 10 beads, how much do all the beads she bought cost?","Carly is making a corset with beads on it. Carly is going to add 50 rows of purple beads, with 20 beads per row. Carly is going to add 40 rows of blue beads, with 18 beads per row. Carly is going to add 80 gold beads. Beads cost $1 per 10 beads. How much do all the beads Carly bought cost?",,,,,,,,,,,,,
+aef72ecd6bd,naive,,"Mary and her two friends came up with the idea of collecting marbles each day for their play on weekends. From Monday to Friday, Mary collected twice as many red marbles as Jenny and half the number of blue marbles collected by Anie, who collected 20 more red marbles than Mary and twice the number of blue marbles Jenny collected. If Jenny collected 30 red marbles and 25 blue marbles, what's the total number of blue marbles collected by the friends together?","This one has a lot of information packed together, so here it is broken apart:
+
+**Collecting Marbles**
+
+Three friends collect marbles from Monday to Friday:
+**Mary**, **Jenny**, and **Anie**.
+
+They collect **red** marbles and **blue** marbles.
+
+**Jenny:**
+- Red marbles: **30**
+- Blue marbles: **25**
+
+**Mary:**
+- Red marbles: **2 times** as many as Jenny
+- Blue marbles: **half** as many as Anie
+
+**Anie:**
+- Red marbles: **20 more** than Mary
+- Blue marbles: **2 times** as many as Jenny
+
+**Question:** How many **blue** marbles did the three friends collect altogether?
+
+---
+
+**Helpful tip:** The question only asks about **blue** marbles. The red marble facts are extra information you don't need.
+
+**Steps to try:**
+1. Find Anie's blue marbles (use Jenny's number).
+2. Find Mary's blue marbles (use Anie's number).
+3. Add Jenny's, Anie's, and Mary's blue marbles.
+
+A table with one row per friend and columns for Red and Blue can also help students organize this one.",,,,,,,,,,,,,
+a4f0a56aab1,plain,REWRITTEN,"Mary and her two friends came up with the idea of collecting marbles each day for their play on weekends. From Monday to Friday, Mary collected twice as many red marbles as Jenny and half the number of blue marbles collected by Anie, who collected 20 more red marbles than Mary and twice the number of blue marbles Jenny collected. If Jenny collected 30 red marbles and 25 blue marbles, what's the total number of blue marbles collected by the friends together?","Mary and her two friends had an idea. They would collect marbles each day to play with on weekends. From Monday to Friday, Mary collected twice as many red marbles as Jenny. Mary also collected half the number of blue marbles collected by Anie. Anie collected 20 more red marbles than Mary. Anie also collected twice the number of blue marbles Jenny collected. If Jenny collected 30 red marbles and 25 blue marbles, what is the total number of blue marbles collected by the friends together?",,,,,,,,,,,,,
+a35628fac69,chunked,REWRITTEN,"As a freelancer, Katherine takes 20 hours to develop a website for her clients. Her junior, Naomi, takes 1/4 times more time to complete creating a similar website. If many clients required her to build their websites in a particular year, and she gave her junior 30 websites to develop, calculate the total number of hours Katherine's junior took to create the 30 websites.","- Katherine is a freelancer.
+- Katherine takes 20 hours to develop a website for her clients.
+- Katherine's junior, Naomi, takes 1/4 times more time to complete creating a similar website.
+- Many clients required Katherine to build their websites in a particular year.
+- Katherine gave her junior 30 websites to develop.
+Question: Calculate the total number of hours Katherine's junior took to create the 30 websites.",,,,,,,,,,,,,
+ab48f431d8a,naive,,"Vikki worked 42 hours in one week. Her hourly pay rate is $10. From her weekly earnings, 20% is deducted as tax, 5% is deducted as insurance cover, and $5 is deducted for union dues. How much money, in dollars, does Vikki take home after deductions?","Vikki worked 42 hours in one week.
+She earns $10 for each hour she works.
+
+Then money is taken out of her weekly earnings:
+- Tax: 20% of her weekly earnings
+- Insurance: 5% of her weekly earnings
+- Union dues: $5
+
+Question: How many dollars does Vikki take home after all of these deductions?",,,,,,,,,,,,,
+a0ced20c793,plain,REWRITTEN,"Cora started reading a 158-page book on Monday, and she decided she wanted to finish it by the end of Friday. She read 23 pages on Monday, 38 pages on Tuesday, and 61 pages on Wednesday. She knows she will have time to read twice as much on Friday as she does on Thursday. How many pages does she have to read on Thursday to finish the book in time?",Cora started reading a book on Monday. The book has 158 pages. Cora wanted to finish the book by the end of Friday. Cora read 23 pages on Monday. Cora read 38 pages on Tuesday. Cora read 61 pages on Wednesday. Cora knows she will have time to read twice as much on Friday as she does on Thursday. How many pages does Cora have to read on Thursday to finish the book in time?,,,,,,,,,,,,,
+a646da26ff3,chunked,REWRITTEN,"Lisa has 18 more dresses than Ana. If the number of their dresses combined is 48, how many dresses does Ana have?","- Lisa has 18 more dresses than Ana.
+- The number of Lisa's and Ana's dresses combined is 48.
+Question: How many dresses does Ana have?",,,,,,,,,,,,,
+a28e2142671,naive,,"Carly is making a beaded corset. She's going to add 50 rows of purple beads with 20 beads per row, 40 rows of blue beads with 18 beads per row, and 80 gold beads. If beads cost $1 per 10 beads, how much do all the beads she bought cost?","Carly is making a beaded corset.
+
+Step 1: Purple beads
+- She adds 50 rows of purple beads.
+- Each row has 20 beads.
+
+Step 2: Blue beads
+- She adds 40 rows of blue beads.
+- Each row has 18 beads.
+
+Step 3: Gold beads
+- She adds 80 gold beads.
+
+The beads cost $1 for every 10 beads.
+
+Question: How much do all the beads Carly bought cost?",,,,,,,,,,,,,
+a6e39bcdc45,naive,,"Karl, Ryan, and Ben are fond of collecting stickers. Karl has 25 stickers. Ryan has 20 more stickers than Karl. Ben has 10 fewer stickers than Ryan. They placed all their stickers in one sticker book. How many stickers did they place altogether?","Here's an easier-to-read version:
+
+**Sticker Collectors**
+
+Karl, Ryan, and Ben collect stickers.
+
+- **Karl** has **25** stickers.
+- **Ryan** has **20 more** stickers than Karl.
+- **Ben** has **10 fewer** stickers than Ryan.
+
+They put all their stickers into one sticker book.
+
+**Question:** How many stickers are in the book in total?
+
+---
+
+**Steps to try:**
+1. Find how many stickers Ryan has.
+2. Find how many stickers Ben has.
+3. Add Karl's, Ryan's, and Ben's stickers together.",,,,,,,,,,,,,
+a39ef0fe429,chunked,REWRITTEN,John went on a mission that was supposed to take 5 days.  Instead it took 60% longer.  He then had to go on a second mission which took 3 days.  How long was he on missions?,"- John went on a mission that was supposed to take 5 days.
+- Instead the mission took 60% longer.
+- John then had to go on a second mission which took 3 days.
+Question: How long was John on missions?",,,,,,,,,,,,,
+a3155680f46,chunked,REWRITTEN,James builds a 20 story building.  The first 10 stories are each 12 feet tall each.  The remaining floors are each 3 feet taller.  How tall is the building?,"- James builds a 20 story building.
+- The first 10 stories are each 12 feet tall.
+- The remaining floors are each 3 feet taller.
+Question: How tall is the building?",,,,,,,,,,,,,
+a0aac83082b,plain,REWRITTEN,"Cora started reading a 158-page book on Monday, and she decided she wanted to finish it by the end of Friday. She read 23 pages on Monday, 38 pages on Tuesday, and 61 pages on Wednesday. She knows she will have time to read twice as much on Friday as she does on Thursday. How many pages does she have to read on Thursday to finish the book in time?","Cora started reading a 158-page book on Monday. She decided she wanted to finish it by the end of Friday. She read 23 pages on Monday, 38 pages on Tuesday, and 61 pages on Wednesday. She knows she will have time to read twice as much on Friday as she does on Thursday. How many pages does she have to read on Thursday to finish the book in time?",,,,,,,,,,,,,
+a0d38195ae5,chunked,REWRITTEN,John went on a mission that was supposed to take 5 days.  Instead it took 60% longer.  He then had to go on a second mission which took 3 days.  How long was he on missions?,"- John went on a mission that was supposed to take 5 days.
+- Instead it took 60% longer.
+- He then had to go on a second mission which took 3 days.
+Question: How long was he on missions?",,,,,,,,,,,,,
+ab0428df30c,plain,REWRITTEN,"Karl, Ryan, and Ben are fond of collecting stickers. Karl has 25 stickers. Ryan has 20 more stickers than Karl. Ben has 10 fewer stickers than Ryan. They placed all their stickers in one sticker book. How many stickers did they place altogether?","Karl, Ryan, and Ben like collecting stickers. Karl has 25 stickers. Ryan has 20 more stickers than Karl. Ben has 10 fewer stickers than Ryan. Karl, Ryan, and Ben put all their stickers in one sticker book. How many stickers did they put in the sticker book altogether?",,,,,,,,,,,,,
+a40a8a61316,naive,,"Lisa has 18 more dresses than Ana. If the number of their dresses combined is 48, how many dresses does Ana have?","Lisa and Ana each have some dresses.
+
+Here are the facts:
+- Lisa has 18 more dresses than Ana.
+- Lisa and Ana have 48 dresses together.
+
+Question: How many dresses does Ana have?",,,,,,,,,,,,,
+a8ed0f395be,plain,REWRITTEN,John went on a mission that was supposed to take 5 days.  Instead it took 60% longer.  He then had to go on a second mission which took 3 days.  How long was he on missions?,"John went on a mission. The mission was supposed to take 5 days. Instead, the mission took 60% longer. Then John had to go on a second mission. The second mission took 3 days. How long was John on missions?",,,,,,,,,,,,,
+a9c38ce60bf,chunked,REWRITTEN,"Lisa has 18 more dresses than Ana. If the number of their dresses combined is 48, how many dresses does Ana have?","- Lisa has 18 more dresses than Ana.
+- If the number of their dresses combined is 48.
+Question: how many dresses does Ana have?",,,,,,,,,,,,,
+ad5dee0f7ad,naive,,"Lisa has 18 more dresses than Ana. If the number of their dresses combined is 48, how many dresses does Ana have?","Here's a simpler version, broken into small steps:
+
+**Lisa and Ana's Dresses**
+
+1. Ana has some dresses.
+2. Lisa has **18 more** dresses than Ana.
+3. Together, Lisa and Ana have **48** dresses.
+
+**Question:** How many dresses does **Ana** have?
+
+---
+
+**Helpful hint (optional):**
+- Lisa's dresses = Ana's dresses + 18
+- Lisa's dresses + Ana's dresses = 48
+
+Tips for presenting it: use a clear, sans-serif font, leave extra space between lines, and let the student check off each line as they read it.",,,,,,,,,,,,,
+aec9fcb57b1,naive,,"Carly is making a beaded corset. She's going to add 50 rows of purple beads with 20 beads per row, 40 rows of blue beads with 18 beads per row, and 80 gold beads. If beads cost $1 per 10 beads, how much do all the beads she bought cost?","Here's a rewritten version that's easier to follow:
+
+**Carly's Beaded Corset**
+
+Carly is decorating a corset with beads.
+
+**Purple beads:**
+- 50 rows
+- 20 beads in each row
+
+**Blue beads:**
+- 40 rows
+- 18 beads in each row
+
+**Gold beads:**
+- 80 beads
+
+**Price:** Every **10 beads** cost **$1**.
+
+**Question:** How much do all of the beads cost?
+
+---
+
+**Steps to try:**
+1. Find the number of purple beads.
+2. Find the number of blue beads.
+3. Add purple, blue, and gold beads to get the total number of beads.
+4. Figure out how many groups of 10 beads there are. Each group costs $1.",,,,,,,,,,,,,
+a4080e9476a,plain,REWRITTEN,James builds a 20 story building.  The first 10 stories are each 12 feet tall each.  The remaining floors are each 3 feet taller.  How tall is the building?,James builds a building with 20 stories. The first 10 stories are each 12 feet tall. The remaining floors are each 3 feet taller. How tall is the building?,,,,,,,,,,,,,
+a175d479f82,naive,,John went on a mission that was supposed to take 5 days.  Instead it took 60% longer.  He then had to go on a second mission which took 3 days.  How long was he on missions?,"John went on a mission.
+- The mission was supposed to take 5 days.
+- It took 60% longer than planned.
+
+Then John went on a second mission.
+- The second mission took 3 days.
+
+Question: How many days was John on missions in total?",,,,,,,,,,,,,
+a8fea4368bc,naive,,"Cora started reading a 158-page book on Monday, and she decided she wanted to finish it by the end of Friday. She read 23 pages on Monday, 38 pages on Tuesday, and 61 pages on Wednesday. She knows she will have time to read twice as much on Friday as she does on Thursday. How many pages does she have to read on Thursday to finish the book in time?","Here's a rewritten version with short, clear chunks:
+
+**Cora's Book**
+
+Cora has a book with **158 pages**.
+
+She wants to finish it by the end of **Friday**.
+
+**What she has read so far:**
+- Monday: **23** pages
+- Tuesday: **38** pages
+- Wednesday: **61** pages
+
+**What is left:**
+- Thursday: ? pages
+- Friday: She will read **2 times** as many pages as on Thursday.
+
+**Question:** How many pages does Cora need to read on **Thursday** to finish the book?
+
+---
+
+**Steps to try:**
+1. Add up the pages she read Monday, Tuesday, and Wednesday.
+2. Find how many pages are still left.
+3. Split the pages left between Thursday and Friday. Remember: Friday is double Thursday.",,,,,,,,,,,,,
+a3b77749975,chunked,REWRITTEN,"Vikki worked 42 hours in one week. Her hourly pay rate is $10. From her weekly earnings, 20% is deducted as tax, 5% is deducted as insurance cover, and $5 is deducted for union dues. How much money, in dollars, does Vikki take home after deductions?","- Vikki worked 42 hours in one week.
+- Her hourly pay rate is $10.
+- From her weekly earnings, 20% is deducted as tax.
+- From her weekly earnings, 5% is deducted as insurance cover.
+- $5 is deducted for union dues.
+Question: How much money, in dollars, does Vikki take home after deductions?",,,,,,,,,,,,,
+ab076b106fd,naive,,"Mary and her two friends came up with the idea of collecting marbles each day for their play on weekends. From Monday to Friday, Mary collected twice as many red marbles as Jenny and half the number of blue marbles collected by Anie, who collected 20 more red marbles than Mary and twice the number of blue marbles Jenny collected. If Jenny collected 30 red marbles and 25 blue marbles, what's the total number of blue marbles collected by the friends together?","Mary and her two friends, Jenny and Anie, collect marbles for play on weekends.
+They collect marbles from Monday to Friday.
+
+Jenny:
+- Red marbles: 30
+- Blue marbles: 25
+
+Mary:
+- Red marbles: 2 times as many as Jenny
+- Blue marbles: half as many as Anie
+
+Anie:
+- Red marbles: 20 more than Mary
+- Blue marbles: 2 times as many as Jenny
+
+Question: How many blue marbles did the three friends collect together?",,,,,,,,,,,,,
+acf49ad96bf,chunked,REWRITTEN,"Carly is making a beaded corset. She's going to add 50 rows of purple beads with 20 beads per row, 40 rows of blue beads with 18 beads per row, and 80 gold beads. If beads cost $1 per 10 beads, how much do all the beads she bought cost?","- Carly is making a beaded corset.
+- Carly is going to add 50 rows of purple beads with 20 beads per row.
+- Carly is going to add 40 rows of blue beads with 18 beads per row.
+- Carly is going to add 80 gold beads.
+- Beads cost $1 per 10 beads.
+Question: How much do all the beads Carly bought cost?",,,,,,,,,,,,,
+a6b8ebed8b6,plain,REWRITTEN,"As a freelancer, Katherine takes 20 hours to develop a website for her clients. Her junior, Naomi, takes 1/4 times more time to complete creating a similar website. If many clients required her to build their websites in a particular year, and she gave her junior 30 websites to develop, calculate the total number of hours Katherine's junior took to create the 30 websites.","As a freelancer, Katherine takes 20 hours to build a website for her clients. Her junior, Naomi, takes 1/4 times more time to make a similar website. In a particular year, many clients asked Katherine to build their websites. She gave her junior 30 websites to build. Calculate the total number of hours Katherine's junior took to create the 30 websites.",,,,,,,,,,,,,
+a024d18d66f,plain,REWRITTEN,"Mary and her two friends came up with the idea of collecting marbles each day for their play on weekends. From Monday to Friday, Mary collected twice as many red marbles as Jenny and half the number of blue marbles collected by Anie, who collected 20 more red marbles than Mary and twice the number of blue marbles Jenny collected. If Jenny collected 30 red marbles and 25 blue marbles, what's the total number of blue marbles collected by the friends together?","Mary and her two friends came up with the idea of collecting marbles each day for their play on weekends. From Monday to Friday, Mary collected twice as many red marbles as Jenny. Mary also collected half the number of blue marbles that Anie collected. Anie collected 20 more red marbles than Mary and twice the number of blue marbles that Jenny collected. If Jenny collected 30 red marbles and 25 blue marbles, what is the total number of blue marbles the friends collected together?",,,,,,,,,,,,,
+a1d3575d7c4,plain,REWRITTEN,John went on a mission that was supposed to take 5 days.  Instead it took 60% longer.  He then had to go on a second mission which took 3 days.  How long was he on missions?,"John went on a mission that was supposed to take 5 days. Instead, it took 60% longer. He then had to go on a second mission, which took 3 days. How long was he on missions?",,,,,,,,,,,,,
+ae0120d86ba,chunked,REWRITTEN,"Carly is making a beaded corset. She's going to add 50 rows of purple beads with 20 beads per row, 40 rows of blue beads with 18 beads per row, and 80 gold beads. If beads cost $1 per 10 beads, how much do all the beads she bought cost?","- Carly is making a beaded corset.
+- She's going to add 50 rows of purple beads with 20 beads per row.
+- She's going to add 40 rows of blue beads with 18 beads per row.
+- She's going to add 80 gold beads.
+- Beads cost $1 per 10 beads.
+Question: How much do all the beads she bought cost?",,,,,,,,,,,,,
+aa609e7fe44,naive,,"Karl, Ryan, and Ben are fond of collecting stickers. Karl has 25 stickers. Ryan has 20 more stickers than Karl. Ben has 10 fewer stickers than Ryan. They placed all their stickers in one sticker book. How many stickers did they place altogether?","Karl, Ryan, and Ben like to collect stickers.
+
+Here is how many stickers each person has:
+- Karl has 25 stickers.
+- Ryan has 20 more stickers than Karl.
+- Ben has 10 fewer stickers than Ryan.
+
+Then they put all of their stickers into one sticker book.
+
+Question: How many stickers did they put in the sticker book altogether?",,,,,,,,,,,,,
+ae6808d9076,plain,REWRITTEN,"Out of the 200 cookies that Javier baked from the recipe he learned online, his wife took 30%, and his daughter took 40 from the remaining cookies. If he ate half of the remaining cookies, how many cookies did they not eat?","Javier baked 200 cookies from a recipe he learned online. His wife took 30% of the cookies. His daughter took 40 from the remaining cookies. If he ate half of the remaining cookies, how many cookies did they not eat?",,,,,,,,,,,,,
+a70d86fe508,chunked,REWRITTEN,"Mary and her two friends came up with the idea of collecting marbles each day for their play on weekends. From Monday to Friday, Mary collected twice as many red marbles as Jenny and half the number of blue marbles collected by Anie, who collected 20 more red marbles than Mary and twice the number of blue marbles Jenny collected. If Jenny collected 30 red marbles and 25 blue marbles, what's the total number of blue marbles collected by the friends together?","- Mary and her two friends came up with the idea of collecting marbles each day for their play on weekends.
+- From Monday to Friday, Mary collected twice as many red marbles as Jenny.
+- From Monday to Friday, Mary collected half the number of blue marbles collected by Anie.
+- Anie collected 20 more red marbles than Mary.
+- Anie collected twice the number of blue marbles Jenny collected.
+- If Jenny collected 30 red marbles and 25 blue marbles.
+Question: What's the total number of blue marbles collected by the friends together?",,,,,,,,,,,,,
+a83cb3c2410,plain,REWRITTEN,"Carly is making a beaded corset. She's going to add 50 rows of purple beads with 20 beads per row, 40 rows of blue beads with 18 beads per row, and 80 gold beads. If beads cost $1 per 10 beads, how much do all the beads she bought cost?","Carly is making a beaded corset. She will add 50 rows of purple beads with 20 beads per row, 40 rows of blue beads with 18 beads per row, and 80 gold beads. If beads cost $1 per 10 beads, how much do all the beads she bought cost?",,,,,,,,,,,,,
+aaee7a94013,chunked,REWRITTEN,"Out of the 200 cookies that Javier baked from the recipe he learned online, his wife took 30%, and his daughter took 40 from the remaining cookies. If he ate half of the remaining cookies, how many cookies did they not eat?","- Javier baked 200 cookies from the recipe he learned online.
+- Out of the 200 cookies, Javier's wife took 30%.
+- Javier's daughter took 40 from the remaining cookies.
+- Javier ate half of the remaining cookies.
+Question: How many cookies did they not eat?",,,,,,,,,,,,,
+a0999550f32,chunked,REWRITTEN,"Cora started reading a 158-page book on Monday, and she decided she wanted to finish it by the end of Friday. She read 23 pages on Monday, 38 pages on Tuesday, and 61 pages on Wednesday. She knows she will have time to read twice as much on Friday as she does on Thursday. How many pages does she have to read on Thursday to finish the book in time?","- Cora started reading a 158-page book on Monday.
+- Cora decided she wanted to finish the book by the end of Friday.
+- Cora read 23 pages on Monday.
+- Cora read 38 pages on Tuesday.
+- Cora read 61 pages on Wednesday.
+- Cora knows she will have time to read twice as much on Friday as she does on Thursday.
+Question: How many pages does Cora have to read on Thursday to finish the book in time?",,,,,,,,,,,,,
+aed9d7da959,plain,REWRITTEN,"Mary and her two friends came up with the idea of collecting marbles each day for their play on weekends. From Monday to Friday, Mary collected twice as many red marbles as Jenny and half the number of blue marbles collected by Anie, who collected 20 more red marbles than Mary and twice the number of blue marbles Jenny collected. If Jenny collected 30 red marbles and 25 blue marbles, what's the total number of blue marbles collected by the friends together?","Mary and her two friends had the idea to collect marbles each day for their play on weekends. From Monday to Friday, Mary collected twice as many red marbles as Jenny. Mary collected half the number of blue marbles collected by Anie. Anie collected 20 more red marbles than Mary. Anie collected twice the number of blue marbles that Jenny collected. Jenny collected 30 red marbles and 25 blue marbles. What is the total number of blue marbles collected by the friends together?",,,,,,,,,,,,,
+a3a2da9d171,chunked,REWRITTEN,"Mary and her two friends came up with the idea of collecting marbles each day for their play on weekends. From Monday to Friday, Mary collected twice as many red marbles as Jenny and half the number of blue marbles collected by Anie, who collected 20 more red marbles than Mary and twice the number of blue marbles Jenny collected. If Jenny collected 30 red marbles and 25 blue marbles, what's the total number of blue marbles collected by the friends together?","- Mary and her two friends came up with the idea of collecting marbles each day for their play on weekends.
+- From Monday to Friday, Mary collected twice as many red marbles as Jenny.
+- Mary collected half the number of blue marbles collected by Anie.
+- Anie collected 20 more red marbles than Mary.
+- Anie collected twice the number of blue marbles Jenny collected.
+- Jenny collected 30 red marbles.
+- Jenny collected 25 blue marbles.
+Question: What's the total number of blue marbles collected by the friends together?",,,,,,,,,,,,,
+ab88368bd93,naive,,John went on a mission that was supposed to take 5 days.  Instead it took 60% longer.  He then had to go on a second mission which took 3 days.  How long was he on missions?,"Here's a simpler version:
+
+**John's Missions**
+
+**Mission 1:**
+- It was planned to take **5 days**.
+- It actually took **60% longer** than planned.
+
+**Mission 2:**
+- It took **3 days**.
+
+**Question:** How many days was John on missions in total?
+
+---
+
+**Steps to try:**
+1. Find 60% of 5 days.
+2. Add that to 5 days. This is how long Mission 1 really took.
+3. Add the 3 days from Mission 2.",,,,,,,,,,,,,
+ad00606486e,plain,REWRITTEN,"Carly is making a beaded corset. She's going to add 50 rows of purple beads with 20 beads per row, 40 rows of blue beads with 18 beads per row, and 80 gold beads. If beads cost $1 per 10 beads, how much do all the beads she bought cost?",Carly is making a beaded corset. She is going to add 50 rows of purple beads with 20 beads per row. She is going to add 40 rows of blue beads with 18 beads per row. She is going to add 80 gold beads. Beads cost $1 per 10 beads. How much do all the beads she bought cost?,,,,,,,,,,,,,
+ad3422f870a,plain,NO_REWRITE_NEEDED,"Lisa has 18 more dresses than Ana. If the number of their dresses combined is 48, how many dresses does Ana have?","Lisa has 18 more dresses than Ana. If the number of their dresses combined is 48, how many dresses does Ana have?",,,,,,,,,,,,,
+a47e9b94976,plain,REWRITTEN,"As a freelancer, Katherine takes 20 hours to develop a website for her clients. Her junior, Naomi, takes 1/4 times more time to complete creating a similar website. If many clients required her to build their websites in a particular year, and she gave her junior 30 websites to develop, calculate the total number of hours Katherine's junior took to create the 30 websites.","As a freelancer, Katherine takes 20 hours to develop a website for her clients. Her junior, Naomi, takes 1/4 times more time to create a similar website. If many clients required her to build their websites in a particular year, and she gave her junior 30 websites to develop, calculate the total number of hours Katherine's junior took to create the 30 websites.",,,,,,,,,,,,,
+abc28ddec57,plain,NO_REWRITE_NEEDED,"Vikki worked 42 hours in one week. Her hourly pay rate is $10. From her weekly earnings, 20% is deducted as tax, 5% is deducted as insurance cover, and $5 is deducted for union dues. How much money, in dollars, does Vikki take home after deductions?","Vikki worked 42 hours in one week. Her hourly pay rate is $10. From her weekly earnings, 20% is deducted as tax, 5% is deducted as insurance cover, and $5 is deducted for union dues. How much money, in dollars, does Vikki take home after deductions?",,,,,,,,,,,,,
+a40bdaa190d,plain,REWRITTEN,"As a freelancer, Katherine takes 20 hours to develop a website for her clients. Her junior, Naomi, takes 1/4 times more time to complete creating a similar website. If many clients required her to build their websites in a particular year, and she gave her junior 30 websites to develop, calculate the total number of hours Katherine's junior took to create the 30 websites.","Katherine is a freelancer. Katherine takes 20 hours to build a website for her clients. Naomi is Katherine's junior. Naomi takes 1/4 times more time to build a similar website. In a particular year, many clients wanted Katherine to build their websites. Katherine gave Naomi 30 websites to build. Calculate the total number of hours Naomi took to build the 30 websites.",,,,,,,,,,,,,
+af25b1f4c52,plain,NO_REWRITE_NEEDED,John went on a mission that was supposed to take 5 days.  Instead it took 60% longer.  He then had to go on a second mission which took 3 days.  How long was he on missions?,John went on a mission that was supposed to take 5 days.  Instead it took 60% longer.  He then had to go on a second mission which took 3 days.  How long was he on missions?,,,,,,,,,,,,,
+a597818db7d,plain,REWRITTEN,"Vikki worked 42 hours in one week. Her hourly pay rate is $10. From her weekly earnings, 20% is deducted as tax, 5% is deducted as insurance cover, and $5 is deducted for union dues. How much money, in dollars, does Vikki take home after deductions?","Vikki worked 42 hours in one week. Vikki is paid $10 per hour. From Vikki's weekly earnings, 20% is taken out for tax. From Vikki's weekly earnings, 5% is taken out for insurance. From Vikki's weekly earnings, $5 is taken out for union dues. How much money, in dollars, does Vikki take home after these amounts are taken out?",,,,,,,,,,,,,
+a22989cc80c,naive,,James builds a 20 story building.  The first 10 stories are each 12 feet tall each.  The remaining floors are each 3 feet taller.  How tall is the building?,"Here's a simpler version:
+
+**James's Building**
+
+James builds a building with **20 floors**.
+
+**Bottom part:**
+- The first **10** floors
+- Each one is **12 feet** tall
+
+**Top part:**
+- The other **10** floors
+- Each one is **3 feet taller** than a bottom floor
+
+**Question:** How tall is the whole building?
+
+---
+
+**Steps to try:**
+1. Find the height of the bottom 10 floors.
+2. Find how tall one top floor is.
+3. Find the height of the top 10 floors.
+4. Add the two parts together.
+
+A quick sketch of a tall building split into a bottom half and a top half can really help here.",,,,,,,,,,,,,
+ab918d1a57b,chunked,REWRITTEN,"Karl, Ryan, and Ben are fond of collecting stickers. Karl has 25 stickers. Ryan has 20 more stickers than Karl. Ben has 10 fewer stickers than Ryan. They placed all their stickers in one sticker book. How many stickers did they place altogether?","- Karl, Ryan, and Ben are fond of collecting stickers.
+- Karl has 25 stickers.
+- Ryan has 20 more stickers than Karl.
+- Ben has 10 fewer stickers than Ryan.
+- Karl, Ryan, and Ben placed all their stickers in one sticker book.
+Question: How many stickers did Karl, Ryan, and Ben place altogether?",,,,,,,,,,,,,
+a2f562c18b2,naive,,"Out of the 200 cookies that Javier baked from the recipe he learned online, his wife took 30%, and his daughter took 40 from the remaining cookies. If he ate half of the remaining cookies, how many cookies did they not eat?","Here's a rewritten version in small steps:
+
+**Javier's Cookies**
+
+1. Javier baked **200** cookies.
+2. His wife took **30%** of the cookies.
+3. Then his daughter took **40** of the cookies that were left.
+4. Then Javier ate **half** of the cookies that were left.
+
+**Question:** How many cookies were **not** eaten?
+
+---
+
+**Steps to try:**
+1. Find 30% of 200. Subtract it from 200.
+2. Subtract the 40 cookies his daughter took.
+3. Find half of what is left. That is how many Javier ate.
+4. The cookies still left at the end are the ones not eaten.
+
+Tip: Have the student write the number of cookies left after each step so they can keep track.",,,,,,,,,,,,,
+a0b93bad8c5,naive,,"Cora started reading a 158-page book on Monday, and she decided she wanted to finish it by the end of Friday. She read 23 pages on Monday, 38 pages on Tuesday, and 61 pages on Wednesday. She knows she will have time to read twice as much on Friday as she does on Thursday. How many pages does she have to read on Thursday to finish the book in time?","Cora has a book with 158 pages.
+She wants to finish it by the end of Friday.
+
+Here is what she read:
+- Monday: 23 pages
+- Tuesday: 38 pages
+- Wednesday: 61 pages
+
+Here is what you need to know about the rest of the week:
+- On Friday, she will have time to read 2 times as many pages as on Thursday.
+
+Question: How many pages does Cora have to read on Thursday to finish the book in time?",,,,,,,,,,,,,
+a5e88c63218,chunked,REWRITTEN,"Vikki worked 42 hours in one week. Her hourly pay rate is $10. From her weekly earnings, 20% is deducted as tax, 5% is deducted as insurance cover, and $5 is deducted for union dues. How much money, in dollars, does Vikki take home after deductions?","- Vikki worked 42 hours in one week.
+- Vikki's hourly pay rate is $10.
+- From Vikki's weekly earnings, 20% is deducted as tax.
+- From Vikki's weekly earnings, 5% is deducted as insurance cover.
+- From Vikki's weekly earnings, $5 is deducted for union dues.
+Question: How much money, in dollars, does Vikki take home after deductions?",,,,,,,,,,,,,
+ade58418190,chunked,REWRITTEN,"Out of the 200 cookies that Javier baked from the recipe he learned online, his wife took 30%, and his daughter took 40 from the remaining cookies. If he ate half of the remaining cookies, how many cookies did they not eat?","- Out of the 200 cookies that Javier baked from the recipe he learned online, his wife took 30%.
+- His daughter took 40 from the remaining cookies.
+- If he ate half of the remaining cookies.
+Question: How many cookies did they not eat?",,,,,,,,,,,,,
+abe7212454a,plain,REWRITTEN,"Out of the 200 cookies that Javier baked from the recipe he learned online, his wife took 30%, and his daughter took 40 from the remaining cookies. If he ate half of the remaining cookies, how many cookies did they not eat?","Javier baked 200 cookies from a recipe he learned online. His wife took 30% of the cookies. His daughter took 40 from the remaining cookies. If he ate half of the remaining cookies, how many cookies did they not eat?",,,,,,,,,,,,,
+a33f3cd6393,plain,REWRITTEN,"Vikki worked 42 hours in one week. Her hourly pay rate is $10. From her weekly earnings, 20% is deducted as tax, 5% is deducted as insurance cover, and $5 is deducted for union dues. How much money, in dollars, does Vikki take home after deductions?","Vikki worked 42 hours in one week. Her hourly pay rate is $10. From her weekly earnings, 20% is deducted as tax, 5% is deducted as insurance cover, and $5 is deducted for union dues. How much money, in dollars, does Vikki take home after these deductions?",,,,,,,,,,,,,
