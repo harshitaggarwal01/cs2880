@@ -8,6 +8,7 @@ Harvard COMPSCI 2880 (AI for Social Impact), Fall 2026.
 | If you want… | Read |
 |---|---|
 | Latest check-in (Nov 3): progress and first real results | [`docs/checkin_1.md`](docs/checkin_1.md) · slides [`docs/SafeAdapt-Math_checkin1.pptx`](docs/SafeAdapt-Math_checkin1.pptx) |
+| Structure, methods, code map and future plans | [`docs/PROJECT_OVERVIEW.md`](docs/PROJECT_OVERVIEW.md) |
 | The plan in one page | [`docs/one_page_brief.md`](docs/one_page_brief.md) |
 | Real LLM outputs to show the professor | [`docs/professor_examples.md`](docs/professor_examples.md) |
 | The full project plan | [`docs/dossier.md`](docs/dossier.md) |
