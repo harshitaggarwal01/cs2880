@@ -91,7 +91,14 @@ Resume a partial run with `python src/run_phase1.py --config config.anthropic.ya
 
 ## Open decisions
 - [ ] Which rewriters go into the main run (Haiku, Sonnet, Qwen, and GPT/Gemini if keys arrive)? Full or 50% + PPI labelling for the open rewriter? (Task A2; code done, `config.matrix.yaml` includes Qwen)
-- [ ] Approve the dev-pilot matrix run (~$2.3) once `ANTHROPIC_API_KEY` and `OPENROUTER_API_KEY` are in the environment; set a cost cap for the matrix main run (~$40–45)
+- [x] Dev-pilot matrix run (~$2.3): **approved in session on 2026-11-11, to run once `ANTHROPIC_API_KEY` and `OPENROUTER_API_KEY` are in the environment** (both unset on Nov 11). Commands:
+  ```bash
+  python src/run_phase1.py --config config.matrix.yaml --from pilot --until pilot          # 3 rewriters x 2 styles x 10 dev
+  python src/verify.py data/outputs/matrix-v1/pilot_generations.jsonl --config config.matrix.yaml --all-critics
+  python src/ledger.py --run data/outputs/matrix-v1 --config config.matrix.yaml           # report actual cost
+  ```
+  Then check per Qwen call that `think_chars` is 0 and `served_by` is a no-retention provider. Stop and report if the ledger passes $3.
+- [ ] Set a cost cap for the matrix main run (~$40–45)
 - [ ] Add `ext_gsmic` to `partitions` in the config before main generation? (adds ~48 annotation items; supplies relevance-leakage positives)
 - [ ] Choose λ, μ for the cascade objective, or report the frontier only
 - [ ] Which external tools pass the ToS check for Phase 3A
