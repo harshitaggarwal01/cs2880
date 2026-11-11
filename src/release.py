@@ -32,7 +32,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from common import FROZEN, PROMPTS, ROOT, read_jsonl, write_jsonl
+from common import FROZEN, PROMPTS, ROOT, primary_verify_files, read_jsonl, write_jsonl
 
 GEN_FILES = ["generations.jsonl", "ablation_generations.jsonl", "baseline.jsonl", "repairs.jsonl"]
 ASDIV_ATTRIBUTION = "ASDiv, Miao, Liang & Su (ACL 2020), CC BY-NC 4.0"
@@ -166,7 +166,7 @@ def build_adaptations(run_dir: Path, source_ds: dict[str, str], excluded: dict) 
 def build_verifier(run_dir: Path, keep_ids: set[str], excluded: dict) -> list[dict]:
     """Verify rows for kept output_ids; one row per (output_id, layers) so derived subsets are not duplicated."""
     rows, seen = [], set()
-    for path in sorted(run_dir.glob("*.verify-*.jsonl")):
+    for path in primary_verify_files(run_dir):
         for v in read_jsonl(path):
             if v["output_id"] not in keep_ids:
                 count(excluded["verifier"], "output_not_released")

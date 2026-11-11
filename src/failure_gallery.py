@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from common import FROZEN, read_jsonl
+from common import FROZEN, primary_verify_files, read_jsonl
 from evaluate import derive
 
 GEN_FILES = ["generations.jsonl", "ablation_generations.jsonl", "baseline.jsonl", "repairs.jsonl"]
@@ -60,7 +60,7 @@ def load_generations(run_dir: Path) -> dict[str, dict]:
 def load_verdicts(run_dir: Path) -> dict[str, dict]:
     """output_id -> verifier row; the row with the most layers wins (full det+critic+program over derived subsets)."""
     out: dict[str, dict] = {}
-    for path in sorted(run_dir.glob("*.verify-*.jsonl")):
+    for path in primary_verify_files(run_dir):
         for v in read_jsonl(path):
             old = out.get(v["output_id"])
             if old is None or len(v.get("layers") or ()) > len(old.get("layers") or ()):

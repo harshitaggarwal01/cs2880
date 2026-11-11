@@ -77,7 +77,7 @@ Rules that protect the result (also in README): never resample `data/frozen/`; k
 
 | Risk | Mitigation |
 |---|---|
-| Same-family generators and critic | Disclosed; human labels are ground truth; cross-family rerun when keys arrive |
+| Same-family generators and critic | Disclosed; human labels are ground truth. With `config.matrix.yaml` (Qwen rewriter and critics alongside Claude) the self-preference effect is **measured** (`critic_matrix.py`, `self_preference.csv`); still disclosed for `anthropic-v1` |
 | Few unsafe items under constrained prompts (floor effect) | Realistic condition and external sets supply positives; verifier metrics reported per condition |
 | Annotation overrun | 30% double annotation; scope-down order in ROADMAP |
 | Model drift (unpinned IDs) | `returned_model` logged per call; all generation within one week |

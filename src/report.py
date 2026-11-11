@@ -25,7 +25,7 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
 import evaluate as ev  # noqa: E402
-from common import ROOT, read_jsonl  # noqa: E402
+from common import ROOT, primary_verify_files, read_jsonl  # noqa: E402
 
 # Okabe-Ito colour-blind-safe palette
 PAL = ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#D55E00", "#56B4E9", "#F0E442", "#000000"]
@@ -57,7 +57,7 @@ def load_generations(run_dir: Path) -> pd.DataFrame:
 def load_verify(run_dir: Path) -> dict[str, list[dict]]:
     """Verification files keyed by layer set (e.g. 'critic+det+program'); the file with the most layers sorts first."""
     out: dict[str, list[dict]] = {}
-    for path in sorted(run_dir.glob("*.verify-*.jsonl")):
+    for path in primary_verify_files(run_dir):
         rows = read_jsonl(path)
         if rows:
             label = "+".join(rows[0].get("layers") or [path.stem.split(".verify-")[-1]])
@@ -208,6 +208,28 @@ def fig_verifier(abl: pd.DataFrame, path: Path) -> Path | None:
     axes[0][0].set_ylabel("recall on human-UNSAFE")
     fig.suptitle("circle: flag REJECT only; square: flag REVIEW or REJECT; bars: 95% CI; dotted: 0.90 target", fontsize=8, y=1.0)
     axes[0][-1].legend(frameon=False, fontsize=8, loc="lower right")
+    return _save(fig, path)
+
+
+def fig_critics(tab: pd.DataFrame, path: Path) -> Path | None:
+    """Recall on human-UNSAFE vs review rate, one point per critic / ensemble (critic verdict alone)."""
+    t = tab[(tab.get("basis") == "critic_verdict")] if "basis" in tab else tab.iloc[0:0]
+    if t.empty:
+        return None
+    fig, ax = plt.subplots(figsize=(5.2, 4))
+    for k, (_, r) in enumerate(t.iterrows()):
+        ax.errorbar(r["review_rate"], r["recall_unsafe"],
+                    yerr=[[max(0, r["recall_unsafe"] - r["recall_lo"])], [max(0, r["recall_hi"] - r["recall_unsafe"])]],
+                    fmt="o" if r["kind"] == "critic" else "s", color=PAL[k % len(PAL)], capsize=2,
+                    label=f"{r['critic']} (${r['usd_per_item']:.4f}/item)")
+    ax.axhline(0.9, color="grey", ls=":", lw=1)
+    ax.set_xlabel("review rate (critic not SAFE)")
+    ax.set_ylabel("recall on human-UNSAFE")
+    ax.set_xlim(0, 1.02)
+    ax.set_ylim(0, 1.05)
+    _style(ax)
+    ax.legend(frameon=False, fontsize=7, loc="lower right")
+    fig.suptitle("circle: single critic; square: ensemble; bars: 95% source-clustered CI", fontsize=8, y=1.0)
     return _save(fig, path)
 
 
@@ -420,6 +442,27 @@ def labelled_sections(doc: Doc, run_dir: Path, labels: Path, key: Path | None, f
            if lg["penalized"] else "ordinary logit; standard errors clustered by source")
     doc.p(f"**Exploratory, not one of the prespecified tests.** n = {lg['n']}; {how}.")
     doc.table(lg["table"], "_Model not estimable (too few rows or only one outcome class)._")
+
+    cm_path = run_dir / "analysis" / "critic_matrix.csv"
+    if cm_path.exists():  # written by src/critic_matrix.py (matrix configs only)
+        cm = pd.read_csv(cm_path)
+        ens_path = run_dir / "analysis" / "critic_ensembles.csv"
+        ens = pd.read_csv(ens_path) if ens_path.exists() else pd.DataFrame()
+        crit = pd.concat([cm[cm["kind"] == "critic"], ens], ignore_index=True)
+        doc.h("Critic matrix (additional analysis)")
+        doc.p("**Not part of the prespecified analysis**, which uses the primary critic only. Every critic is scored "
+              "against the same adjudicated labels; positive class = human UNSAFE; source-clustered bootstrap CIs.")
+        doc.table(crit[[c for c in ("kind", "critic", "family", "basis", "n", "recall_unsafe", "recall_lo", "recall_hi",
+                                    "precision", "review_rate", "usd_per_item") if c in crit]])
+        doc.image(fig_critics(crit, fig_dir / "fig_critics.png"), "Recall versus review rate per critic and ensemble")
+        sp_path = run_dir / "analysis" / "self_preference.csv"
+        if sp_path.exists():
+            sp = pd.read_csv(sp_path)
+            doc.h("Self-preference test", 3)
+            doc.p("Among human-UNSAFE items: logit of critic-says-SAFE on same_family with generator and critic fixed "
+                  "effects, SEs clustered by source (Panickssery et al. 2024). A positive coefficient means critics "
+                  "are more lenient on their own family's unsafe rewrites.")
+            doc.table(sp[sp["term"] == "same_family"])
 
     sheet_a, sheet_b = labels.parent / "sheet_A.csv", labels.parent / "sheet_B.csv"
     if sheet_a.exists() and sheet_b.exists():

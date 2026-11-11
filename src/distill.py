@@ -209,11 +209,11 @@ def synthetic(n_sources: int = 150, per_source: int = 5, seed: int = 0) -> tuple
 # ------------------------------------------------------------------ cli
 
 def _load_run(run: Path, labels: str | None, key: str | None) -> tuple[pd.DataFrame, list[dict], dict]:
-    from common import ROOT, read_jsonl
+    from common import ROOT, primary_verify_files, read_jsonl
     from evaluate import _primary, load_source_rows, prepare
     ann = ROOT / "data" / "annotations" / run.name
     df = _primary(prepare(labels or ann / "adjudicated.csv", key or ann / "KEY_DO_NOT_OPEN.csv"))
-    files = sorted(run.glob("*.verify-*.jsonl"))
+    files = primary_verify_files(run)
     if not files:
         raise SystemExit(f"no *.verify-*.jsonl in {run}")
     rows: dict[str, dict] = {}

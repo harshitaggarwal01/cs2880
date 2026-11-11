@@ -46,6 +46,7 @@ Detailed phase docs: [PHASE1.md](PHASE1.md) · [PHASE2.md](PHASE2.md) · [PHASE3
 | 2026-11-02 | Code all future methods now with synthetic tests (online bandit + off-policy evaluation, Stackelberg audit game, small open checker, Dawid–Skene critic ensemble, iterated red-team, weighted conformal, multilingual/science/hint-level adapters) | Owner request; they run on real data once labels exist (Task H) |
 | 2026-11-02 | Cheaper models implement, orchestration reviews; statistical modules (conformal/LTT, PPI, clustered logit) get a second review before being declared done | Cost control without lowering the bar on the parts a reviewer will check |
 | 2026-11-11 | **Verifier v1.1 tuned on dev only:** RELATIONS_DIFFER is logged, not a review reason, when answers MATCH; new values written only as a word one…ten → REVIEW `NUMBER_WORD_ADDED` (digits unchanged); synonym classes {altogether, in total, total, combined} and {remaining, the rest, left, other}; "each" presence only; human cue names; REVIEW `CHUNK_FORMAT` | 18/40 dev reviews came from relation-type labels while every answer matched; the only REJECT was a counting word. Tuned on the 10 dev problems only; study problems unopened. Dev pilot 17/22/1 → 29/11/0 (tuning-set numbers, not rates). `TARGET_WORDING_CHANGED` threshold unchanged |
+| 2026-11-11 | **Matrix design coded (Task A2):** `openai_compat` provider; `config.matrix.yaml` (run `matrix-v1`) with rewriters Haiku 5.5, Sonnet 5.5, Qwen3.8-27B and critics Opus 5.5 (primary), Sonnet 5.5, Qwen3.8-27B, Qwen3.5-9B; one Opus extractor; `verify.py --critic/--all-critics`; `critics` orchestrator step; `critic_matrix.py` (per-critic metrics, self-preference logit, ensembles, Pareto) | Qwen3.8-27B is Apache-2.0 open weights a school could self-host; OpenRouter requests are pinned to `data_collection: deny` + `zdr: true`. Primary critic is prespecified and alone drives repair and the Phase-1 analysis; other critics are an additional, labelled analysis. Which rewriters enter the main run, and full vs 50% + PPI labelling for Qwen, are still the owner's decision |
 
 ## Status (update at each gate)
 
@@ -63,6 +64,7 @@ Detailed phase docs: [PHASE1.md](PHASE1.md) · [PHASE2.md](PHASE2.md) · [PHASE3
 | Next-agent hand-off | done (Nov 2): `docs/plan/AGENT_PROMPT_NEXT.md` |
 | Data backup to Hugging Face | done (Nov 2): private dataset `harshitaggarwal/safeadapt-math`; re-run `make hf-backup` after each milestone |
 | Verifier tuning v1.1 (RELATIONS_DIFFER, number words, synonyms, cue names, chunk format) | done (Nov 11), dev only; pilot re-decided offline: 29 PASS / 11 REVIEW / 0 REJECT (v1.0: 17/22/1); 135 tests |
+| Open model + generator × critic matrix code (Task A2) | done (Nov 11): provider, matrix config, multi-critic verify, critic_matrix.py; mock end to end; 161 tests. Not run on real APIs (no keys in the environment); dev-pilot matrix run ≈ $2.3, ask first |
 | Rubric v1 frozen | pending calibration relabel by both teammates |
 | Main generation, annotation, adjudication | pending |
 | Phase 2–4 on real labels | pending |

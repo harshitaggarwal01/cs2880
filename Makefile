@@ -3,7 +3,7 @@ CFG ?= config.anthropic.yaml
 RUN ?= data/outputs/anthropic-v1
 MOCK ?=
 
-.PHONY: help setup test fetch calibrate pilot phase1 generate ablation baseline verify repair sheets ledger evaluate report variance conformal cascade ppi policy redteam demo release clean-mock
+.PHONY: help setup test fetch calibrate pilot phase1 generate ablation baseline verify repair sheets ledger evaluate report variance conformal cascade ppi policy redteam demo release clean-mock critic-matrix critics
 
 help: ## Show this list of targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-12s %s\n", $$1, $$2}'
@@ -85,3 +85,9 @@ hf-stage: ## Stage the Hugging Face backup in data/hf_staging (no network)
 
 hf-backup: ## Upload the backup to the private HF dataset repo (needs HF_TOKEN with write access)
 	$(PY) src/push_hf.py --push
+
+critic-matrix: ## Generator x critic matrix, self-preference test, critic ensembles (matrix config)
+	$(PY) src/critic_matrix.py --run $(RUN) --config $(CFG) --labels data/annotations/$(notdir $(RUN))/adjudicated.csv --key data/annotations/$(notdir $(RUN))/KEY_DO_NOT_OPEN.csv
+
+critics: ## Run every non-primary critic of a matrix config on generations (extra API cost; ask first)
+	$(PY) src/run_phase1.py --config $(CFG) --from critics --until critics $(MOCK)

@@ -7,11 +7,15 @@ Oct 2026 (see docs/model_selection.md):
   OpenAI  gpt-6-luna       Responses API, reasoning effort "none", temperature 0
   Google  gemini-3.8-flash thinking_level "low"; no temperature (ignored/removed on 3.8)
   Anthropic claude-sonnet-5-5 (critic) effort "low"; no temperature (400 on 5.x)
+  openai_compat  any OpenAI-compatible chat-completions host (OpenRouter, Together, DeepInfra, Groq, Fireworks,
+                 the HF router, local vLLM/Ollama). Spec fields: base_url, api_key_env (the NAME of the env var
+                 holding the key; never the key), model. Used for open-weight Qwen models.
 A "mock" provider is included so the whole pipeline can be dry-run without keys.
 """
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 from datetime import datetime, timezone
@@ -126,6 +130,111 @@ class AnthropicProvider(Provider):
                     stop_reason=r.stop_reason)
 
 
+THINK_RE = re.compile(r"<think>.*?</think>\s*", re.S)
+
+
+class OpenAICompatibleProvider(Provider):
+    """Chat-completions provider for OpenAI-compatible hosts.
+
+    JSON output: `settings.json_mode` = "json_schema" (default; response_format json_schema), "json_object"
+    (response_format json_object + the schema in the system prompt) or "prompt" (schema in the system prompt only).
+    If the host rejects json_schema (HTTP 400/404/422), the call falls back once to json_object; the mode actually
+    used is recorded as `json_mode`. Parsed output is validated against the schema (`schema_valid`).
+    `settings.extra_body` is passed through (e.g. OpenRouter provider routing {"data_collection": "deny",
+    "zdr": true}, or Qwen's {"chat_template_kwargs": {"enable_thinking": false}}). <think> blocks are stripped from
+    the returned text and their length logged. A host-reported cost (OpenRouter `usage.cost`) is kept as
+    `reported_cost_usd`, and the serving provider, when the host returns one, as `served_by`.
+    """
+    name = "openai_compat"
+    SAMPLING = ("temperature", "top_p", "seed", "presence_penalty", "frequency_penalty")
+
+    def __init__(self, model: str, settings: dict | None = None, base_url: str | None = None,
+                 api_key_env: str | None = None, client=None):
+        super().__init__(model, settings)
+        if not base_url:
+            raise ValueError("openai_compat needs base_url")
+        self.base_url, self.api_key_env, self._client = base_url, api_key_env, client
+
+    def client(self):
+        if self._client is None:
+            from openai import OpenAI
+            key = None
+            if self.api_key_env:
+                key = os.environ.get(self.api_key_env)
+                if not key:
+                    raise RuntimeError(f"environment variable {self.api_key_env} is not set")
+            self._client = OpenAI(base_url=self.base_url, api_key=key or "no-key-local", max_retries=0)
+        return self._client
+
+    @staticmethod
+    def _schema_note(schema: dict) -> str:
+        return ("\n\nReply with a single JSON object that matches this JSON schema, and nothing else:\n"
+                + json.dumps(schema))
+
+    def _request(self, system: str, user: str, json_schema: dict | None, mode: str):
+        kwargs = dict(model=self.model, max_tokens=self.settings.get("max_tokens", 2048))
+        kwargs.update({k: self.settings[k] for k in self.SAMPLING if k in self.settings})
+        if self.settings.get("extra_body"):
+            kwargs["extra_body"] = self.settings["extra_body"]
+        sys_text = system
+        if json_schema and mode == "json_schema":
+            kwargs["response_format"] = {"type": "json_schema",
+                                         "json_schema": {"name": "out", "schema": json_schema, "strict": False}}
+        elif json_schema:
+            sys_text = system + self._schema_note(json_schema)
+            if mode == "json_object":
+                kwargs["response_format"] = {"type": "json_object"}
+        kwargs["messages"] = [{"role": "system", "content": sys_text}, {"role": "user", "content": user}]
+        return self.client().chat.completions.create(**kwargs)
+
+    def _call(self, system, user, json_schema):
+        mode = self.settings.get("json_mode", "json_schema") if json_schema else "none"
+        try:
+            r = self._request(system, user, json_schema, mode)
+        except Exception as e:  # noqa: BLE001
+            if mode == "json_schema" and getattr(e, "status_code", None) in (400, 404, 422):
+                mode = "json_object"
+                r = self._request(system, user, json_schema, mode)
+            else:
+                raise
+        choice = r.choices[0]
+        text = choice.message.content or ""
+        think = THINK_RE.findall(text)
+        text = THINK_RE.sub("", text).strip()
+        u = r.usage
+        usage = {"input_tokens": getattr(u, "prompt_tokens", 0) or 0,
+                 "output_tokens": getattr(u, "completion_tokens", 0) or 0}  # completion tokens include reasoning
+        details = getattr(u, "completion_tokens_details", None)
+        if details is not None and getattr(details, "reasoning_tokens", None):
+            usage["reasoning_tokens_included"] = details.reasoning_tokens
+        extra = {**(getattr(r, "model_extra", None) or {})}
+        u_extra = getattr(u, "model_extra", None) or {}
+        out = dict(raw_output=text, returned_model=r.model, response_id=r.id, usage=usage,
+                   stop_reason=choice.finish_reason, json_mode=mode, think_chars=sum(map(len, think)),
+                   base_url=self.base_url)
+        if u_extra.get("cost") is not None:
+            out["reported_cost_usd"] = float(u_extra["cost"])
+        if extra.get("provider"):
+            out["served_by"] = extra["provider"]
+        if json_schema:
+            out["schema_valid"] = _schema_valid(text, json_schema)
+        return out
+
+
+def _schema_valid(text: str, schema: dict) -> bool:
+    obj = parse_json_block(text)
+    if obj is None:
+        return False
+    try:
+        import jsonschema
+        jsonschema.validate(obj, schema)
+        return True
+    except ImportError:  # pragma: no cover
+        return True
+    except Exception:  # noqa: BLE001 - jsonschema.ValidationError / SchemaError
+        return False
+
+
 class MockProvider(Provider):
     """Offline stand-in: returns the source problem unchanged (or a SAFE critic verdict)."""
     name = "mock"
@@ -149,11 +258,18 @@ class MockProvider(Provider):
                     stop_reason="end")
 
 
-PROVIDERS = {"openai": OpenAIProvider, "google": GoogleProvider, "anthropic": AnthropicProvider, "mock": MockProvider}
+PROVIDERS = {"openai": OpenAIProvider, "google": GoogleProvider, "anthropic": AnthropicProvider,
+             "openai_compat": OpenAICompatibleProvider, "mock": MockProvider}
 
 
 def make_provider(spec: dict) -> Provider:
-    return PROVIDERS[spec["provider"]](spec["model"], spec.get("settings", {}))
+    if "api_key" in spec:
+        raise ValueError("put the NAME of an environment variable in api_key_env; never a key in the config")
+    cls = PROVIDERS[spec["provider"]]
+    if cls is OpenAICompatibleProvider:
+        return cls(spec["model"], spec.get("settings", {}), base_url=spec.get("base_url"),
+                   api_key_env=spec.get("api_key_env"))
+    return cls(spec["model"], spec.get("settings", {}))
 
 
 def call_with_one_retry(provider: Provider, system: str, user: str, json_schema: dict | None = None) -> dict:

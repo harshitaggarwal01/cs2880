@@ -90,6 +90,19 @@ def verify(c: Ctx) -> None:
         c.sh("verify.py", str(gens), "--config", c.cfg_path, "--layers", "det")
 
 
+def critics(c: Ctx) -> str | None:
+    """Run the non-primary critics of a matrix config (`critics:` list). Decisions stay per critic; repair and the
+    prespecified analysis use the primary critic only."""
+    if not c.cfg.get("critics"):
+        return "single-critic config"
+    others = [k["name"] for k in c.cfg["critics"] if k["name"] != c.cfg["primary_critic"]]
+    if not others:
+        return "only the primary critic is configured"
+    for gens in _existing(c, "generations.jsonl", "ablation_generations.jsonl"):  # same files as the verify step
+        for name in others:
+            c.sh("verify.py", str(gens), "--config", c.cfg_path, "--critic", name)
+
+
 def repair(c: Ctx) -> None:
     for gens in _existing(c, "generations.jsonl", "ablation_generations.jsonl"):
         ver = gens.with_name(f"{gens.stem}.{FULL}.jsonl")
@@ -138,7 +151,7 @@ def report(c: Ctx) -> str | None:
 
 STEPS: list[tuple[str, Callable[[Ctx], str | None]]] = [
     ("fetch", fetch), ("pilot", pilot), ("generate", generate), ("ablation", ablation), ("baseline", baseline),
-    ("verify", verify), ("repair", repair), ("verify_repairs", verify_repairs), ("sheets", sheets),
+    ("verify", verify), ("critics", critics), ("repair", repair), ("verify_repairs", verify_repairs), ("sheets", sheets),
     ("ledger", ledger), ("evaluate", evaluate), ("report", report),
 ]
 

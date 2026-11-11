@@ -38,6 +38,12 @@ def append_jsonl(path: Path, row: dict) -> None:
 
 # ---------------------------------------------------------------- datasets
 
+def primary_verify_files(run_dir: Path, pattern: str = "*.verify-*.jsonl") -> list[Path]:
+    """Verify files of the primary critic only. Files of other named critics (`*.verify-critic@NAME-*.jsonl`, from
+    a matrix config) are excluded: they repeat the same output_ids and belong to critic_matrix.py and the ledger."""
+    return sorted(p for p in Path(run_dir).glob(pattern) if ".verify-critic@" not in p.name)
+
+
 def gsm8k_answer(solution: str) -> str:
     """Final answer after the '####' marker in a GSM8K solution."""
     return solution.split("####")[-1].strip().replace(",", "")

@@ -5,6 +5,11 @@
   python src/verify.py ... --layers det,critic     # ablations for RQ3
   python src/verify.py gens.jsonl --redecide gens.verify-critic-det-program.jsonl --out new.jsonl
                                                    # re-decide offline with current rules (no API)
+  python src/verify.py gens.jsonl --config config.matrix.yaml --critic qwen38   # one named critic
+  python src/verify.py gens.jsonl --config config.matrix.yaml --all-critics      # every critic, primary first
+Non-primary critics write <gens>.verify-critic@NAME-det-program.jsonl; extractions are cached, so an extra critic
+costs only its critic calls. Decisions stay per critic; only the primary critic's file feeds repair and the
+prespecified analysis.
 When a full (det,critic,program) verify file for the same generations already exists, --layers
 subsets are computed offline from it (no API calls); rows are tagged "derived_from".
 Baseline rows (generator "deterministic") get the deterministic layer only unless
@@ -40,7 +45,8 @@ from llm import call_with_one_retry, done_ids, fill, load_prompt, make_provider,
 
 VERIFIER_VERSION = "1.1"
 ALL_LAYERS = {"det", "critic", "program"}
-META_KEYS = ("returned_model", "response_id", "usage", "latency_s", "stop_reason")
+META_KEYS = ("returned_model", "response_id", "usage", "latency_s", "stop_reason", "reported_cost_usd", "served_by",
+             "json_mode")
 _CACHES: dict[Path, dict[str, dict]] = {}
 
 HARD_CODES = {"QTY_CHANGE", "QTY_OMIT", "QTY_ADD", "UNIT_CHANGE", "ENTITY_CHANGE", "REL_CHANGE", "COND_OMIT", "COND_ADD",
@@ -213,6 +219,8 @@ def main() -> None:
     ap.add_argument("--out", default=None)
     ap.add_argument("--redecide", default=None, metavar="VERIFY_JSONL",
                     help="re-decide an existing verify file offline with the current rules (no API); needs --out")
+    ap.add_argument("--critic", default=None, help="name of one critic from `critics:` (default: primary_critic)")
+    ap.add_argument("--all-critics", action="store_true", help="run every critic in `critics:`, primary first")
     ap.add_argument("--include-baseline-llm", action="store_true",
                     help="also run critic/program layers on deterministic-baseline rows (default: det only)")
     args = ap.parse_args()
@@ -231,26 +239,72 @@ def main() -> None:
     if gens and all(is_baseline(g) for g in gens) and not args.include_baseline_llm:
         layers &= {"det"}
     layers |= {"det"}  # the deterministic layer always runs
-    stem = gen_path.stem + ".verify-"
-    out_path = Path(args.out) if args.out else gen_path.with_name(stem + "-".join(sorted(layers)) + ".jsonl")
-    full_path = gen_path.with_name(stem + "-".join(sorted(ALL_LAYERS)) + ".jsonl")
-    if layers != ALL_LAYERS and full_path.exists() and full_path != out_path:
-        derive_subset(full_path, out_path, layers)
-        return
+    specs, primary = critic_specs(cfg)
+    if args.all_critics:
+        names = [primary] + [n for n in specs if n != primary]
+    else:
+        names = [args.critic or primary]
+    for n in names:
+        if n not in specs:
+            ap.error(f"unknown critic {n!r}; config has {list(specs)}")
+    if len(names) > 1 and args.out:
+        ap.error("--out cannot be combined with --all-critics")
+    for name in names:
+        if name != primary and layers != ALL_LAYERS:
+            if "critic" not in layers:
+                continue  # no critic layer: nothing critic-specific to run
+            ap.error("non-primary critics run with all layers (det,critic,program)")
+        out_path = Path(args.out) if args.out else verify_path(gen_path, layers, None if name == primary else name)
+        full_path = verify_path(gen_path, ALL_LAYERS)
+        if name == primary and layers != ALL_LAYERS and full_path.exists() and full_path != out_path:
+            derive_subset(full_path, out_path, layers)
+            continue
+        verify_file(gens, gen_path, out_path, cfg, layers, name, specs[name], src, args.mock, args.include_baseline_llm)
 
+
+def critic_specs(cfg: dict) -> tuple[dict[str, dict], str]:
+    """Named critic specs and the primary critic's name.
+
+    Matrix configs list `critics:` and name `primary_critic:` (prespecified; it alone drives decisions used for
+    repair and the main analysis). Older configs have a single `critic:`, which becomes the primary.
+    """
+    if cfg.get("critics"):
+        specs = {c["name"]: c for c in cfg["critics"]}
+        if len(specs) != len(cfg["critics"]):
+            raise ValueError("critic names must be unique")
+        primary = cfg.get("primary_critic")
+        if primary not in specs:
+            raise ValueError(f"primary_critic {primary!r} must name one of {list(specs)}")
+        return specs, primary
+    c = cfg["critic"]
+    name = c.get("name", "primary")
+    return {name: c}, name
+
+
+def verify_path(gen_path: Path, layers: set[str], critic_name: str | None = None) -> Path:
+    """<gens>.verify-critic-det-program.jsonl for the primary critic; <gens>.verify-critic@NAME-det-program.jsonl
+    for another named critic (the det and program layers are identical across critics)."""
+    parts = [("critic@" + critic_name if (p == "critic" and critic_name) else p) for p in sorted(layers)]
+    return gen_path.with_name(gen_path.stem + ".verify-" + "-".join(parts) + ".jsonl")
+
+
+def verify_file(gens: list[dict], gen_path: Path, out_path: Path, cfg: dict, layers: set[str], critic_name: str,
+                critic_spec: dict, src: dict[str, str], mock: bool, include_baseline_llm: bool) -> None:
     seen = done_ids(out_path)
-    mock = {"provider": "mock", "model": "mock"}
-    use_llm = any(not is_baseline(g) or args.include_baseline_llm for g in gens)
-    critic_p = make_provider(mock if args.mock else cfg["critic"]) if "critic" in layers and use_llm else None
-    extract_p = make_provider(mock if args.mock else cfg["extractor"]) if "program" in layers and use_llm else None
+    mock_spec = {"provider": "mock", "model": "mock"}
+    use_llm = any(not is_baseline(g) or include_baseline_llm for g in gens)
+    critic_p = make_provider(mock_spec if mock else critic_spec) if "critic" in layers and use_llm else None
+    extract_p = make_provider(mock_spec if mock else cfg["extractor"]) if "program" in layers and use_llm else None
     c_sys, c_user, c_sha = load_prompt("critic_v1")
     _, _, e_sha = load_prompt("extract_v1")
     cache_path = gen_path.parent / "extractions.jsonl"
+    critic_info = {"critic_name": critic_name, "critic_family": critic_spec.get("family"),
+                   "critic_model": critic_spec.get("model")} if "critic" in layers else {}
 
     for g in gens:
         if g["output_id"] in seen or not g.get("adapted_problem"):
             continue
-        skip_llm = is_baseline(g) and not args.include_baseline_llm
+        skip_llm = is_baseline(g) and not include_baseline_llm
         row_layers = layers & {"det"} if skip_llm else layers
         source, cand = src[g["source_id"]], g["adapted_problem"]
         det = check(source, cand, g["transformation"])
@@ -270,8 +324,9 @@ def main() -> None:
                                 "decision": decision, "reasons": reasons, "deterministic": det, "critic": critic,
                                 "program": prog, "critic_prompt_sha256": c_sha, "extract_prompt_sha256": e_sha,
                                 "extract_meta": extract_meta, "verifier_version": VERIFIER_VERSION,
+                                **(critic_info if not skip_llm else {}),
                                 "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds")})
-        print(g["output_id"], decision, reasons[:3])
+        print(g["output_id"], decision, reasons[:3], f"[{critic_name}]" if critic_info else "")
 
 
 if __name__ == "__main__":

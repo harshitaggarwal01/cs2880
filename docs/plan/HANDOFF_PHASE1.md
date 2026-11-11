@@ -6,7 +6,7 @@
 - **Next agent:** start from [`AGENT_PROMPT_NEXT.md`](AGENT_PROMPT_NEXT.md) (tasks A–G with rules and commands)
 - run_id: `anthropic-v1`: real pilot done (dev set only), main run not started; `anthropic-v1-mock` runs end to end offline
 - Config: `config.anthropic.yaml` (SHA-256 prefix `10dd8ddccdd13230`); becomes `config.frozen.yaml` inside the run folder on first use
-- Tests: 135 passed / 0 failed (`make test`), covering Phase 1–4 code and verifier v1.1
+- Tests: 161 passed / 0 failed (`make test`), covering Phase 1–4 code, verifier v1.1 and the Task A2 matrix code
 - Verifier: **v1.1** (Nov 11, tuned on dev only; see `docs/methods/verifier.md`). Pilot re-decided offline: 29 PASS / 11 REVIEW / 0 REJECT (v1.0: 17 / 22 / 1)
 - API keys: an Anthropic key was supplied in-session on Nov 2 (not stored in the repo). For a new session, add `ANTHROPIC_API_KEY` to the environment's secrets.
 
@@ -50,6 +50,22 @@
   - Re-decided offline (no API, $0): `data/outputs/anthropic-v1/pilot_generations.verify-critic-det-program.v1_1.jsonl`; the v1.0 file is kept. **29 PASS / 11 REVIEW / 0 REJECT.** These are tuning-set numbers: optimistic by construction, not rates.
 - **One real catch (still REVIEW in v1.1):** `haiku55|chunked|gsm8k-train-2016` (Vikki as bullets). "From her weekly earnings" no longer governs the 5% line, so it can be read as 5% of what's left after tax. The critic returned UNSURE → REVIEW. Keep this as a positive example for the rubric discussion.
 
+## Open model + generator × critic matrix (Task A2, Nov 11): coded, not yet run
+- `src/llm.py`: `OpenAICompatibleProvider` (`openai_compat`). Spec fields are `base_url`, `api_key_env` (the variable's name) and `model`. It uses json_schema → json_object fallback, schema validation, strips `<think>` blocks, and logs host-reported cost (`reported_cost_usd`) and `served_by`. `make_provider` refuses an `api_key` field.
+- `config.matrix.yaml` (run `matrix-v1`), with a `family` on every model:
+  - Rewriters: `haiku55`, `sonnet55`, `qwen38` (`qwen/qwen3.8-27b`).
+  - Critics: `opus55` (primary), `sonnet55c`, `qwen38c`, `qwen35_9b`.
+  - Extractor: one Opus.
+  - GPT/Gemini entries are commented out until their keys exist.
+  - Model IDs, licences (Apache-2.0) and price ranges were verified Nov 11; see `docs/model_selection.md`.
+- `verify.py --critic NAME` / `--all-critics`. Non-primary critics write `*.verify-critic@NAME-det-program.jsonl` and reuse the extraction cache. A `critics` orchestrator step runs after `verify`. Repair and every prespecified analysis read only the primary critic's files (`common.primary_verify_files`).
+- `ledger.py`: new columns `critic_name`, `family`, `cost_source`; uses the host-reported cost when present. Old runs load unchanged.
+- `src/critic_matrix.py` (`make critic-matrix`): per-critic metrics, generator × critic grid, self-preference logit, ensembles and Pareto. Report section plus `fig_critics.png`. `evaluate.fit_logit_clustered` is `logit_unsafe`'s fitting rule factored out unchanged.
+- **Keys:** none are set in this environment (`ANTHROPIC_API_KEY` and `OPENROUTER_API_KEY` both unset). Add them to the environment's secrets, and turn on OpenRouter's account-level training opt-out.
+- **Cost estimates** (from the Nov 2 ledger: Opus critic about $0.015 per call, extraction about $0.011 per text; Qwen at the conservative table price):
+  - Dev pilot through the full matrix (`make pilot CFG=config.matrix.yaml`, then `verify.py ... --all-critics` on `pilot_generations.jsonl`): about **$2.3**. Ask the owner first.
+  - Main run with the matrix: about **$40–45** (Opus critic ~$16, extraction ~$13, Sonnet critic ~$8, Qwen ≤ $4, generation ~$2). Ask the owner for a cap.
+
 ## Backup to Hugging Face
 `src/push_hf.py` stages everything hard to reproduce into `data/hf_staging/` (gitignored): frozen sample, real run outputs, extraction cache, ledger, labels and keys, the earlier pilot, calibration sheets, prompts, configs, checksums and a dataset card. It then uploads to the **private** dataset repo `harshitaggarwal/safeadapt-math`.
 - It drops GSM1K/GSM-IC text rows, skips mock runs and `data/raw`, aborts if anything looks like a secret, and refuses to upload to a public repo.
@@ -74,13 +90,14 @@ make conformal && make cascade && make ppi && make policy   # Phase 2 on real la
 Resume a partial run with `python src/run_phase1.py --config config.anthropic.yaml --from <step> --until <step>`; `.done/<step>` markers skip finished steps; `--force` reruns.
 
 ## Open decisions
-- [ ] Which rewriters go into the main run (Haiku, Sonnet, Qwen, and GPT/Gemini if keys arrive)? Full or 50% + PPI labelling for the open rewriter? (Task A2)
+- [ ] Which rewriters go into the main run (Haiku, Sonnet, Qwen, and GPT/Gemini if keys arrive)? Full or 50% + PPI labelling for the open rewriter? (Task A2; code done, `config.matrix.yaml` includes Qwen)
+- [ ] Approve the dev-pilot matrix run (~$2.3) once `ANTHROPIC_API_KEY` and `OPENROUTER_API_KEY` are in the environment; set a cost cap for the matrix main run (~$40–45)
 - [ ] Add `ext_gsmic` to `partitions` in the config before main generation? (adds ~48 annotation items; supplies relevance-leakage positives)
 - [ ] Choose λ, μ for the cascade objective, or report the frontier only
 - [ ] Which external tools pass the ToS check for Phase 3A
 - [ ] Submit the teacher survey for a CUHS determination this semester, or defer
 
 ## Next owner's first three actions
-1. ~~Verifier precision fixes~~ done (v1.1, Nov 11). Next: Task A2 (open model + critic matrix code).
+1. ~~Verifier precision fixes~~ done (v1.1, Nov 11); ~~Task A2 code~~ done (Nov 11). Next: add keys, run the dev-pilot matrix (ask first), then Task B once labels are in.
 2. Both teammates label the calibration sheets blind; run the agreement and disagreement commands; freeze rubric v1.
 3. With rubric v1 frozen and the key in the environment: `make phase1` (≈ $20; ask first).

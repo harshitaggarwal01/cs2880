@@ -470,10 +470,19 @@ def logit_unsafe(df: pd.DataFrame, sources: dict, n_boot: int = 400, seed: int =
     likely here (constrained prompts can have no unsafe items at all). Returns {"table", "n", "penalized", "converged",
     "method"}; `penalized` means the Firth fallback was used and `converged` refers to the unpenalised fit.
     """
+    y, X, groups = _design(df, sources)
+    return fit_logit_clustered(y, X, groups, n_boot=n_boot, seed=seed)
+
+
+def fit_logit_clustered(y: pd.Series, X: pd.DataFrame, groups: np.ndarray, n_boot: int = 400, seed: int = 0) -> dict:
+    """The fitting rule of `logit_unsafe`, factored out unchanged so other analyses (critic_matrix) can reuse it.
+
+    MLE logit with SEs clustered by `groups` (integer codes 0..k-1); on separation / non-convergence / huge SEs,
+    Firth's bias-reduced logit with a cluster bootstrap. An intercept is added. Same return dict as logit_unsafe.
+    """
     import statsmodels.api as sm
     from statsmodels.tools.sm_exceptions import ConvergenceWarning, PerfectSeparationError
 
-    y, X, groups = _design(df, sources)
     cols = ["term", "coef", "se", "z", "p", "odds_ratio", "or_lo", "or_hi"]
     if len(y) < 10 or y.nunique() < 2 or X.shape[1] == 0:
         return {"table": pd.DataFrame(columns=cols), "n": int(len(y)), "penalized": False, "converged": False,

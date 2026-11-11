@@ -7,6 +7,17 @@ and this project uses semantic versioning where applicable.
 
 ## [Unreleased]
 
+### Open model + generator × critic matrix (2026-11-11, Task A2; code only, no real API calls)
+- `llm.OpenAICompatibleProvider` (`openai_compat`): any OpenAI-compatible host. json_schema → json_object fallback, schema validation, `<think>` stripping, host-reported cost and serving provider logged. The key is read from the env var named in `api_key_env`
+- `config.matrix.yaml` (run `matrix-v1`): rewriters Haiku 5.5, Sonnet 5.5, Qwen3.8-27B; critics Opus 5.5 (primary), Sonnet 5.5, Qwen3.8-27B, Qwen3.5-9B; `family` tags; OpenRouter routing `data_collection: deny`, `zdr: true`
+- `verify.py --critic NAME` / `--all-critics`; `critic_specs`, `verify_path`; rows store `critic_name`, `critic_family`, `critic_model`; new `critics` orchestrator step (13 steps)
+- `common.primary_verify_files`: report, distill, failure gallery, release and variance read primary-critic files only
+- `ledger.py`: `critic_name`, `family`, `cost_source` columns; prefers host-reported cost
+- `src/critic_matrix.py` + `make critic-matrix`: per-critic metrics with clustered CIs, generator × critic grid, self-preference logit, ensembles, critic-option Pareto; report section and figure
+- `evaluate.fit_logit_clustered`: `logit_unsafe`'s fit rule factored out without behaviour change
+- Docs: `docs/methods/critic_matrix.md`, Qwen section in `docs/model_selection.md`, CITATIONS (Zheng 2023, Verga 2024)
+- Tests: `test_llm_openai_compat.py` (9), `test_critic_matrix.py` (9), `test_matrix_pipeline.py` (8); 161 total
+
 ### Verifier v1.1 (2026-11-11, dev problems only)
 - `verify.decide`: `program:RELATIONS_DIFFER` is no longer a REVIEW reason when the recomputed answers MATCH; `relation_types_equal` stays in the row
 - `deterministic_checks`: new values written only as a word one…ten → REVIEW `NUMBER_WORD_ADDED` (digits unchanged); synonym classes for total/remaining phrases; "each" counted by presence; human cue names in `readable()`; new REVIEW flag `CHUNK_FORMAT` for chunked outputs

@@ -25,7 +25,7 @@ from pathlib import Path
 import yaml
 
 import collect_outputs
-from common import FROZEN, OUTPUTS, ROOT, read_jsonl
+from common import FROZEN, OUTPUTS, ROOT, primary_verify_files, read_jsonl
 from evaluate import write_analysis
 
 
@@ -147,7 +147,7 @@ def det_rows(gens: list[dict], sources: dict) -> list[dict]:
 
 def best_original_verify(run_dir: Path) -> list[dict]:
     """The existing verification of the originals with the most layers, or []."""
-    files = sorted(run_dir.glob("generations.verify-*.jsonl"), key=lambda p: -len(p.stem.split(".verify-")[-1].split("-")))
+    files = sorted(primary_verify_files(run_dir, "generations.verify-*.jsonl"), key=lambda p: -len(p.stem.split(".verify-")[-1].split("-")))
     return read_jsonl(files[0]) if files else []
 
 
