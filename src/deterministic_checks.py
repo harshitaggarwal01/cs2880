@@ -9,7 +9,8 @@ Severity
   REJECT  strong evidence of corruption or leakage (number lost/added, answer-like
           derived value, explicit step structure, explicit operation instruction)
   REVIEW  weaker evidence (relational/quantifier phrase lost, unit set changed,
-          question missing, large length change)
+          question missing, large length change, a new count written only as a word
+          one..ten, chunked-format slips)
 
 Usage:  python src/deterministic_checks.py outputs.jsonl --sources data/frozen/dev.jsonl
 """
@@ -63,6 +64,16 @@ RELATIONAL_PHRASES = [
     r"\bevery\b", r"\bremaining\b", r"\bthe rest\b", r"\bat least\b", r"\bat most\b", r"\bonly\b",
     r"\btotal\b", r"\baltogether\b", r"\bcombined\b", r"\blonger\b", r"\btaller\b", r"%|\bpercent\b",
 ]
+# v1.1 synonym classes: a swap within a class is neither "lost" nor "added". Members marked untracked
+# (not in RELATIONAL_PHRASES) never raise a flag themselves; they only offset a tracked member's change.
+# "\btotal\b" also matches "in total".
+SYNONYM_CLASSES = [
+    [r"\baltogether\b", r"\btotal\b", r"\bcombined\b"],
+    [r"\bremaining\b", r"\bthe rest\b", r"\bleft\b", r"\bother\b"],
+]
+# "each ... each" in the source: keeping one "each" is enough (presence, not count)
+PRESENCE_ONLY = {r"\beach\b"}
+CARDINAL_WORDS = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"}
 UNITS = [
     "dollars", "dollar", "\\$", "cents", "cent", "hours", "hour", "minutes", "minute", "seconds", "second",
     "days", "day", "weeks", "week", "months", "month", "years", "year", "miles", "mile", "feet", "foot", "inches",
@@ -167,6 +178,15 @@ def check(source: str, candidate: str, transformation: str = "plain") -> dict:
     if missing:
         flags.append(Flag("QTY_OMIT_OR_CHANGE", "REJECT", f"source numbers missing: {fmt(missing)}"))
     if added:
+        # v1.1: a new value written only as a cardinal word one..ten (no digit form) is usually a count of
+        # listed items ("taken out in three ways"); downgrade it to REVIEW. Digits keep the REJECT rules.
+        words_only = [v for v in added if v <= 10 and v.denominator == 1
+                      and v not in digit_values(cand_numbers_text) and v in cardinal_word_values(cand_numbers_text)]
+        if words_only:
+            flags.append(Flag("NUMBER_WORD_ADDED", "REVIEW",
+                              f"new values written only as number words: {fmt(Counter({v: added[v] for v in words_only}))}"))
+        added = Counter({v: n for v, n in added.items() if v not in words_only})
+    if added:
         derived = derived_values(numbers(source))
         leak_like = [v for v in added if v in derived]
         other = [v for v in added if v not in derived]
@@ -188,14 +208,13 @@ def check(source: str, candidate: str, transformation: str = "plain") -> dict:
         flags.append(Flag(name, sev_eff, ("new cues: " if new_kind else "more uses of source cue words: ")
                           + ", ".join(sorted(readable(p) for p in inc))))
 
-    lost_rel = count_patterns(RELATIONAL_PHRASES, source) - count_patterns(RELATIONAL_PHRASES, candidate)
+    lost_rel, new_rel = relation_changes(source, candidate)
     if lost_rel:
         flags.append(Flag("RELATION_OR_QUANTIFIER_LOST", "REVIEW",
-                          "phrases fewer than in source: " + ", ".join(sorted(p.strip('\\b') for p in lost_rel))))
-    new_rel = count_patterns(RELATIONAL_PHRASES, candidate) - count_patterns(RELATIONAL_PHRASES, source)
+                          "phrases fewer than in source: " + ", ".join(sorted(readable(p) for p in lost_rel))))
     if new_rel:
         flags.append(Flag("RELATION_OR_QUANTIFIER_ADDED", "REVIEW",
-                          "phrases not in source: " + ", ".join(sorted(p.strip('\\b') for p in new_rel))))
+                          "phrases not in source: " + ", ".join(sorted(readable(p) for p in new_rel))))
 
     su, cu = units(source), units(candidate)
     if su != cu:
@@ -208,6 +227,11 @@ def check(source: str, candidate: str, transformation: str = "plain") -> dict:
         overlap = len(content_words(sq) & content_words(cq)) / len(content_words(sq))
         if overlap < 0.5:
             flags.append(Flag("TARGET_WORDING_CHANGED", "REVIEW", f"question content-word overlap {overlap:.2f}"))
+
+    if transformation == "chunked":
+        bad = chunk_format_problems(candidate)
+        if bad:
+            flags.append(Flag("CHUNK_FORMAT", "REVIEW", "; ".join(bad)))
 
     ratio = len(candidate.split()) / max(1, len(source.split()))
     if ratio > 1.6:
@@ -222,8 +246,78 @@ def check(source: str, candidate: str, transformation: str = "plain") -> dict:
                             "candidate_max_sentence_words": max_sentence_words(candidate)}}
 
 
+CUE_NAMES = {
+    r"\badd(?:ing|ed)?\b": "add", r"\bsubtract(?:ing|ed)?\b": "subtract", r"\bmultipl(?:y|ying|ied)\b": "multiply",
+    r"\bdivid(?:e|ing|ed)\b": "divide", r"^\s*(?:step\s*\d+|\d+[.)])": "numbered line", r"\bstep\s*\d+\b": "step N",
+    r"\bsteps? to\b": "step(s) to", r"\bhints?\b": "hint", r"\btips?\b": "tip", r"\b(?:you )?don'?t need\b": "don't need",
+    r"(?<!\w)[×÷=](?!\w)": "× ÷ = symbol", r"\d\s*[+*x×−-]\s*\d": "inline arithmetic", r"\?\s*=\s*": "?= blank",
+    r"\bto (?:find|solve|get) (?:this|the answer)": "to find/solve/get the answer", r"%|\bpercent\b": "percent",
+    r"\bwhat you need to (?:find|know)\b": "what you need to find/know",
+    r"\bfirst,?\s+(?:find|figure|work|calculate|add|multiply|subtract|divide)": "first <operation>",
+    r"\bthen\s+(?:find|figure|work|calculate|add|multiply|subtract|divide)": "then <operation>",
+    r"\bnext,?\s+(?:find|figure|work|calculate)": "next <operation>",
+}
+
+
 def readable(pattern: str) -> str:
-    return re.sub(r"\\[bsd]|[\\^()?:*+|\[\]]|(?<=\w)s\*", "", pattern).replace("<!w", "").strip() or pattern
+    """Human name for a cue regex ("add" for the add/adding/added pattern), for flag details."""
+    if pattern in CUE_NAMES:
+        return CUE_NAMES[pattern]
+    s = re.sub(r"\(\?:([^()]*)\)", lambda m: m.group(1).split("|")[0], pattern)  # first alternative of each group
+    s = re.sub(r"\\[bsd]|\(\?<!\\w\)|\(\?!\\w\)|[\\^()?*+\[\]]", "", s)
+    return " ".join(s.split()) or pattern
+
+
+def digit_values(text: str) -> set[Fraction]:
+    out = set()
+    for whole, dec, den, _ in NUM_RE.findall(text):
+        v = Fraction(whole.replace(",", ""))
+        if dec:
+            v += Fraction(int(dec), 10 ** len(dec))
+        if den and int(den) != 0:
+            v = v / Fraction(int(den))
+        out.add(v)
+    return out
+
+
+def cardinal_word_values(text: str) -> set[Fraction]:
+    return {Fraction(WORD_NUM[w.lower()]) for w in WORD_RE.findall(text) if w.lower() in CARDINAL_WORDS}
+
+
+def relation_changes(source: str, candidate: str) -> tuple[Counter, Counter]:
+    """Relational phrases lost / added, with v1.1 synonym classes and presence-only "each"."""
+    s_cnt, c_cnt = count_patterns(RELATIONAL_PHRASES, source), count_patterns(RELATIONAL_PHRASES, candidate)
+    for p in PRESENCE_ONLY:
+        s_cnt[p], c_cnt[p] = min(s_cnt[p], 1), min(c_cnt[p], 1)
+    lost, added = s_cnt - c_cnt, c_cnt - s_cnt
+    for cls in SYNONYM_CLASSES:
+        s_all, c_all = count_patterns(cls, source), count_patterns(cls, candidate)
+        surplus = sum((c_all - s_all).values())   # extra uses of any member in the candidate
+        deficit = sum((s_all - c_all).values())   # fewer uses of any member in the candidate
+        for p in cls:
+            if p in lost:
+                k = min(lost[p], surplus)
+                lost[p] -= k
+                surplus -= k
+            if p in added:
+                k = min(added[p], deficit)
+                added[p] -= k
+                deficit -= k
+    return +lost, +added
+
+
+def chunk_format_problems(candidate: str) -> list[str]:
+    """Presentation check for chunked outputs: fact lines start with "- ", and a "Question:" line exists."""
+    lines = [l for l in candidate.strip().splitlines() if l.strip()]
+    q = [i for i, l in enumerate(lines) if l.strip().lower().startswith("question")]
+    out = []
+    if not q:
+        out.append("no 'Question:' line")
+    facts = lines[:q[-1]] if q else lines
+    n_bad = sum(1 for l in facts if not l.lstrip().startswith("- "))
+    if n_bad:
+        out.append(f"{n_bad} fact line(s) without a leading '- '")
+    return out
 
 
 def fmt(c: Counter) -> str:

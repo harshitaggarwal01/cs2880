@@ -2,7 +2,8 @@
 
   python src/examples_doc.py      # rewrites docs/run_examples.md from the run files (no retyping)
 
-The example picks and "Our read" commentary are hand-written for the Nov 2 pilot; update them if verdicts change.
+The example picks and "Our read" commentary are hand-written; they were updated on Nov 11 for verifier v1.1
+(decisions re-derived offline from the Nov 2 run; the v1.0 decision is shown where it changed).
 """
 import collections
 import csv
@@ -13,7 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 RUN = ROOT / "data/outputs/anthropic-v1"
 load = lambda p: [json.loads(l) for l in open(p)]
 gens = {r["output_id"]: r for r in load(RUN / "pilot_generations.jsonl")}
-ver = {r["output_id"]: r for r in load(RUN / "pilot_generations.verify-critic-det-program.jsonl")}
+VERIFY_FILE = "pilot_generations.verify-critic-det-program.v1_1.jsonl"
+ver = {r["output_id"]: r for r in load(RUN / VERIFY_FILE)}
 src = {r["source_id"]: r for r in load(ROOT / "data/frozen/dev.jsonl")}
 old = {r["output_id"]: r for r in load(ROOT / "pilot/pilot_outputs.jsonl")}
 ledger = list(csv.DictReader(open(RUN / "ledger.csv")))
@@ -41,6 +43,9 @@ def checker_lines(r):
     det = r["deterministic"]["flags"]
     c, p = r["critic"] or {}, r["program"] or {}
     lines = [f"- **Decision: {r['decision']}**" + (f" (reasons: {', '.join('`'+x+'`' for x in r['reasons'])})" if r["reasons"] else "")]
+    old_r = r.get("redecided_from")
+    if old_r and (old_r["decision"], old_r["reasons"]) != (r["decision"], r["reasons"]):
+        lines.append(f"- Checker v1.0 said: {old_r['decision']}" + (f" ({', '.join('`'+x+'`' for x in old_r['reasons'])})" if old_r["reasons"] else ""))
     lines.append("- Rules (layer 1): " + ("; ".join(f"`{f['code']}` ({f['severity']}): {f['detail']}" for f in det) if det else "no flags"))
     crit = f"- AI reviewer (layer 2, Claude Opus 5.5): **{c.get('overall')}**"
     if c.get("failure_codes"):
@@ -82,10 +87,14 @@ w(f"| Outputs | {len(gens)} rewrites |")
 w("| Checker | rules → AI reviewer (Claude Opus 5.5) → extract both versions as a program and recompute the answer |")
 w(f"| Cost | ${tot:.2f} total: rewriting ${by_stage['gen']:.2f}, AI reviewer ${by_stage['critic']:.2f}, "
   f"answer recompute ${by_stage['extract']:.2f} ({len(ledger)} API calls) |")
-w(f"| Checker decisions | {dec['PASS']} PASS · {dec['REVIEW']} REVIEW · {dec['REJECT']} REJECT |")
+dec0 = collections.Counter(r["redecided_from"]["decision"] for r in ver.values())
+w(f"| Checker decisions (v1.1, Nov 11) | {dec['PASS']} PASS · {dec['REVIEW']} REVIEW · {dec['REJECT']} REJECT |")
+w(f"| Checker decisions (v1.0, Nov 2) | {dec0['PASS']} PASS · {dec0['REVIEW']} REVIEW · {dec0['REJECT']} REJECT |")
 w("")
 w("**Read these as examples, not rates.** There are no human labels yet (calibration labelling is next), "
-  "the realistic teacher prompt was not part of this run, and the reviewer is from the same company as the rewriters.\n")
+  "the realistic teacher prompt was not part of this run, and the reviewer is from the same company as the rewriters. "
+  "Checker v1.1 was tuned on these same 10 practice problems, so its numbers here are optimistic by construction; "
+  "they show what the tuning changed, not how the checker will do on the study problems.\n")
 
 w("### Decisions by model and style\n")
 w("| Model · style | PASS | REVIEW | REJECT | Same answer when recomputed |\n|---|---:|---:|---:|---:|")
@@ -98,13 +107,15 @@ for gen in ("haiku55", "sonnet55"):
 w("")
 
 # ------------------------------------------------------------------ examples
-w("---\n\n## Example 1: one problem, four rewrites (false alarm, real catch, clean pass)\n")
+w("---\n\n## Example 1: one problem, four rewrites (former false alarm, real catch, clean pass)\n")
 source_block("gsm8k-train-2016")
 w("")
 output_block("sonnet55", "plain", "gsm8k-train-2016")
-w("**Our read: false alarm.** The rewrite is faithful and the answer is unchanged. The rule for leaked derived values "
-  "fired because the new word \"three\" (counting the deductions) happens to equal a number that can be computed from "
-  "the problem. Counting words should not count as leaks; this rule gets tuned on practice problems.\n")
+w("**Our read: no longer a false alarm.** The rewrite is faithful and the answer is unchanged. Checker v1.0 rejected "
+  "it because the new word \"three\" (counting the deductions) happens to equal a number that can be computed from "
+  "the problem. v1.1 treats a new count written only as a word (one to ten) as a REVIEW flag, not a leak; digits keep "
+  "the strict rule, so \"Stories 11 to 20\" (below) is still rejected. It stays in REVIEW because \"per hour\" is a "
+  "new relational phrase; a human glance settles it.\n")
 output_block("haiku55", "chunked", "gsm8k-train-2016", evidence=True)
 w("**Our read: real catch.** Splitting the sentence into bullets detached \"from her weekly earnings\" from the 5% "
   "line. A student could take 5% of what is left after tax and get a different answer. No word-matching rule sees "
@@ -114,16 +125,17 @@ w("**Our read: the right way to chunk it.** Sonnet repeated \"From her weekly ea
   "which keeps the meaning that Haiku's version lost. Same layout, and this time the math is unchanged.\n")
 output_block("haiku55", "plain", "gsm8k-train-2016")
 w("**Our read: correct abstention.** Haiku judged the problem already clear and returned it unchanged.\n")
-w("**Takeaway.** Same problem, four outputs: a false alarm, a real catch, the fix done right, and a safe no-change. "
+w("**Takeaway.** Same problem, four outputs: a former false alarm (now a light REVIEW), a real catch, the fix done right, and a safe no-change. "
   "The checker needs every layer, and the review step needs to stay.\n")
 
-w("---\n\n## Example 2: a faithful rewrite flagged by an over-strict rule\n")
+w("---\n\n## Example 2: a faithful rewrite that an over-strict rule used to flag\n")
 source_block("gsm8k-train-1795")
 w("")
 output_block("sonnet55", "chunked", "gsm8k-train-1795")
-w("**Our read: false alarm.** One fact per line, every relation kept, same answer. The recompute layer compares the "
-  "*types* of relations it extracts, and splitting compound sentences changes how they are extracted. That "
-  "comparison fired on 18 of 40 rewrites, all with matching answers; it is the main cause of the review load.\n")
+w("**Our read: fixed in v1.1.** One fact per line, every relation kept, same answer. The recompute layer compares the "
+  "*types* of relations it extracts, and splitting compound sentences changes how they are extracted. In v1.0 that "
+  "comparison sent 18 of 40 rewrites to REVIEW, all with matching answers. v1.1 still logs it but no longer uses it "
+  "as a review reason when the recomputed answers match.\n")
 
 w("---\n\n## Example 3: one word changed, one rule fires\n")
 source_block("gsm8k-train-5510")
@@ -131,15 +143,18 @@ w("")
 output_block("haiku55", "plain", "gsm8k-train-5510")
 output_block("sonnet55", "plain", "gsm8k-train-5510")
 w("**Our read.** Both plain rewrites are faithful. Haiku changed \"altogether\" to \"in total\" and \"placed\" to "
-  "\"put … into the book\", so the rules saw a quantifier lost, one added, and the question reworded: REVIEW. "
-  "Sonnet kept \"altogether\": PASS. The rules are deliberately sensitive to math words; the question for tuning is "
-  "how much synonym change to allow.\n")
+  "\"put … into the book\". v1.0 saw a quantifier lost, one added, and the question reworded. v1.1 treats "
+  "{altogether, in total, total, combined} as one class, so only the reworded-question flag is left (its threshold is "
+  "unchanged): still REVIEW, for a better reason. Sonnet kept \"altogether\": PASS.\n")
+output_block("haiku55", "chunked", "gsm8k-train-5510")
+w("**Our read: presentation slip, now flagged.** The first fact line has no leading \"- \". The math is fine; v1.1 adds "
+  "a REVIEW-only `CHUNK_FORMAT` flag so a teacher-facing tool does not ship an inconsistent layout.\n")
 
 w("---\n\n## Example 4: a rewrite that quietly resolves an ambiguity\n")
 source_block("gsm8k-train-5378")
 w("")
 output_block("sonnet55", "plain", "gsm8k-train-5378")
-w("**Our read: worth discussing.** The original says the remaining floors are \"3 feet taller\" without saying "
+w("**Our read: worth discussing (v1.1 now passes it; v1.0 reviewed it only for extracted relation types).** The original says the remaining floors are \"3 feet taller\" without saying "
   "taller than what. Sonnet made it explicit: \"3 feet taller than each of the first 10 stories.\" That is the "
   "intended reading (answer 270 either way), but it removes an interpretation step the original left to the "
   "student. Our rubric records this as *resolved ambiguity*: is that a fair accommodation or a small modification?\n")
@@ -190,13 +205,14 @@ for key, label, read in (
 
 # ------------------------------------------------------------------ appendix
 w("---\n\n## Appendix: all 40 checker decisions from this week's run\n")
-w("| Problem | Model · style | Decision | Reasons |\n|---|---|---|---|")
+w("| Problem | Model · style | v1.1 decision | Reasons | v1.0 decision |\n|---|---|---|---|---|")
 for k in sorted(ver, key=lambda k: (k.split("|")[3], k.split("|")[1], k.split("|")[2])):
     _, gen, tf, sid = k.split("|")
     r = ver[k]
     w(f"| `{sid}` | {MODEL[gen].replace('Claude ', '')} · {tf} | {r['decision']} | "
-      f"{', '.join(r['reasons']) if r['reasons'] else '—'} |")
+      f"{', '.join(r['reasons']) if r['reasons'] else '—'} | {r['redecided_from']['decision']} |")
 w("\nFiles: `data/outputs/anthropic-v1/pilot_generations.jsonl` (rewrites), "
-  "`pilot_generations.verify-critic-det-program.jsonl` (checker), `ledger.csv` (cost); earlier pilot in `pilot/`.")
+  f"`{VERIFY_FILE}` (checker v1.1), `pilot_generations.verify-critic-det-program.jsonl` (checker v1.0, kept), "
+  "`ledger.csv` (cost); earlier pilot in `pilot/`.")
 (ROOT / "docs/run_examples.md").write_text("\n".join(out) + "\n")
 print("written", len(out), "lines")

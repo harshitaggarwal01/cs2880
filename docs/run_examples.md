@@ -14,22 +14,23 @@ Every rewrite and every checker verdict below is copied programmatically from th
 | Outputs | 40 rewrites |
 | Checker | rules → AI reviewer (Claude Opus 5.5) → extract both versions as a program and recompute the answer |
 | Cost | $1.19 total: rewriting $0.05, AI reviewer $0.59, answer recompute $0.56 (123 API calls) |
-| Checker decisions | 17 PASS · 22 REVIEW · 1 REJECT |
+| Checker decisions (v1.1, Nov 11) | 29 PASS · 11 REVIEW · 0 REJECT |
+| Checker decisions (v1.0, Nov 2) | 17 PASS · 22 REVIEW · 1 REJECT |
 
-**Read these as examples, not rates.** There are no human labels yet (calibration labelling is next), the realistic teacher prompt was not part of this run, and the reviewer is from the same company as the rewriters.
+**Read these as examples, not rates.** There are no human labels yet (calibration labelling is next), the realistic teacher prompt was not part of this run, and the reviewer is from the same company as the rewriters. Checker v1.1 was tuned on these same 10 practice problems, so its numbers here are optimistic by construction; they show what the tuning changed, not how the checker will do on the study problems.
 
 ### Decisions by model and style
 
 | Model · style | PASS | REVIEW | REJECT | Same answer when recomputed |
 |---|---:|---:|---:|---:|
-| Claude Haiku 5.5 · plain language | 3 | 7 | 0 | 10/10 |
-| Claude Haiku 5.5 · chunked | 4 | 6 | 0 | 10/10 |
-| Claude Sonnet 5.5 · plain language | 4 | 5 | 1 | 10/10 |
-| Claude Sonnet 5.5 · chunked | 6 | 4 | 0 | 10/10 |
+| Claude Haiku 5.5 · plain language | 5 | 5 | 0 | 10/10 |
+| Claude Haiku 5.5 · chunked | 7 | 3 | 0 | 10/10 |
+| Claude Sonnet 5.5 · plain language | 8 | 2 | 0 | 10/10 |
+| Claude Sonnet 5.5 · chunked | 9 | 1 | 0 | 10/10 |
 
 ---
 
-## Example 1: one problem, four rewrites (false alarm, real catch, clean pass)
+## Example 1: one problem, four rewrites (former false alarm, real catch, clean pass)
 
 **Original** (`gsm8k-train-2016`, GSM8K train; answer 310)
 
@@ -42,12 +43,13 @@ Every rewrite and every checker verdict below is copied programmatically from th
 Vikki worked 42 hours in one week. She is paid $10 per hour. Money is taken out of her weekly earnings in three ways: 20% is taken out for tax, 5% is taken out for insurance, and $5 is taken out for union dues. How much money, in dollars, does Vikki take home after these deductions?
 ```
 
-- **Decision: REJECT** (reasons: `det:LEAK_DERIVED_VALUE`)
-- Rules (layer 1): `LEAK_DERIVED_VALUE` (REJECT): new numbers equal to values derivable from the source: 3; `RELATION_OR_QUANTIFIER_ADDED` (REVIEW): phrases not in source: per
+- **Decision: REVIEW** (reasons: `det:NUMBER_WORD_ADDED`, `det:RELATION_OR_QUANTIFIER_ADDED`)
+- Checker v1.0 said: REJECT (`det:LEAK_DERIVED_VALUE`)
+- Rules (layer 1): `NUMBER_WORD_ADDED` (REVIEW): new values written only as number words: 3; `RELATION_OR_QUANTIFIER_ADDED` (REVIEW): phrases not in source: per
 - AI reviewer (layer 2, Claude Opus 5.5): **SAFE**
 - Answer recompute (layer 3): MATCH, original 310 vs rewrite 310
 
-**Our read: false alarm.** The rewrite is faithful and the answer is unchanged. The rule for leaked derived values fired because the new word "three" (counting the deductions) happens to equal a number that can be computed from the problem. Counting words should not count as leaks; this rule gets tuned on practice problems.
+**Our read: no longer a false alarm.** The rewrite is faithful and the answer is unchanged. Checker v1.0 rejected it because the new word "three" (counting the deductions) happens to equal a number that can be computed from the problem. v1.1 treats a new count written only as a word (one to ten) as a REVIEW flag, not a leak; digits keep the strict rule, so "Stories 11 to 20" (below) is still rejected. It stays in REVIEW because "per hour" is a new relational phrase; a human glance settles it.
 
 **Claude Haiku 5.5 · chunked** (status `REWRITTEN`)
 
@@ -100,11 +102,11 @@ Vikki worked 42 hours in one week. Her hourly pay rate is $10. From her weekly e
 
 **Our read: correct abstention.** Haiku judged the problem already clear and returned it unchanged.
 
-**Takeaway.** Same problem, four outputs: a false alarm, a real catch, the fix done right, and a safe no-change. The checker needs every layer, and the review step needs to stay.
+**Takeaway.** Same problem, four outputs: a former false alarm (now a light REVIEW), a real catch, the fix done right, and a safe no-change. The checker needs every layer, and the review step needs to stay.
 
 ---
 
-## Example 2: a faithful rewrite flagged by an over-strict rule
+## Example 2: a faithful rewrite that an over-strict rule used to flag
 
 **Original** (`gsm8k-train-1795`, GSM8K train; answer 100)
 
@@ -124,12 +126,13 @@ Vikki worked 42 hours in one week. Her hourly pay rate is $10. From her weekly e
 Question: What's the total number of blue marbles collected by the friends together?
 ```
 
-- **Decision: REVIEW** (reasons: `program:RELATIONS_DIFFER`)
+- **Decision: PASS**
+- Checker v1.0 said: REVIEW (`program:RELATIONS_DIFFER`)
 - Rules (layer 1): no flags
 - AI reviewer (layer 2, Claude Opus 5.5): **SAFE**
 - Answer recompute (layer 3): MATCH, original 100 vs rewrite 100; extracted relation types differ
 
-**Our read: false alarm.** One fact per line, every relation kept, same answer. The recompute layer compares the *types* of relations it extracts, and splitting compound sentences changes how they are extracted. That comparison fired on 18 of 40 rewrites, all with matching answers; it is the main cause of the review load.
+**Our read: fixed in v1.1.** One fact per line, every relation kept, same answer. The recompute layer compares the *types* of relations it extracts, and splitting compound sentences changes how they are extracted. In v1.0 that comparison sent 18 of 40 rewrites to REVIEW, all with matching answers. v1.1 still logs it but no longer uses it as a review reason when the recomputed answers match.
 
 ---
 
@@ -146,8 +149,9 @@ Question: What's the total number of blue marbles collected by the friends toget
 Karl, Ryan, and Ben like to collect stickers. Karl has 25 stickers. Ryan has 20 more stickers than Karl. Ben has 10 fewer stickers than Ryan. They put all of their stickers into one sticker book. How many stickers did they put in the book in total?
 ```
 
-- **Decision: REVIEW** (reasons: `det:RELATION_OR_QUANTIFIER_LOST`, `det:RELATION_OR_QUANTIFIER_ADDED`, `det:TARGET_WORDING_CHANGED`)
-- Rules (layer 1): `RELATION_OR_QUANTIFIER_LOST` (REVIEW): phrases fewer than in source: altogether; `RELATION_OR_QUANTIFIER_ADDED` (REVIEW): phrases not in source: total; `TARGET_WORDING_CHANGED` (REVIEW): question content-word overlap 0.33
+- **Decision: REVIEW** (reasons: `det:TARGET_WORDING_CHANGED`)
+- Checker v1.0 said: REVIEW (`det:RELATION_OR_QUANTIFIER_LOST`, `det:RELATION_OR_QUANTIFIER_ADDED`, `det:TARGET_WORDING_CHANGED`)
+- Rules (layer 1): `TARGET_WORDING_CHANGED` (REVIEW): question content-word overlap 0.33
 - AI reviewer (layer 2, Claude Opus 5.5): **SAFE**
 - Answer recompute (layer 3): MATCH, original 105 vs rewrite 105
 
@@ -162,7 +166,26 @@ Karl, Ryan, and Ben like to collect stickers. Karl has 25 stickers. Ryan has 20 
 - AI reviewer (layer 2, Claude Opus 5.5): **SAFE**
 - Answer recompute (layer 3): MATCH, original 105 vs rewrite 105
 
-**Our read.** Both plain rewrites are faithful. Haiku changed "altogether" to "in total" and "placed" to "put … into the book", so the rules saw a quantifier lost, one added, and the question reworded: REVIEW. Sonnet kept "altogether": PASS. The rules are deliberately sensitive to math words; the question for tuning is how much synonym change to allow.
+**Our read.** Both plain rewrites are faithful. Haiku changed "altogether" to "in total" and "placed" to "put … into the book". v1.0 saw a quantifier lost, one added, and the question reworded. v1.1 treats {altogether, in total, total, combined} as one class, so only the reworded-question flag is left (its threshold is unchanged): still REVIEW, for a better reason. Sonnet kept "altogether": PASS.
+
+**Claude Haiku 5.5 · chunked** (status `REWRITTEN`)
+
+```text
+Karl, Ryan, and Ben are fond of collecting stickers.
+- Karl has 25 stickers.
+- Ryan has 20 more stickers than Karl.
+- Ben has 10 fewer stickers than Ryan.
+- They placed all their stickers in one sticker book.
+Question: How many stickers did they place altogether?
+```
+
+- **Decision: REVIEW** (reasons: `det:CHUNK_FORMAT`)
+- Checker v1.0 said: PASS
+- Rules (layer 1): `CHUNK_FORMAT` (REVIEW): 1 fact line(s) without a leading '- '
+- AI reviewer (layer 2, Claude Opus 5.5): **SAFE**
+- Answer recompute (layer 3): MATCH, original 105 vs rewrite 105
+
+**Our read: presentation slip, now flagged.** The first fact line has no leading "- ". The math is fine; v1.1 adds a REVIEW-only `CHUNK_FORMAT` flag so a teacher-facing tool does not ship an inconsistent layout.
 
 ---
 
@@ -179,12 +202,13 @@ Karl, Ryan, and Ben like to collect stickers. Karl has 25 stickers. Ryan has 20 
 James builds a building with 20 stories. Each of the first 10 stories is 12 feet tall. Each of the remaining stories is 3 feet taller than each of the first 10 stories. How tall is the building?
 ```
 
-- **Decision: REVIEW** (reasons: `program:RELATIONS_DIFFER`)
+- **Decision: PASS**
+- Checker v1.0 said: REVIEW (`program:RELATIONS_DIFFER`)
 - Rules (layer 1): no flags
 - AI reviewer (layer 2, Claude Opus 5.5): **SAFE**
 - Answer recompute (layer 3): MATCH, original 270 vs rewrite 270; extracted relation types differ
 
-**Our read: worth discussing.** The original says the remaining floors are "3 feet taller" without saying taller than what. Sonnet made it explicit: "3 feet taller than each of the first 10 stories." That is the intended reading (answer 270 either way), but it removes an interpretation step the original left to the student. Our rubric records this as *resolved ambiguity*: is that a fair accommodation or a small modification?
+**Our read: worth discussing (v1.1 now passes it; v1.0 reviewed it only for extracted relation types).** The original says the remaining floors are "3 feet taller" without saying taller than what. Sonnet made it explicit: "3 feet taller than each of the first 10 stories." That is the intended reading (answer 270 either way), but it removes an interpretation step the original left to the student. Our rubric records this as *resolved ambiguity*: is that a fair accommodation or a small modification?
 
 ---
 
@@ -207,7 +231,7 @@ Question: How much do all the beads she bought cost?
 ```
 
 - **Decision: REVIEW** (reasons: `det:LEAK_OPERATION`)
-- Rules (layer 1): `LEAK_OPERATION` (REVIEW): more uses of source cue words: addinged
+- Rules (layer 1): `LEAK_OPERATION` (REVIEW): more uses of source cue words: add
 - AI reviewer (layer 2, Claude Opus 5.5): **SAFE**
 - Answer recompute (layer 3): MATCH, original 180 vs rewrite 180
 
@@ -322,47 +346,47 @@ Question: How tall is the whole building?
 
 ## Appendix: all 40 checker decisions from this week's run
 
-| Problem | Model · style | Decision | Reasons |
-|---|---|---|---|
-| `gsm8k-train-1097` | Haiku 5.5 · chunked | PASS | — |
-| `gsm8k-train-1097` | Haiku 5.5 · plain | REVIEW | det:RELATION_OR_QUANTIFIER_LOST, det:TARGET_WORDING_CHANGED, program:RELATIONS_DIFFER |
-| `gsm8k-train-1097` | Sonnet 5.5 · chunked | PASS | — |
-| `gsm8k-train-1097` | Sonnet 5.5 · plain | PASS | — |
-| `gsm8k-train-1795` | Haiku 5.5 · chunked | REVIEW | program:RELATIONS_DIFFER |
-| `gsm8k-train-1795` | Haiku 5.5 · plain | REVIEW | det:RELATION_OR_QUANTIFIER_LOST, det:RELATION_OR_QUANTIFIER_ADDED, program:RELATIONS_DIFFER |
-| `gsm8k-train-1795` | Sonnet 5.5 · chunked | REVIEW | program:RELATIONS_DIFFER |
-| `gsm8k-train-1795` | Sonnet 5.5 · plain | REVIEW | program:RELATIONS_DIFFER |
-| `gsm8k-train-2016` | Haiku 5.5 · chunked | REVIEW | critic:UNSURE |
-| `gsm8k-train-2016` | Haiku 5.5 · plain | PASS | — |
-| `gsm8k-train-2016` | Sonnet 5.5 · chunked | PASS | — |
-| `gsm8k-train-2016` | Sonnet 5.5 · plain | REJECT | det:LEAK_DERIVED_VALUE |
-| `gsm8k-train-2998` | Haiku 5.5 · chunked | REVIEW | program:RELATIONS_DIFFER |
-| `gsm8k-train-2998` | Haiku 5.5 · plain | REVIEW | program:RELATIONS_DIFFER |
-| `gsm8k-train-2998` | Sonnet 5.5 · chunked | PASS | — |
-| `gsm8k-train-2998` | Sonnet 5.5 · plain | REVIEW | program:RELATIONS_DIFFER |
-| `gsm8k-train-3578` | Haiku 5.5 · chunked | PASS | — |
-| `gsm8k-train-3578` | Haiku 5.5 · plain | PASS | — |
-| `gsm8k-train-3578` | Sonnet 5.5 · chunked | PASS | — |
-| `gsm8k-train-3578` | Sonnet 5.5 · plain | PASS | — |
-| `gsm8k-train-5378` | Haiku 5.5 · chunked | REVIEW | det:RELATION_OR_QUANTIFIER_LOST, program:RELATIONS_DIFFER |
-| `gsm8k-train-5378` | Haiku 5.5 · plain | REVIEW | det:RELATION_OR_QUANTIFIER_LOST, program:RELATIONS_DIFFER |
-| `gsm8k-train-5378` | Sonnet 5.5 · chunked | REVIEW | det:RELATION_OR_QUANTIFIER_LOST, program:RELATIONS_DIFFER |
-| `gsm8k-train-5378` | Sonnet 5.5 · plain | REVIEW | program:RELATIONS_DIFFER |
-| `gsm8k-train-5508` | Haiku 5.5 · chunked | REVIEW | det:LEAK_OPERATION |
-| `gsm8k-train-5508` | Haiku 5.5 · plain | REVIEW | det:LEAK_OPERATION, det:RELATION_OR_QUANTIFIER_LOST, det:RELATION_OR_QUANTIFIER_ADDED, program:RELATIONS_DIFFER |
-| `gsm8k-train-5508` | Sonnet 5.5 · chunked | REVIEW | det:LEAK_OPERATION |
-| `gsm8k-train-5508` | Sonnet 5.5 · plain | REVIEW | det:LEAK_OPERATION, det:RELATION_OR_QUANTIFIER_LOST, det:RELATION_OR_QUANTIFIER_ADDED, program:RELATIONS_DIFFER |
-| `gsm8k-train-5510` | Haiku 5.5 · chunked | PASS | — |
-| `gsm8k-train-5510` | Haiku 5.5 · plain | REVIEW | det:RELATION_OR_QUANTIFIER_LOST, det:RELATION_OR_QUANTIFIER_ADDED, det:TARGET_WORDING_CHANGED |
-| `gsm8k-train-5510` | Sonnet 5.5 · chunked | PASS | — |
-| `gsm8k-train-5510` | Sonnet 5.5 · plain | PASS | — |
-| `gsm8k-train-5951` | Haiku 5.5 · chunked | PASS | — |
-| `gsm8k-train-5951` | Haiku 5.5 · plain | PASS | — |
-| `gsm8k-train-5951` | Sonnet 5.5 · chunked | PASS | — |
-| `gsm8k-train-5951` | Sonnet 5.5 · plain | PASS | — |
-| `gsm8k-train-6838` | Haiku 5.5 · chunked | REVIEW | program:RELATIONS_DIFFER |
-| `gsm8k-train-6838` | Haiku 5.5 · plain | REVIEW | det:RELATION_OR_QUANTIFIER_ADDED, program:RELATIONS_DIFFER |
-| `gsm8k-train-6838` | Sonnet 5.5 · chunked | REVIEW | program:RELATIONS_DIFFER |
-| `gsm8k-train-6838` | Sonnet 5.5 · plain | REVIEW | program:RELATIONS_DIFFER |
+| Problem | Model · style | v1.1 decision | Reasons | v1.0 decision |
+|---|---|---|---|---|
+| `gsm8k-train-1097` | Haiku 5.5 · chunked | PASS | — | PASS |
+| `gsm8k-train-1097` | Haiku 5.5 · plain | REVIEW | det:TARGET_WORDING_CHANGED | REVIEW |
+| `gsm8k-train-1097` | Sonnet 5.5 · chunked | PASS | — | PASS |
+| `gsm8k-train-1097` | Sonnet 5.5 · plain | PASS | — | PASS |
+| `gsm8k-train-1795` | Haiku 5.5 · chunked | PASS | — | REVIEW |
+| `gsm8k-train-1795` | Haiku 5.5 · plain | REVIEW | det:RELATION_OR_QUANTIFIER_LOST, det:RELATION_OR_QUANTIFIER_ADDED | REVIEW |
+| `gsm8k-train-1795` | Sonnet 5.5 · chunked | PASS | — | REVIEW |
+| `gsm8k-train-1795` | Sonnet 5.5 · plain | PASS | — | REVIEW |
+| `gsm8k-train-2016` | Haiku 5.5 · chunked | REVIEW | critic:UNSURE | REVIEW |
+| `gsm8k-train-2016` | Haiku 5.5 · plain | PASS | — | PASS |
+| `gsm8k-train-2016` | Sonnet 5.5 · chunked | PASS | — | PASS |
+| `gsm8k-train-2016` | Sonnet 5.5 · plain | REVIEW | det:NUMBER_WORD_ADDED, det:RELATION_OR_QUANTIFIER_ADDED | REJECT |
+| `gsm8k-train-2998` | Haiku 5.5 · chunked | PASS | — | REVIEW |
+| `gsm8k-train-2998` | Haiku 5.5 · plain | PASS | — | REVIEW |
+| `gsm8k-train-2998` | Sonnet 5.5 · chunked | PASS | — | PASS |
+| `gsm8k-train-2998` | Sonnet 5.5 · plain | PASS | — | REVIEW |
+| `gsm8k-train-3578` | Haiku 5.5 · chunked | PASS | — | PASS |
+| `gsm8k-train-3578` | Haiku 5.5 · plain | PASS | — | PASS |
+| `gsm8k-train-3578` | Sonnet 5.5 · chunked | PASS | — | PASS |
+| `gsm8k-train-3578` | Sonnet 5.5 · plain | PASS | — | PASS |
+| `gsm8k-train-5378` | Haiku 5.5 · chunked | PASS | — | REVIEW |
+| `gsm8k-train-5378` | Haiku 5.5 · plain | PASS | — | REVIEW |
+| `gsm8k-train-5378` | Sonnet 5.5 · chunked | PASS | — | REVIEW |
+| `gsm8k-train-5378` | Sonnet 5.5 · plain | PASS | — | REVIEW |
+| `gsm8k-train-5508` | Haiku 5.5 · chunked | REVIEW | det:LEAK_OPERATION | REVIEW |
+| `gsm8k-train-5508` | Haiku 5.5 · plain | REVIEW | det:LEAK_OPERATION, det:RELATION_OR_QUANTIFIER_LOST, det:RELATION_OR_QUANTIFIER_ADDED | REVIEW |
+| `gsm8k-train-5508` | Sonnet 5.5 · chunked | REVIEW | det:LEAK_OPERATION | REVIEW |
+| `gsm8k-train-5508` | Sonnet 5.5 · plain | REVIEW | det:LEAK_OPERATION, det:RELATION_OR_QUANTIFIER_LOST, det:RELATION_OR_QUANTIFIER_ADDED | REVIEW |
+| `gsm8k-train-5510` | Haiku 5.5 · chunked | REVIEW | det:CHUNK_FORMAT | PASS |
+| `gsm8k-train-5510` | Haiku 5.5 · plain | REVIEW | det:TARGET_WORDING_CHANGED | REVIEW |
+| `gsm8k-train-5510` | Sonnet 5.5 · chunked | PASS | — | PASS |
+| `gsm8k-train-5510` | Sonnet 5.5 · plain | PASS | — | PASS |
+| `gsm8k-train-5951` | Haiku 5.5 · chunked | PASS | — | PASS |
+| `gsm8k-train-5951` | Haiku 5.5 · plain | PASS | — | PASS |
+| `gsm8k-train-5951` | Sonnet 5.5 · chunked | PASS | — | PASS |
+| `gsm8k-train-5951` | Sonnet 5.5 · plain | PASS | — | PASS |
+| `gsm8k-train-6838` | Haiku 5.5 · chunked | PASS | — | REVIEW |
+| `gsm8k-train-6838` | Haiku 5.5 · plain | REVIEW | det:RELATION_OR_QUANTIFIER_ADDED | REVIEW |
+| `gsm8k-train-6838` | Sonnet 5.5 · chunked | PASS | — | REVIEW |
+| `gsm8k-train-6838` | Sonnet 5.5 · plain | PASS | — | REVIEW |
 
-Files: `data/outputs/anthropic-v1/pilot_generations.jsonl` (rewrites), `pilot_generations.verify-critic-det-program.jsonl` (checker), `ledger.csv` (cost); earlier pilot in `pilot/`.
+Files: `data/outputs/anthropic-v1/pilot_generations.jsonl` (rewrites), `pilot_generations.verify-critic-det-program.v1_1.jsonl` (checker v1.1), `pilot_generations.verify-critic-det-program.jsonl` (checker v1.0, kept), `ledger.csv` (cost); earlier pilot in `pilot/`.

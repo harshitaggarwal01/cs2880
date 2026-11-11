@@ -3,6 +3,8 @@
   python src/verify.py data/outputs/main-v1/generations.jsonl --config config.yaml
   python src/verify.py ... --layers det            # deterministic layer only (no API)
   python src/verify.py ... --layers det,critic     # ablations for RQ3
+  python src/verify.py gens.jsonl --redecide gens.verify-critic-det-program.jsonl --out new.jsonl
+                                                   # re-decide offline with current rules (no API)
 When a full (det,critic,program) verify file for the same generations already exists, --layers
 subsets are computed offline from it (no API calls); rows are tagged "derived_from".
 Baseline rows (generator "deterministic") get the deterministic layer only unless
@@ -16,6 +18,9 @@ Decision policy (frozen before looking at main-set labels; thresholds tuned on d
           OR source and candidate programs evaluate to different values
   REVIEW  any REVIEW flag, critic UNSURE, critic refusal/parse failure, program not checkable
   PASS    otherwise
+v1.1 (Nov 11, tuned on the 10 dev problems only): extracted relation types that differ while the recomputed
+answers MATCH are logged (program.relation_types_equal) but no longer a REVIEW reason. Rows store
+"verifier_version"; rows without it are v1.0.
 """
 from __future__ import annotations
 
@@ -33,6 +38,7 @@ from common import FROZEN, append_jsonl, read_jsonl, sha256_text
 from deterministic_checks import check
 from llm import call_with_one_retry, done_ids, fill, load_prompt, make_provider, parse_json_block
 
+VERIFIER_VERSION = "1.1"
 ALL_LAYERS = {"det", "critic", "program"}
 META_KEYS = ("returned_model", "response_id", "usage", "latency_s", "stop_reason")
 _CACHES: dict[Path, dict[str, dict]] = {}
@@ -109,8 +115,9 @@ def decide(det: dict, critic: dict | None, prog: dict | None, require_critic: bo
         review.append("critic:" + ("missing" if critic.get("_error") else critic.get("overall")))
     if prog and prog.get("status") == "UNCHECKABLE":
         review.append("program:UNCHECKABLE")
-    if prog and prog.get("status") == "MATCH" and not prog.get("relation_types_equal", True):
-        review.append("program:RELATIONS_DIFFER")
+    # v1.1: relation_types_equal stays in the stored row as a logged feature, but it is no longer a REVIEW
+    # reason when the recomputed answers MATCH (dev pilot: 18/40 such reviews, every answer matched; the
+    # extractor labels the same relation differently across paraphrases).
     return ("REVIEW", review) if review else ("PASS", [])
 
 
@@ -160,9 +167,32 @@ def derive_subset(full_path: Path, out_path: Path, layers: set[str]) -> None:
         critic = {k: x for k, x in v["critic"].items() if k != "_meta"} if v.get("critic") and "critic" in layers else None
         row = {**{k: x for k, x in v.items() if k != "extract_meta"}, "layers": sorted(layers), "decision": decision,
                "reasons": reasons, "critic": critic, "program": v.get("program") if "program" in layers else None,
-               "derived_from": full_path.name}
+               "derived_from": full_path.name, "verifier_version": VERIFIER_VERSION}
         append_jsonl(out_path, row)
         print(v["output_id"], decision, reasons[:3], "(derived)")
+
+
+def redecide_row(v: dict, g: dict, source: str) -> dict:
+    """Re-decide a stored full verify row with the current rules: layer 1 is recomputed (free); the stored
+    critic and program results are reused, so no API calls are made."""
+    det = check(source, g["adapted_problem"], g["transformation"])
+    critic = v.get("critic")
+    prog = v.get("program")
+    decision, reasons = decide(det, critic, prog, require_critic="critic" in v.get("layers", []))
+    return {**v, "decision": decision, "reasons": reasons, "deterministic": det, "verifier_version": VERIFIER_VERSION,
+            "redecided_from": {"decision": v["decision"], "reasons": v["reasons"],
+                               "verifier_version": v.get("verifier_version", "1.0")},
+            "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+
+
+def redecide_file(full_path: Path, gen_path: Path, out_path: Path, sources: dict[str, str]) -> list[dict]:
+    """Write a re-decided copy of `full_path` to `out_path` (overwrites; the input file is untouched)."""
+    if out_path.resolve() == full_path.resolve():
+        raise ValueError("refusing to overwrite the input verify file")
+    gens = {g["output_id"]: g for g in read_jsonl(gen_path)}
+    rows = [redecide_row(v, gens[v["output_id"]], sources[gens[v["output_id"]]["source_id"]]) for v in read_jsonl(full_path)]
+    out_path.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    return rows
 
 
 def load_sources() -> dict[str, str]:
@@ -181,6 +211,8 @@ def main() -> None:
     ap.add_argument("--layers", default="det,critic,program")
     ap.add_argument("--mock", action="store_true")
     ap.add_argument("--out", default=None)
+    ap.add_argument("--redecide", default=None, metavar="VERIFY_JSONL",
+                    help="re-decide an existing verify file offline with the current rules (no API); needs --out")
     ap.add_argument("--include-baseline-llm", action="store_true",
                     help="also run critic/program layers on deterministic-baseline rows (default: det only)")
     args = ap.parse_args()
@@ -188,6 +220,13 @@ def main() -> None:
     cfg = yaml.safe_load(open(args.config))
     src = load_sources()
     gen_path = Path(args.generations)
+    if args.redecide:
+        if not args.out:
+            ap.error("--redecide needs --out")
+        rows = redecide_file(Path(args.redecide), gen_path, Path(args.out), src)
+        from collections import Counter
+        print(f"verifier v{VERIFIER_VERSION}:", dict(Counter(r["decision"] for r in rows)), "->", args.out)
+        return
     gens = read_jsonl(gen_path)
     if gens and all(is_baseline(g) for g in gens) and not args.include_baseline_llm:
         layers &= {"det"}
@@ -230,7 +269,7 @@ def main() -> None:
         append_jsonl(out_path, {"output_id": g["output_id"], "raw_output": "", "layers": sorted(row_layers),
                                 "decision": decision, "reasons": reasons, "deterministic": det, "critic": critic,
                                 "program": prog, "critic_prompt_sha256": c_sha, "extract_prompt_sha256": e_sha,
-                                "extract_meta": extract_meta,
+                                "extract_meta": extract_meta, "verifier_version": VERIFIER_VERSION,
                                 "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds")})
         print(g["output_id"], decision, reasons[:3])
 

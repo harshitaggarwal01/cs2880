@@ -7,6 +7,14 @@ and this project uses semantic versioning where applicable.
 
 ## [Unreleased]
 
+### Verifier v1.1 (2026-11-11, dev problems only)
+- `verify.decide`: `program:RELATIONS_DIFFER` is no longer a REVIEW reason when the recomputed answers MATCH; `relation_types_equal` stays in the row
+- `deterministic_checks`: new values written only as a word one…ten → REVIEW `NUMBER_WORD_ADDED` (digits unchanged); synonym classes for total/remaining phrases; "each" counted by presence; human cue names in `readable()`; new REVIEW flag `CHUNK_FORMAT` for chunked outputs
+- `VERIFIER_VERSION = "1.1"` stored in every verify row; `verify.py --redecide` re-decides a stored verify file offline (layer 1 recomputed, critic and program reused)
+- Dev pilot re-decided offline ($0): 17/22/1 → 29 PASS / 11 REVIEW / 0 REJECT (`pilot_generations.verify-critic-det-program.v1_1.jsonl`; v1.0 file kept)
+- `docs/methods/verifier.md` (version log); `docs/run_examples.md` regenerated from the v1.1 file with updated notes
+- Tests: `tests/test_verifier_v11.py` (23 tests); 135 total
+
 ### Summary (2026-11-02, branch dev-phases)
 All phases coded and tested offline (108 tests after the Nov 2 statistical review); mock pipeline runs end to end; real Anthropic pilot run and verified ($1.19); check-in 1 materials.
 

@@ -1,4 +1,4 @@
-# Handoff: Phase 1 (2026-11-02)
+# Handoff: Phase 1 (2026-11-02; updated 2026-11-11 for verifier v1.1)
 
 ## State
 - Branch: `dev-phases` (off `main` at `5d02d64`)
@@ -6,7 +6,8 @@
 - **Next agent:** start from [`AGENT_PROMPT_NEXT.md`](AGENT_PROMPT_NEXT.md) (tasks A–G with rules and commands)
 - run_id: `anthropic-v1`: real pilot done (dev set only), main run not started; `anthropic-v1-mock` runs end to end offline
 - Config: `config.anthropic.yaml` (SHA-256 prefix `10dd8ddccdd13230`); becomes `config.frozen.yaml` inside the run folder on first use
-- Tests: 112 passed / 0 failed (`make test`), covering Phase 1–4 code
+- Tests: 135 passed / 0 failed (`make test`), covering Phase 1–4 code and verifier v1.1
+- Verifier: **v1.1** (Nov 11, tuned on dev only; see `docs/methods/verifier.md`). Pilot re-decided offline: 29 PASS / 11 REVIEW / 0 REJECT (v1.0: 17 / 22 / 1)
 - API keys: an Anthropic key was supplied in-session on Nov 2 (not stored in the repo). For a new session, add `ANTHROPIC_API_KEY` to the environment's secrets.
 
 ## What was run
@@ -40,12 +41,14 @@
 - 40 generations: `claude-haiku-5-5` and `claude-sonnet-5-5` × {plain, chunked} × 10 dev problems. 3 plain outputs returned `NO_REWRITE_NEEDED`. All `returned_model` values match the requested models.
 - Verifier: 17 PASS, 22 REVIEW, 1 REJECT. Critic: 39 SAFE, 1 UNSURE. Program layer: 40/40 answers MATCH.
 - Cost: $1.19 total (gen $0.05, critic $0.59, extract $0.56), about $0.03 per output. Extrapolates to about $20 for the main run, in line with the budget.
-- **Verifier precision issues to resolve before the main run:**
-  1. `program:RELATIONS_DIFFER` fires on 18/40 even though every recomputed answer matches. Relation-type comparison is too strict; it alone drives most REVIEWs. Options: drop it from `decide` when the values MATCH, or keep it as a logged feature only.
-  2. The one REJECT (`sonnet55|plain|gsm8k-train-2016`, the Vikki pay problem) is a false alarm. The rewrite says "taken out in three ways", and "three" equals a value derivable from the source. Counting words ("three ways", "two steps") should not count as leaked derived values.
-  Both are verifier-tuning decisions. Make them on the dev set only, before main generation, and record them in the decision log.
-- **One real catch:** `haiku55|chunked|gsm8k-train-2016` (Vikki as bullets). "From her weekly earnings" no longer governs the 5% line, so it can be read as 5% of what's left after tax. The critic returned UNSURE → REVIEW. Keep this as a positive example for the rubric discussion.
-- Cosmetic: the det flag detail prints regex-derived cue names (e.g. "addinged" for `add(?:ing|ed)?`). It affects display only, not decisions; fix `readable()` in `src/deterministic_checks.py` when tuning.
+- **Verifier precision issues: resolved in v1.1 (Nov 11, dev only).** See `docs/methods/verifier.md` for the full table.
+  1. `program:RELATIONS_DIFFER` no longer sends MATCH items to REVIEW; `relation_types_equal` is kept as a logged feature.
+  2. The "taken out in three ways" REJECT is now REVIEW (`NUMBER_WORD_ADDED`): a new value written only as a word one…ten. Digits keep the strict rule; "Stories 11 to 20" still REJECTs.
+  3. Synonym classes {altogether, in total, total, combined} and {remaining, the rest, left, other}; "each" counts presence only.
+  4. `readable()` prints human cue names ("add", not "addinged").
+  5. New REVIEW flag `CHUNK_FORMAT` (chunked fact line without "- ", or no "Question:" line).
+  - Re-decided offline (no API, $0): `data/outputs/anthropic-v1/pilot_generations.verify-critic-det-program.v1_1.jsonl`; the v1.0 file is kept. **29 PASS / 11 REVIEW / 0 REJECT.** These are tuning-set numbers: optimistic by construction, not rates.
+- **One real catch (still REVIEW in v1.1):** `haiku55|chunked|gsm8k-train-2016` (Vikki as bullets). "From her weekly earnings" no longer governs the 5% line, so it can be read as 5% of what's left after tax. The critic returned UNSURE → REVIEW. Keep this as a positive example for the rubric discussion.
 
 ## Backup to Hugging Face
 `src/push_hf.py` stages everything hard to reproduce into `data/hf_staging/` (gitignored): frozen sample, real run outputs, extraction cache, ledger, labels and keys, the earlier pilot, calibration sheets, prompts, configs, checksums and a dataset card. It then uploads to the **private** dataset repo `harshitaggarwal/safeadapt-math`.
@@ -78,6 +81,6 @@ Resume a partial run with `python src/run_phase1.py --config config.anthropic.ya
 - [ ] Submit the teacher survey for a CUHS determination this semester, or defer
 
 ## Next owner's first three actions
-1. Decide the two verifier-precision fixes above (dev set only); re-verify the pilot.
+1. ~~Verifier precision fixes~~ done (v1.1, Nov 11). Next: Task A2 (open model + critic matrix code).
 2. Both teammates label the calibration sheets blind; run the agreement and disagreement commands; freeze rubric v1.
 3. With rubric v1 frozen and the key in the environment: `make phase1` (≈ $20; ask first).
