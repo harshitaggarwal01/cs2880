@@ -102,6 +102,10 @@ def build_game(rates: pd.DataFrame, group_cols: list[str] | None = None, rate_co
         raise ValueError("no rate column found (give rate_col)")
     lo_col = lo_col or (f"{rate_col}_lo" if f"{rate_col}_lo" in d else "lo")
     hi_col = hi_col or (f"{rate_col}_hi" if f"{rate_col}_hi" in d else "hi")
+    # summary rows ("all" in any grouping column, as in ppi.csv / rates tables) are not audit targets
+    gcols = [c for c in (["group"] + list(group_cols or []) + ["transformation", "generator", "model"]) if c in d]
+    if gcols:
+        d = d[~d[gcols].astype(str).eq("all").any(axis=1)].reset_index(drop=True)
     if "group" in d:
         names = d["group"].astype(str).tolist()
     else:
