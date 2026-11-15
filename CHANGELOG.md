@@ -7,6 +7,12 @@ and this project uses semantic versioning where applicable.
 
 ## [Unreleased]
 
+### Free tier + first human labels (2026-11-16)
+- `config.ollama.yaml`: a $0 tier with open-weight models served by Ollama on OSCAR. Qwen and Llama rewriters, a large Qwen primary critic and extractor, and a Llama critic. The model tags are examples to be set from `ollama list`. Claude/GPT critics can be added later on the same outputs and labels.
+- `scripts/oscar_ollama.sbatch`: Slurm job that starts Ollama, pulls the configured models, and runs the dev pilot (default) or the full run through the sheets.
+- Annotator A's calibration labels imported (`data/calibration/pilot/sheet_A.xlsx` / `.csv`; 70/70 complete).
+- `sheets_xlsx`: a NO_REWRITE_NEEDED row whose text is an exact copy of the original gets the safety labels filled in automatically.
+
 ### Easier labelling (2026-11-15)
 - `src/sheets_xlsx.py` (`make sheets-xlsx` / `make import-sheets`): Excel sheets with dropdowns for every label, a QUICK = ALL CLEAR shortcut, a live green "done" column, frozen problem columns, and Instructions and Codes tabs. Import validates every row (enums, conflicts, evidence for flagged rows, failure codes, abstention) and writes the CSV the other scripts read.
 - Calibration and main-study sheet builders also write the xlsx files; `adjudicate.py` imports newer xlsx files first.

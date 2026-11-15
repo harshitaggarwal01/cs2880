@@ -192,6 +192,12 @@ def validate(r: dict) -> tuple[dict, list[str], bool]:
             probs.append("QUICK=ALL CLEAR but a problem label is set; clear one of them")
     elif quick:
         probs.append(f"QUICK must be blank or ALL CLEAR, not {quick!r}")
+    elif (r.get("model_status") == "NO_REWRITE_NEEDED" and not any(r.get(k) for k in KEY)
+          and " ".join(r.get("original", "").split()) == " ".join(r.get("adaptation", "").split())):
+        # an unchanged copy of the original is, by construction, the same task with nothing leaked
+        for k, v in ALL_CLEAR.items():
+            r[k] = v
+        r["failure_codes"] = r.get("failure_codes", "")
     for k, vals in ENUMS.items():
         if r.get(k) and r[k].upper() not in vals:
             probs.append(f"{k}={r[k]!r} not in {vals}")

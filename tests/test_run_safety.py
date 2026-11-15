@@ -91,7 +91,7 @@ class LeanDesign(unittest.TestCase):
         self.assertEqual(plan["design"], "full")
 
     def test_config_plan_is_lean(self):
-        for f in ("config.matrix.yaml", "config.matrix-budget.yaml", "config.matrix-mid.yaml"):
+        for f in ("config.matrix.yaml", "config.matrix-budget.yaml", "config.matrix-mid.yaml", "config.ollama.yaml"):
             plan = mas.load_plan(str(ROOT / f), None)
             self.assertEqual(plan["design"], "lean", f)
             self.assertEqual(plan["label_frac"]["naive"], 1.0)

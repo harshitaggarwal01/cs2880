@@ -31,7 +31,7 @@ Nothing wrong with the adaptation?
    - 3 = much easier
 3. The **done** column turns green. Next row.
 
-If **model said** is `NO_REWRITE_NEEDED`, leave presentation blank. Set **abstention_appropriate** to YES if the original was already short and clear, NO if it really needed simplifying.
+If **model said** is `NO_REWRITE_NEEDED`, leave presentation blank (the safety labels are filled in automatically when the text is an exact copy of the original). Set **abstention_appropriate** to YES if the original was already short and clear, NO if it really needed simplifying.
 
 ## When something is wrong (three passes)
 | Pass | Check | If wrong |
