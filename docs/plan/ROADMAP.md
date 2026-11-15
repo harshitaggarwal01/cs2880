@@ -72,7 +72,9 @@ Detailed phase docs: [PHASE1.md](PHASE1.md) · [PHASE2.md](PHASE2.md) · [PHASE3
 | Verifier tuning v1.1 (RELATIONS_DIFFER, number words, synonyms, cue names, chunk format) | done (Nov 11), dev only; pilot re-decided offline: 29 PASS / 11 REVIEW / 0 REJECT (v1.0: 17/22/1); 135 tests |
 | Open model + generator × critic matrix code (Task A2) | done (Nov 11): provider, matrix config, multi-critic verify, critic_matrix.py; mock end to end; 161 tests. Not run on real APIs (no keys in the environment); dev-pilot matrix run ≈ $2.3, ask first |
 | Audit of Cathy's Nov 11 work + Option-2 build (Nov 15) | done: lean labelling design + adjudication script, PPI in the pipeline, refusal reporting, v1.0-vs-v1.1 sensitivity table, cost estimator, hard cap, budget/mid tiers, GSM1K fetch, checker v1.1.1; Task H future-method modules (online bandit + OPE, audit game, Dawid–Skene, small checker, weighted conformal, iterated red-team, scope adapters, student-study design) |
-| Rubric v1 frozen | pending: the 70 calibration items are still unlabelled (critical path) |
+| Calibration labels | annotator A done (Nov 16, 70/70); annotator B pending |
+| Free OSCAR tier | built (Nov 16): `config.ollama.yaml`, `scripts/oscar_ollama.sbatch`, `docs/plan/AGENT_PROMPT_OSCAR.md`; dev pilot to run on OSCAR (branch `oscar-free-tier`) |
+| Rubric v1 frozen | pending annotator B → agreement → freeze (critical path) |
 | Main generation, annotation, adjudication | pending |
 | Phase 2–4 on real labels | pending |
 

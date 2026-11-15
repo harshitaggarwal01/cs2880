@@ -61,6 +61,10 @@ Then run `pip install -r requirements.txt && make test`. Expect **221 tests pass
 
 ## 3. Your tasks, in order
 
+> **Status as of 2026-11-16:**
+> - Free tier on OSCAR is built; its own agent prompt is `docs/plan/AGENT_PROMPT_OSCAR.md` (branch `oscar-free-tier`).
+> - Annotator A's calibration labels are in; annotator B is pending.
+>
 > **Status as of 2026-11-15:**
 > - Tasks A, A2 and H are **built**. Next is Task B (humans label the 70 calibration items), then Task C on a checker tier chosen by the owner.
 > - Option 2 was chosen: full matrix with lean labelling, prespecified in `docs/plan/PHASE1.md`.

@@ -68,6 +68,11 @@ docs/                   dossier, explainer, plan/, methods/, check-in note, deck
 
 ## 5. Status
 
+**Update, Nov 16:**
+- First human labels (annotator A, preliminary): careful prompts 92% SAFE vs the realistic prompt 30%.
+- The AI labeller agreed with the human 93% of the time (κ 0.79) but missed 5 of 18 unsafe rewrites.
+- Free tier on OSCAR via Ollama ($0), on branch `oscar-free-tier`.
+
 **Update, Nov 15:**
 - Option 2 is chosen and built: three rewriters (Haiku, Sonnet, Qwen), every critic on every output, and lean labelling, about 850 items and about 14 h per annotator.
 - Cost controls are in place: an estimator, a hard cap, and budget/mid/full checker tiers. The budget tier (≈ $7.2) fits the current $9.

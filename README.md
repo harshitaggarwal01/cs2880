@@ -10,6 +10,8 @@ Harvard COMPSCI 2880 (AI for Social Impact), Fall 2026.
 | Latest check-in (Nov 3): progress and first real results | [`docs/checkin_1.md`](docs/checkin_1.md) · slides [`docs/SafeAdapt-Math_checkin1.pptx`](docs/SafeAdapt-Math_checkin1.pptx) |
 | Structure, methods, code map and future plans | [`docs/PROJECT_OVERVIEW.md`](docs/PROJECT_OVERVIEW.md) |
 | Picking up the work (agent or teammate): remaining tasks, rules, commands | [`docs/plan/AGENT_PROMPT_NEXT.md`](docs/plan/AGENT_PROMPT_NEXT.md) |
+| Running the free tier on OSCAR (Ollama): agent prompt | [`docs/plan/AGENT_PROMPT_OSCAR.md`](docs/plan/AGENT_PROMPT_OSCAR.md) |
+| Presentation content (progress, Nov 2026) | [`docs/slides_progress_2.md`](docs/slides_progress_2.md) |
 | The plan in one page | [`docs/one_page_brief.md`](docs/one_page_brief.md) |
 | Real outputs and checker verdicts from our runs (Nov 2 API pilot + earlier pilot) | [`docs/run_examples.md`](docs/run_examples.md) |
 | Real LLM outputs to show the professor | [`docs/professor_examples.md`](docs/professor_examples.md) |
@@ -45,7 +47,8 @@ Harvard COMPSCI 2880 (AI for Social Impact), Fall 2026.
   - Cost estimator, hard cap and budget/mid/full tiers.
   - Every future method coded (online bandit + off-policy evaluation, Stackelberg audit game, Dawid–Skene critic ensemble, small open checker, weighted conformal, iterated red-team, multilingual/science/hint-level adapters).
   - 221 tests.
-- **In progress:** both teammates label the 70 calibration items blind (critical path). Paid runs wait for keys; the budget tier fits $9.
+- **Nov 16:** annotator A finished the 70 calibration labels (preliminary: careful prompts 92% SAFE vs realistic prompt 30%; the AI labeller missed 5 of 18 unsafe). Free Ollama tier built for OSCAR (branch `oscar-free-tier`).
+- **In progress:** annotator B's calibration labels (critical path); the free dev pilot on OSCAR.
 - **Next:**
   1. Tune the two checker false-alarm rules on the dev problems; re-verify the pilot (about $1).
   2. Both teammates label `data/calibration/pilot/sheet_{A,B}.csv` blind, check agreement, freeze rubric v1.

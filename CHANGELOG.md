@@ -8,6 +8,8 @@ and this project uses semantic versioning where applicable.
 ## [Unreleased]
 
 ### Free tier + first human labels (2026-11-16)
+- Branch `oscar-free-tier` cut from `dev-phases`. Added `docs/plan/AGENT_PROMPT_OSCAR.md`, a prompt for a Claude Code agent on OSCAR: setup, model choice, smoke test, dev pilot, main run, blinding rules.
+- `docs/slides_progress_2.md`: 12-slide presentation content.
 - `config.ollama.yaml`: a $0 tier with open-weight models served by Ollama on OSCAR. Qwen and Llama rewriters, a large Qwen primary critic and extractor, and a Llama critic. The model tags are examples to be set from `ollama list`. Claude/GPT critics can be added later on the same outputs and labels.
 - `scripts/oscar_ollama.sbatch`: Slurm job that starts Ollama, pulls the configured models, and runs the dev pilot (default) or the full run through the sheets.
 - Annotator A's calibration labels imported (`data/calibration/pilot/sheet_A.xlsx` / `.csv`; 70/70 complete).

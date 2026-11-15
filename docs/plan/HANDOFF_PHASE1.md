@@ -1,9 +1,12 @@
-# Handoff: Phase 1 (2026-11-02; updated 2026-11-11 for verifier v1.1; 2026-11-15 for the Option-2 build)
+# Handoff: Phase 1 (2026-11-02; updated 2026-11-11 for verifier v1.1; 2026-11-15 for the Option-2 build; 2026-11-16 for the free OSCAR tier)
 
 ## State
 - Branch: `dev-phases` (off `main` at `5d02d64`)
 - Commit SHA: see `git log -1` on `dev-phases`; last updated Nov 15 (audit + Option-2 build)
-- **Next agent:** start from [`AGENT_PROMPT_NEXT.md`](AGENT_PROMPT_NEXT.md) (tasks A–G with rules and commands)
+- **Branches:** `oscar-free-tier` (active; cut from `dev-phases` on Nov 16) holds the free OSCAR run; `dev-phases` holds everything before it; `main` is the check-in state.
+- **Next agents:**
+  - On OSCAR: [`AGENT_PROMPT_OSCAR.md`](AGENT_PROMPT_OSCAR.md) (free Ollama tier: setup, model choice, dev pilot, main run).
+  - Everywhere else: [`AGENT_PROMPT_NEXT.md`](AGENT_PROMPT_NEXT.md) (tasks A–H with rules and commands).
 - run_id: `anthropic-v1`: real pilot done (dev set only), main run not started; `anthropic-v1-mock` runs end to end offline
 - Config: `config.anthropic.yaml` (SHA-256 prefix `10dd8ddccdd13230`); becomes `config.frozen.yaml` inside the run folder on first use
 - Tests: 221 passed / 0 failed (`make test`): Phase 1–4 code, verifier v1.1.1, the matrix code, lean labelling, cost controls and the Task H modules
@@ -65,6 +68,17 @@
 - **Cost estimates** (from the Nov 2 ledger: Opus critic about $0.015 per call, extraction about $0.011 per text; Qwen at the conservative table price):
   - Dev pilot through the full matrix (`make pilot CFG=config.matrix.yaml`, then `verify.py ... --all-critics` on `pilot_generations.jsonl`): about **$2.3**. Ask the owner first.
   - Main run with the matrix: about **$40–45** (Opus critic ~$16, extraction ~$13, Sonnet critic ~$8, Qwen ≤ $4, generation ~$2). Ask the owner for a cap.
+
+## Free OSCAR tier and calibration progress (Nov 16)
+- **Free tier:** `config.ollama.yaml` and `scripts/oscar_ollama.sbatch` (Ollama on OSCAR, $0).
+  - The model tags are examples; set them from `ollama list`.
+  - Run the dev pilot now. The main generation can follow as soon as the pilot is healthy and the config is frozen. It does not need the second annotator, but **labelling the main sheets waits for the frozen rubric**.
+- **Calibration:** annotator A (Harshit) labelled all 70 items (`data/calibration/pilot/sheet_A.xlsx` → `.csv`, validated). Annotator B (Cathy) is pending.
+- **Preliminary, one annotator (for the presentation only; do not show to annotator B before she finishes):**
+  - Careful prompts SAFE 46/50 (92%; 95% CI 81–97%). Realistic prompt 6/20 (30%; 15–52%): Opus 0/10, Haiku 6/10.
+  - Human A vs the AI-proposed preliminary labels: SAFE agreement 93%, κ = 0.79. All 5 disagreements are unsafe rewrites the AI called safe.
+- **Presentation content:** `docs/slides_progress_2.md` (12 slides, Claude Design markdown). Slide 8 is a placeholder for the OSCAR pilot.
+- **Keys:** none needed for the free tier. Anthropic later adds a Claude critic on the same outputs (about $7 or less). OpenAI is optional.
 
 ## Option-2 build (Nov 15): decided and built, nothing run
 - **Owner decisions (Nov 15):**
