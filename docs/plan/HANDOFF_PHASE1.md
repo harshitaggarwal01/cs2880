@@ -80,6 +80,7 @@
   | `config.matrix.yaml` | ≈ $58 | ≈ $2.5 |
 
   Each config carries `budget_usd`; `run_phase1.py` refuses any paid step that would exceed it.
+- **Offline end-to-end check (Nov 15, fake labels on `matrix-budget-v1-mock`):** every step and every analysis module ran, from generation through sheets, adjudication, the analysis step with PPI, the report, the critic matrix, Dawid–Skene, policy, online policy, the audit game, the small checker, conformal, cascade and distill. At full bootstrap size (B = 10,000) the analysis step and the report each take about 15 minutes; that is expected.
 - **Lean labelling:** about 850 of about 1,430 items are labelled, about 14 h per annotator (offline end-to-end check on `matrix-budget-v1-mock`). Merge the two sheets with `make adjudicate`.
 - **Keys needed:** `ANTHROPIC_API_KEY` (Anthropic) and `OPENROUTER_API_KEY` (Qwen). Add them through the environment's secrets, never in chat or files, and turn on OpenRouter's account-level training opt-out.
 
