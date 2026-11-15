@@ -5,7 +5,7 @@ MOCK ?=
 ANN ?= data/annotations/$(notdir $(RUN))
 CAP ?=
 
-.PHONY: help setup test fetch calibrate pilot phase1 generate ablation baseline verify repair sheets ledger evaluate report variance conformal cascade ppi policy redteam demo release clean-mock critic-matrix critics estimate adjudicate policy-online audit-game critic-ensemble train-checker mgsm science conformal-shift-demo redteam-iterated
+.PHONY: help setup test fetch calibrate pilot phase1 generate ablation baseline verify repair sheets ledger evaluate report variance conformal cascade ppi policy redteam demo release clean-mock critic-matrix critics estimate adjudicate policy-online audit-game critic-ensemble train-checker mgsm science conformal-shift-demo redteam-iterated sheets-xlsx import-sheets
 
 help: ## Show this list of targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-12s %s\n", $$1, $$2}'
@@ -124,3 +124,9 @@ conformal-shift-demo: ## Weighted conformal under planted covariate shift (Task 
 
 redteam-iterated: ## Iterated attacker vs checker with a held-out attack set (API cost unless MOCK=--mock; ask first)
 	$(PY) src/redteam.py --config $(CFG) --iterated --rounds 3 --n 50 $(MOCK)
+
+sheets-xlsx: ## Make Excel labelling sheets (dropdowns, ALL CLEAR, instructions) from ANN's sheet_A/B.csv
+	$(PY) src/sheets_xlsx.py export $(ANN)/sheet_A.csv $(ANN)/sheet_B.csv --force
+
+import-sheets: ## Check and import labels from ANN's sheet_A/B.xlsx back to CSV (lists every problem by row)
+	$(PY) src/sheets_xlsx.py import $(ANN)/sheet_A.xlsx $(ANN)/sheet_B.xlsx

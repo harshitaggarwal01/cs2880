@@ -75,6 +75,13 @@ def main() -> None:
     ap.add_argument("--resolved", help="TO_ADJUDICATE.csv with *_final columns filled")
     args = ap.parse_args()
     ann = Path(args.ann)
+    for name in ("sheet_A", "sheet_B"):  # labels entered in the .xlsx sheets are imported (validated) first
+        x, c = ann / f"{name}.xlsx", ann / f"{name}.csv"
+        if x.exists() and (not c.exists() or x.stat().st_mtime > c.stat().st_mtime):
+            from sheets_xlsx import import_xlsx
+            done, probs = import_xlsx(x, partial=True)
+            print(f"imported {x.name}: {done} labelled rows" + (f", {len(probs)} problems (run make import-sheets)"
+                                                                  if probs else ""))
     final, todo, warn = merge(ann / "sheet_A.csv", ann / "sheet_B.csv")
     try:
         from evaluate import agreement, derive

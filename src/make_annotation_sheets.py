@@ -194,6 +194,12 @@ def build(files: list[str], plan: dict, double_frac: float, seed: int, out_dir: 
             w.writerow([i["annotation_id"], i["output_id"], i["source_id"], i["generator"], i["transformation"],
                         i["partition"], is_repair(i), i.get("repair_of", ""), i["annotation_id"] in double,
                         assign[i["annotation_id"]]])
+    try:  # Excel versions with dropdowns for the annotators (labels come back via sheets_xlsx import)
+        from sheets_xlsx import export
+        for name in sheets:
+            export(out_dir / name, force=True)
+    except ImportError as e:  # openpyxl missing: CSV sheets still work
+        print(f"(no .xlsx sheets: {e})")
     minutes = float(plan.get("minutes_per_item", 1.5))
     by_stratum = Counter(f"{g}|{t}|{p}|{'repair' if r else 'first'}" for g, t, p, r in map(stratum, items))
     lab_stratum = Counter(f"{g}|{t}|{p}|{'repair' if r else 'first'}" for g, t, p, r in map(stratum, lab_items))

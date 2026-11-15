@@ -15,7 +15,8 @@ Harvard COMPSCI 2880 (AI for Social Impact), Fall 2026.
 | Real LLM outputs to show the professor | [`docs/professor_examples.md`](docs/professor_examples.md) |
 | The full project plan | [`docs/dossier.md`](docs/dossier.md) |
 | What to read, in order | [`docs/reading_list.md`](docs/reading_list.md) |
-| How to label outputs | [`docs/annotation_guide.md`](docs/annotation_guide.md) |
+| **Labelling: quick start** (Excel sheets with dropdowns) | [`docs/LABELLING_GUIDE.md`](docs/LABELLING_GUIDE.md) |
+| How to label outputs (full rubric) | [`docs/annotation_guide.md`](docs/annotation_guide.md) |
 | What was wrong in the earlier documents | [`docs/source_audit.md`](docs/source_audit.md) |
 | Which models and settings, and why | [`docs/model_selection.md`](docs/model_selection.md) |
 | The earlier ChatGPT documents (superseded) | [`docs/archive/`](docs/archive/) |

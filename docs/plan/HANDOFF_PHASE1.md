@@ -122,6 +122,6 @@ Resume a partial run with `python src/run_phase1.py --config config.anthropic.ya
 - [ ] Submit the teacher survey for a CUHS determination this semester, or defer
 
 ## Next owner's first steps (from Nov 15)
-1. Both teammates label the 70 calibration items blind (`data/calibration/pilot/sheet_A.csv`, `sheet_B.csv`). Run the agreement and disagreement commands, then freeze rubric v1. **This is the critical path; it needs no keys.**
+1. Both teammates label the 70 calibration items blind in **`data/calibration/pilot/sheet_A.xlsx` / `sheet_B.xlsx`** (dropdowns; read `docs/LABELLING_GUIDE.md` first), then run `make import-sheets ANN=data/calibration/pilot`. Run the agreement and disagreement commands, then freeze rubric v1. **This is the critical path; it needs no keys.**
 2. Add the keys. Run `make estimate CFG=config.matrix-budget.yaml CAP=9`, then the dev pilot on the chosen tier: `python src/run_phase1.py --config config.matrix-budget.yaml --from pilot --until pilot`, then `python src/verify.py data/outputs/matrix-budget-v1/pilot_generations.jsonl --config config.matrix-budget.yaml --all-critics` (about $0.3). Check `think_chars` = 0 and `served_by` on the Qwen rows.
 3. With the rubric frozen: `python src/run_phase1.py --config config.matrix-budget.yaml --until sheets` (fetch, including GSM1K → generate → … → lean sheets). Label (about 14 h each), then `make adjudicate ANN=data/annotations/matrix-budget-v1`, then run the `evaluate` and `report` steps, then the Task D/H analyses. Run `make hf-backup` after each milestone.

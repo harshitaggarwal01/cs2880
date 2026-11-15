@@ -88,6 +88,12 @@ def make_calibration_sheets(out_dir: Path = DEFAULT_OUT, seed: int = 2880) -> No
         for i in sorted(items, key=lambda x: x["annotation_id"]):
             w.writerow([i["annotation_id"], i["output_id"], i["source_id"], i["generator"], i["transformation"],
                         i["partition"], False, "", True])
+    try:  # Excel versions with dropdowns (labels come back via `python src/sheets_xlsx.py import`)
+        from sheets_xlsx import export
+        for name in ("sheet_A.csv", "sheet_B.csv"):
+            export(out_dir / name, force=True)
+    except ImportError as e:
+        print(f"(no .xlsx sheets: {e})")
     print(f"{len(items)} pilot items -> sheet_A and sheet_B (both complete); written to {out_dir}")
 
 

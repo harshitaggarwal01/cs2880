@@ -7,6 +7,12 @@ and this project uses semantic versioning where applicable.
 
 ## [Unreleased]
 
+### Easier labelling (2026-11-15)
+- `src/sheets_xlsx.py` (`make sheets-xlsx` / `make import-sheets`): Excel sheets with dropdowns for every label, a QUICK = ALL CLEAR shortcut, a live green "done" column, frozen problem columns, and Instructions and Codes tabs. Import validates every row (enums, conflicts, evidence for flagged rows, failure codes, abstention) and writes the CSV the other scripts read.
+- Calibration and main-study sheet builders also write the xlsx files; `adjudicate.py` imports newer xlsx files first.
+- `docs/LABELLING_GUIDE.md`: a 10-minute quick start, with worked examples from the Nov 2 run (none from the calibration set).
+- Calibration `sheet_A.xlsx` / `sheet_B.xlsx` generated. Tests: `test_sheets_xlsx.py` (3).
+
 ### Audit + Option-2 build (2026-11-15; code only, no paid API calls)
 - **Lean labelling (prespecified):** `make_annotation_sheets.py --config` reads a `labelling:` block.
   - 50% of sources for the careful prompts, paired across rewriters and styles; all realistic-prompt outputs; repairs of labelled originals; 30% of the baseline, nested.
