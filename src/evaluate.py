@@ -59,6 +59,8 @@ def cluster_boot(df: pd.DataFrame, stat, b: int = B, seed: int = SEED) -> tuple[
     """Point estimate and 95% percentile CI, resampling source problems with replacement."""
     rng = np.random.default_rng(seed)
     df = df.reset_index(drop=True)
+    if df.empty:
+        return float("nan"), float("nan"), float("nan")
     groups = {k: np.asarray(v) for k, v in df.groupby("source_id").indices.items()}
     keys = np.array(list(groups))
     point = stat(df)
@@ -754,7 +756,13 @@ def main() -> None:
     verify_rows: list[dict] = []
     for path in args.verify:
         v = pd.read_json(path, lines=True)[["output_id", "decision"]]
-        d = first.merge(v, on="output_id")
+        # repairs are scored against the repairs' own labels; first-pass files against first-pass labels
+        pool = df[df["is_repair"]] if ("is_repair" in df and Path(path).name.startswith("repairs.")) else first
+        d = pool.merge(v, on="output_id")
+        if d.empty:
+            print(f"## Verifier {path}: no labelled items match; skipped\n")
+            verify_rows += read_jsonl(Path(path))
+            continue
         d["FLAG_ANY"] = (d["decision"] != "PASS").astype(int)
         d["FLAG_REJECT"] = (d["decision"] == "REJECT").astype(int)
         for col in ("FLAG_ANY", "FLAG_REJECT"):

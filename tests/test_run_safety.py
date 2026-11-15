@@ -199,6 +199,13 @@ class Checker(unittest.TestCase):
         self.assertEqual(v10_style_decision({"decision": "PASS", "deterministic": {"flags": []}, "program": {}}), "PASS")
 
 
+class EmptyBootstrap(unittest.TestCase):
+    def test_cluster_boot_empty_is_nan(self):
+        from evaluate import cluster_boot
+        point, lo, hi = cluster_boot(pd.DataFrame({"source_id": [], "x": []}), lambda d: 0.0, 10)
+        self.assertTrue(pd.isna(lo) and pd.isna(hi))
+
+
 class Refusals(unittest.TestCase):
     def test_counts_table_has_refusals(self):
         g = pd.DataFrame([{"kind": "main", "output_id": "a", "generator": "g", "transformation": "naive",
