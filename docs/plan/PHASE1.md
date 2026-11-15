@@ -22,6 +22,25 @@ Produce the first real, labelled benchmark: how often two LLMs change the mathem
 
 **Caveat, stated in every result table:** generators and critic are the same model family. LLM judges favour their own family's outputs (Panickssery, Bowman & Feng 2024) and errors correlate within a provider (Kim et al. 2025). Verifier recall is still measured against *human* labels, so the headline numbers stand; what the same-family setup can inflate is the critic layer's apparent agreement with the generators. The cross-family run repeats generation with `gpt-6-luna` and `gemini-3.8-flash` under the same critic once keys arrive.
 
+## Prespecified design changes (2026-11-15, before any main-run generation)
+
+These are fixed now, before any main-run data exists, so they count as prespecified.
+
+1. **Rewriters and critics (Option 2).** Three rewriters: Claude Haiku 5.5, Claude Sonnet 5.5 and the open-weight Qwen3.8-27B. Every critic in the chosen config judges every output. The primary critic named in the config alone drives REVIEW/REJECT, repair and the Phase-1 analysis. The other critics feed only the critic-matrix analysis.
+2. **Lean labelling** (`labelling:` block; `src/make_annotation_sheets.py`):
+   - careful prompts (plain, chunked): 50% of source problems, sampled once per (partition, step bucket) stratum, so every labelled source has all of its careful-prompt rewrites labelled, paired across rewriters and styles;
+   - realistic prompt: all outputs;
+   - repairs: labelled exactly when their original is;
+   - non-AI baseline: 30% of sources, nested inside the careful-prompt sample;
+   - two annotators split the labelled items, with 30% labelled by both for agreement and adjudication (`src/adjudicate.py`).
+3. **Estimation.**
+   - Rates for every condition are reported by `ppi.py` (classical, PPI, PPI++); for partly labelled conditions the PPI++ rate is the headline.
+   - The predictor is the primary verifier's decision ≠ PASS.
+   - The three prespecified McNemar families, the logit and the layer ablations use labelled items only, so they keep their pairing.
+4. **Refusals and empty replies** are excluded from safety rates and reported per condition.
+5. **Checker version.** v1.1.1 (tuned on dev only) is frozen for the main run. The report adds a sensitivity table that re-decides outputs with the relaxed v1.0 rules restored.
+6. **Cost.** A paid step runs only if the spend so far plus its estimate stays within `budget_usd` (`run_phase1.py`; `src/estimate_cost.py`).
+
 ## Work items
 
 | # | Item | Files | Reuses | Done when |

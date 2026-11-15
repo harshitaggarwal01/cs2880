@@ -98,6 +98,21 @@ partitions: [main, ext_asdiv, ext_gsm1k]
 
 minutes_per_review: 1.5
 
+# Hard spending cap for this run folder (USD). run_phase1 refuses a paid step when spent (ledger) + the step's
+# estimate (src/estimate_cost.py) would exceed it. Override with --budget.
+budget_usd: 60
+
+# Labelling plan, prespecified 2026-11-15 (Option 2; see src/make_annotation_sheets.py and docs/plan/PHASE1.md).
+# Fractions are of SOURCE problems per transformation, sampled once per (partition, step bucket) stratum and nested,
+# so every labelled source has all of its rewrites labelled (paired comparisons). Repairs are labelled when their
+# original is. Unlabelled outputs get rates from PPI++ (src/ppi.py) with the primary verifier as predictor;
+# hypothesis tests use labelled items only.
+labelling:
+  design: lean
+  label_frac: {plain: 0.5, chunked: 0.5, naive: 1.0, deterministic: 0.3}
+  double_frac: 0.30        # share of labelled items both annotators label (agreement + adjudication)
+  minutes_per_item: 1.5
+
 # USD per 1M tokens. Anthropic: pricing table (Oct 2026). OpenRouter prices vary by serving provider; these are
 # conservative upper bounds over the listed providers (2026-11-11). The ledger uses the host-reported cost
 # (usage.cost) when a row has one.

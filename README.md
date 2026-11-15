@@ -37,7 +37,14 @@ Harvard COMPSCI 2880 (AI for Social Impact), Fall 2026.
     10 dev problems, fully verified: 17 PASS / 22 REVIEW / 1 REJECT, 40/40 answers recompute equal, $1.19 total.
     Two checker false-alarm sources were found (see `docs/plan/HANDOFF_PHASE1.md`);
   - calibration sheets for the 70-item relabel (`data/calibration/pilot/`).
-- **In progress:** both teammates label the calibration sheets blind; tune the two false-alarm rules on dev only.
+- **Nov 11–15:**
+  - Checker v1.1/v1.1.1 (dev only).
+  - Open-model (Qwen) generator × critic matrix.
+  - Option-2 lean labelling with PPI.
+  - Cost estimator, hard cap and budget/mid/full tiers.
+  - Every future method coded (online bandit + off-policy evaluation, Stackelberg audit game, Dawid–Skene critic ensemble, small open checker, weighted conformal, iterated red-team, multilingual/science/hint-level adapters).
+  - 221 tests.
+- **In progress:** both teammates label the 70 calibration items blind (critical path). Paid runs wait for keys; the budget tier fits $9.
 - **Next:**
   1. Tune the two checker false-alarm rules on the dev problems; re-verify the pilot (about $1).
   2. Both teammates label `data/calibration/pilot/sheet_{A,B}.csv` blind, check agreement, freeze rubric v1.

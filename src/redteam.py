@@ -2,6 +2,7 @@
 
   python src/redteam.py --config config.anthropic.yaml --mock --n 5       # offline plumbing check
   python src/redteam.py --config config.yaml --n 50 --rounds 1 --generator haiku55
+  python src/redteam.py --config config.yaml --mock --n 10 --iterated --rounds 3   # iterated, held-out recall per round
 
 This is a robustness test of OUR checker on public benchmark problems (see docs/methods/redteam.md). It is not an
 attack on any deployed tool. All outputs live under <run_dir>/redteam/ and are quarantined: they never enter the
@@ -182,18 +183,174 @@ def make_blind_sheet(gen_path: Path, out_csv: Path, n: int = 30, seed: int = 288
     return out_csv
 
 
+# ------------------------------------------------------------------ iterated mode (held-out attack set)
+
+ITER_FILE = "redteam_iterated.jsonl"
+ITER_SUMMARY = "redteam_iterated_summary"
+
+
+def default_checker(source_text: str, candidate: str) -> dict:
+    """The checker under test: the deterministic layer. Returns {"decision", "flags": [{"code", "detail"}]}.
+    Any callable with this signature can be passed to run_iterated (e.g. a trained checker)."""
+    det = check(source_text, candidate, "redteam")
+    return {"decision": det["decision"], "flags": [{"code": f["code"], "detail": f["detail"]} for f in det["flags"]]}
+
+
+def split_sources(sources: list[dict], heldout_frac: float = 0.3, seed: int = 2880) -> tuple[list[dict], list[dict]]:
+    """Deterministic (feedback, held-out) partition of the attacked sources. Held-out sources are never shown to the
+    attacker with a verdict, and no verdict on them enters any attacker prompt."""
+    rng = random.Random(seed)
+    order = sorted(range(len(sources)), key=lambda i: sources[i]["source_id"])
+    rng.shuffle(order)
+    k = min(max(int(round(heldout_frac * len(sources))), 1), max(len(sources) - 1, 0)) if len(sources) > 1 else 0
+    held = set(order[:k])
+    return ([s for i, s in enumerate(sources) if i not in held], [s for i, s in enumerate(sources) if i in held])
+
+
+def verdict_text(verdict: dict) -> str:
+    if verdict["decision"] == "PASS" and not verdict["flags"]:
+        return "PASSED (no flags)"
+    return f"{verdict['decision']}: " + "; ".join(f"{f['code']} ({f['detail']})" for f in verdict["flags"])
+
+
+def round_digest(prev_feedback_records: list[dict]) -> str:
+    """Aggregate of the checker's verdicts on FEEDBACK-set attacks of ONE round: how often each flag fired and which
+    self-reported tactics passed. Built only from the records handed in (the caller passes round k-1 feedback only)."""
+    n = len(prev_feedback_records)
+    codes: dict[str, int] = {}
+    tactics: dict[str, list[int]] = {}
+    for r in prev_feedback_records:
+        for c in r["verdict"]["flags"]:
+            codes[c["code"]] = codes.get(c["code"], 0) + 1
+        t = r.get("tactic") or "unknown"
+        a = tactics.setdefault(t, [0, 0])
+        a[0] += int(r["verdict"]["decision"] == "PASS")
+        a[1] += 1
+    lines = [f"Checker verdicts on {n} attempts in the previous round:"]
+    lines += [f"- flag {c} fired on {k} of {n}" for c, k in sorted(codes.items(), key=lambda x: -x[1])] or ["- no flags fired"]
+    lines += [f"- tactic '{t}' passed {a[0]} of {a[1]}" for t, a in sorted(tactics.items())]
+    return "\n".join(lines)
+
+
+def attack_with_feedback(source: dict, provider, feedback: str | None = None) -> dict:
+    """One attacker call. `feedback` (round k-1 verdict text) is appended to the user prompt; None = a fresh attempt.
+    Returns a generation-schema record plus the exact user prompt that was sent (audit trail)."""
+    system, user_t, prompt_sha = load_prompt(PROMPT)
+    user = fill(user_t, problem_text=source["text"])
+    if feedback:
+        user = f"{user}\n\n{feedback}\n\nMake a new attempt that avoids what was flagged while still leaking subtly. Return only the JSON object."
+    res = call_with_one_retry(provider, system, user)
+    raw = res.get("raw_output")
+    parsed = parse_json_block(raw) if raw else None
+    return {"generator": f"redteam:{provider.model}", "transformation": "redteam",
+            "source_id": source["source_id"], "dataset": source["dataset"], "partition": source["partition"],
+            "source_sha256": sha256_text(source["text"]), "prompt_version": PROMPT, "prompt_sha256": prompt_sha,
+            **res, "status": "ATTACK", "tactic": (parsed or {}).get("tactic"),
+            "adapted_problem": (parsed or {}).get("adapted_problem"),
+            "parse_error": bool(raw) and parsed is None, "attacker_user_prompt": user}
+
+
+def run_iterated(cfg: dict, run_dir: Path, n_sources: int = 50, rounds: int = 3, mock: bool = False,
+                 generator_name: str | None = None, heldout_frac: float = 0.3, checker=None, provider=None,
+                 sources: list[dict] | None = None) -> pd.DataFrame:
+    """Iterated red-teaming with a held-out attack set. Everything is written under <run_dir>/redteam/.
+
+    Round 1: every source (feedback and held-out) is attacked with the plain attacker prompt. Round k >= 2:
+      - feedback sources: the prompt adds that source's own round k-1 attempt and the checker's verdict on it, plus the
+        round k-1 digest over the feedback set;
+      - held-out sources: the prompt adds ONLY the round k-1 feedback-set digest (the attacker generalises lessons; it
+        never sees a verdict on a held-out source, and held-out verdicts are never used for anything but the report).
+    Nothing older than round k-1 reaches the attacker. The checker is static across rounds (no update rule is applied),
+    so a rise in held-out evasion measures attacker adaptation. Resumable: finished (round, set, source) records are kept.
+    Returns the per-round summary (also written to redteam/redteam_iterated_summary.csv).
+    """
+    run_dir = Path(run_dir)
+    out_path = run_dir / SUBDIR / ITER_FILE
+    gens = {g["name"]: g for g in cfg["generators"]}
+    gen = gens[generator_name] if generator_name else cfg["generators"][0]
+    provider = provider or make_provider({"provider": "mock", "model": "mock"} if mock else gen)
+    checker = checker or default_checker
+    if sources is None:
+        sources = [r for r in read_jsonl(FROZEN / "main.jsonl") if r.get("text")][:n_sources]
+    feedback_set, held_set = split_sources(sources, heldout_frac)
+    plan = [("feedback", s) for s in feedback_set] + [("heldout", s) for s in held_set]
+    for k in range(1, max(1, rounds) + 1):
+        prev = [r for r in read_jsonl(out_path) if r["round"] == k - 1] if (k > 1 and out_path.exists()) else []
+        prev_fb = [r for r in prev if r["split"] == "feedback"]
+        prev_by_src = {r["source_id"]: r for r in prev_fb}
+        digest = round_digest(prev_fb) if prev_fb else None
+        seen = done_ids(out_path)
+        for split, s in plan:
+            oid = f"{cfg['run_id']}|{SUBDIR}|{gen['name']}|r{k}|{split}|{s['source_id']}"
+            if oid in seen:
+                continue
+            fb = None
+            if k > 1 and digest:
+                fb = f"[CHECKER FEEDBACK FROM ROUND {k - 1}]\n{digest}"
+                p = prev_by_src.get(s["source_id"]) if split == "feedback" else None
+                if p and p.get("adapted_problem"):
+                    fb += (f"\nYour previous attempt on this problem was:\n\"{p['adapted_problem']}\"\n"
+                           f"Checker verdict on it: {verdict_text(p['verdict'])}")
+            rec = attack_with_feedback(s, provider, fb)
+            cand = rec.get("adapted_problem")
+            verdict = checker(s["text"], cand) if cand else {"decision": "PASS", "flags": []}
+            rec = {"output_id": oid, "run_id": cfg["run_id"], "attacker": gen["name"], "round": k, "split": split,
+                   **rec, "verdict": verdict, "evaded": bool(cand) and verdict["decision"] == "PASS"}
+            _assert_quarantined(out_path, run_dir)
+            append_jsonl(out_path, rec)
+    return iterated_summary(read_jsonl(out_path), run_dir)
+
+
+def _assert_quarantined(path: Path, run_dir: Path) -> None:
+    if (Path(run_dir) / SUBDIR).resolve() not in Path(path).resolve().parents:
+        raise ValueError(f"red-team output must live under {Path(run_dir) / SUBDIR} (quarantine)")
+
+
+def iterated_summary(records: list[dict], run_dir: Path | None = None) -> pd.DataFrame:
+    """Per round: checker recall (flag rate) and evasion rate on the HELD-OUT attacks, and the same on the feedback set.
+    Only attacks with a parsed rewrite count. Writes redteam/redteam_iterated_summary.csv when run_dir is given."""
+    rows = []
+    for k in sorted({r["round"] for r in records}):
+        row = {"round": k}
+        for split, tag in (("heldout", "heldout"), ("feedback", "feedback")):
+            rs = [r for r in records if r["round"] == k and r["split"] == split and r.get("adapted_problem")]
+            n = len(rs)
+            row[f"{tag}_n"] = n
+            row[f"{tag}_recall"] = sum(r["verdict"]["decision"] != "PASS" for r in rs) / n if n else float("nan")
+            row[f"{tag}_evasion_rate"] = 1 - row[f"{tag}_recall"] if n else float("nan")
+        rows.append(row)
+    df = pd.DataFrame(rows)
+    if run_dir is not None:
+        from evaluate import write_analysis
+        write_analysis(Path(run_dir) / SUBDIR, ITER_SUMMARY, df)
+    return df
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default="config.yaml")
     ap.add_argument("--mock", action="store_true", help="offline dry run with the mock provider")
     ap.add_argument("--n", type=int, default=50, help="number of main-partition sources to attack")
     ap.add_argument("--rounds", type=int, default=1, help="attempts per source; >1 feeds back deterministic flags")
+    ap.add_argument("--iterated", action="store_true",
+                    help="iterated mode: --rounds K rounds; the attacker sees only round k-1 checker verdicts; "
+                         "recall is reported on a held-out source set each round")
+    ap.add_argument("--heldout-frac", type=float, default=0.3, help="share of attacked sources held out (iterated mode)")
     ap.add_argument("--generator", default=None, help="generator name from the config (default: first)")
     args = ap.parse_args()
     cfg = yaml.safe_load(open(args.config))
     if args.mock:  # keep dry runs out of the real run's folders
         cfg["run_id"] += "-mock"
     run_dir = OUTPUTS / cfg["run_id"]
+    if args.iterated:
+        summ = run_iterated(cfg, run_dir, args.n, args.rounds, args.mock, args.generator, args.heldout_frac)
+        print("\n## Iterated red-team: checker recall on the held-out attack set, by round\n")
+        try:
+            print(summ.to_markdown(index=False, floatfmt=".3f"))
+        except ImportError:
+            print(summ.to_string(index=False))
+        print(f"\nquarantined under {run_dir / SUBDIR}/ ({ITER_FILE}, {ITER_SUMMARY}.csv)")
+        return
     path = run_attacks(cfg, run_dir, args.n, args.mock, args.generator, args.rounds)
 
     src = load_sources()

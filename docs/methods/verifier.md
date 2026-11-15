@@ -42,3 +42,9 @@ Known looseness, accepted: "left" and "other" are common words, so a candidate t
 These numbers are on the tuning set itself, so they are optimistic by construction. They are checker decisions, not failure rates, and there are no human labels yet. Same-family caveat: the rewriters, critic and extractor are all Claude.
 
 The `--redecide` mode recomputes layer 1 with the current rules and reuses the stored critic and program results. The v1.0 file is kept, and each re-decided row records its old decision in `redecided_from`.
+
+## v1.1.1 (2026-11-15)
+
+- **Synonym classes narrowed.** "left" and "other" offset a dropped "remaining" only in their quantity senses: "is/are/was/were/be/been left", "left over", "leftover", "the other". Found in the Nov 15 audit: a question that dropped "remaining" while an unrelated "other apples" or "turn left" appeared elsewhere passed with no flag. Dev pilot unchanged at 29 PASS / 11 REVIEW / 0 REJECT.
+- **Known blind spot (v1.0 and v1.1).** A leaked value that equals a number already in the source cannot be caught by the number rules. Example: "the other ten floors" when 10 is in the source. A repeated source value is deliberately not treated as new. Only the critic can catch these. Report this under limitations and use it as a red-team target.
+- **In-sample caveat.** The v1.1 and v1.1.1 changes were tuned and checked on the same 40 dev outputs, so 29/11/0 is optimistic. The main-run labels give the honest numbers, and the report's sensitivity table compares v1.1.1 decisions with the v1.0-style rules on those labels.

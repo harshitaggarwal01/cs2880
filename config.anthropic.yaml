@@ -33,6 +33,10 @@ partitions: [main, ext_asdiv, ext_gsm1k]   # dev is for prompt/rubric/verifier d
 
 minutes_per_review: 1.5
 
+# Hard spending cap for this run folder (USD). run_phase1 refuses a paid step when spent (ledger) + the step's
+# estimate (src/estimate_cost.py) would exceed it. Override with --budget.
+budget_usd: 35
+
 # USD per 1M tokens (standard tier, checked 2026-10-16; re-check before running)
 prices:
   gpt-6-luna: {in: 0.10, out: 0.50}

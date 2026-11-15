@@ -2,8 +2,10 @@ PY ?= python3
 CFG ?= config.anthropic.yaml
 RUN ?= data/outputs/anthropic-v1
 MOCK ?=
+ANN ?= data/annotations/$(notdir $(RUN))
+CAP ?=
 
-.PHONY: help setup test fetch calibrate pilot phase1 generate ablation baseline verify repair sheets ledger evaluate report variance conformal cascade ppi policy redteam demo release clean-mock critic-matrix critics
+.PHONY: help setup test fetch calibrate pilot phase1 generate ablation baseline verify repair sheets ledger evaluate report variance conformal cascade ppi policy redteam demo release clean-mock critic-matrix critics estimate adjudicate policy-online audit-game critic-ensemble train-checker mgsm science conformal-shift-demo redteam-iterated
 
 help: ## Show this list of targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-12s %s\n", $$1, $$2}'
@@ -91,3 +93,34 @@ critic-matrix: ## Generator x critic matrix, self-preference test, critic ensemb
 
 critics: ## Run every non-primary critic of a matrix config on generations (extra API cost; ask first)
 	$(PY) src/run_phase1.py --config $(CFG) --from critics --until critics $(MOCK)
+
+estimate: ## Estimate the API cost of CFG before spending (CAP=9 to check a budget); no network
+	$(PY) src/estimate_cost.py --config $(CFG) $(if $(CAP),--cap $(CAP),)
+	$(PY) src/estimate_cost.py --config $(CFG) --pilot | tail -1
+
+adjudicate: ## Merge sheet_A/sheet_B into adjudicated.csv (lists disagreements first)
+	$(PY) src/adjudicate.py --ann $(ANN)
+
+policy-online: ## Online contextual bandit replay + off-policy evaluation (Task H)
+	$(PY) src/policy_online.py --run $(RUN)
+
+audit-game: ## Stackelberg audit-budget game from the run's rates (Task H; policy simulation)
+	$(PY) src/audit_game.py --run $(RUN)
+
+critic-ensemble: ## Dawid-Skene label-free critic aggregation (Task H; matrix config)
+	$(PY) src/critic_ensemble.py --run $(RUN) --config $(CFG) --labels $(ANN)/adjudicated.csv --key $(ANN)/KEY_DO_NOT_OPEN.csv
+
+train-checker: ## Small open checker trained on human labels (Task H; CPU level, GPU level optional)
+	$(PY) src/train_checker.py --run $(RUN)
+
+mgsm: ## Fetch a multilingual MGSM sample (future scope; default off)
+	$(PY) src/fetch_data.py --mgsm --lang es fr de zh
+
+science: ## Fetch an ARC science sample (future scope; default off)
+	$(PY) src/fetch_data.py --science
+
+conformal-shift-demo: ## Weighted conformal under planted covariate shift (Task H; synthetic)
+	$(PY) src/conformal.py --shift-demo
+
+redteam-iterated: ## Iterated attacker vs checker with a held-out attack set (API cost unless MOCK=--mock; ask first)
+	$(PY) src/redteam.py --config $(CFG) --iterated --rounds 3 --n 50 $(MOCK)

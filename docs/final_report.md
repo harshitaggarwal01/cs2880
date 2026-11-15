@@ -174,6 +174,12 @@ What this section must say: total spend by stage (generation, critic, extraction
 
 <!-- TBD after labels: add any threat discovered during annotation or analysis (e.g. rubric changes, items dropped for API errors, prompts that failed to parse). -->
 
+<!-- Limitations to include (decided 2026-11-15): checker tuned in-sample on 10 dev problems (sensitivity table);
+number-rule blind spot for leaked values equal to a source number; rewriters run at vendor-recommended settings
+(Qwen temperature 0.7, Claude defaults), not identical sampling; refusals excluded from safety rates; same-family
+judging measured by the self-preference test; budget tier (if used) has a weaker primary critic; MGSM overlaps
+GSM8K test (future work only). -->
+
 ## 12. Decision rules and recommendations
 
 The rules were written before the data were seen. State which row each finding triggers, quote the number that triggers it, and report an unexpected row as a finding, not as a failure of the study.

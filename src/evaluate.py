@@ -593,6 +593,44 @@ def layer_ablations(verify_rows: list[dict], labels_df: pd.DataFrame, b: int = B
     return pd.DataFrame(rows, columns=cols)
 
 
+def v10_style_decision(row: dict) -> str:
+    """Decision with the two v1.0 rules that checker v1.1 relaxed restored (offline, from stored fields):
+    extracted relation types differing while the answers MATCH -> at least REVIEW; NUMBER_WORD_ADDED -> REJECT."""
+    dec = row.get("decision", "PASS")
+    flags = {f.get("code") for f in (row.get("deterministic") or {}).get("flags", [])}
+    if "NUMBER_WORD_ADDED" in flags:
+        return "REJECT"
+    prog = row.get("program") or {}
+    if dec == "PASS" and prog.get("status") == "MATCH" and prog.get("relation_types_equal") is False:
+        return "REVIEW"
+    return dec
+
+
+def policy_sensitivity(verify_rows: list[dict], labels_df: pd.DataFrame, b: int = B) -> pd.DataFrame:
+    """Recall (positive = human UNSAFE), precision and flag rate of the stored v1.1 decisions vs v1.0-style rules,
+    for FLAG_ANY (REVIEW or REJECT) and FLAG_REJECT, overall and realistic/constrained."""
+    lab = _primary(labels_df)
+    rows = []
+    for name, fn in (("v1.1 (as run)", lambda r: r.get("decision", "PASS")), ("v1.0-style rules", v10_style_decision)):
+        dec = {r["output_id"]: fn(r) for r in verify_rows if r.get("output_id")}
+        d = lab[lab["output_id"].isin(dec)].copy()
+        if d.empty:
+            continue
+        d["decision"] = d["output_id"].map(dec)
+        d["FLAG_ANY"] = (d["decision"] != "PASS").astype(int)
+        d["FLAG_REJECT"] = (d["decision"] == "REJECT").astype(int)
+        naive = d["transformation"] == "naive"
+        for subset, sub in (("realistic", d[naive]), ("constrained", d[~naive]), ("overall", d)):
+            if sub.empty:
+                continue
+            for op in ("FLAG_ANY", "FLAG_REJECT"):
+                m = verifier_metrics(sub, op, b)
+                rows.append({"rules": name, "subset": subset, "operating_point": op, "n": len(sub),
+                             "recall_unsafe": m["recall_unsafe"], "recall_lo": m["recall_ci"][0],
+                             "recall_hi": m["recall_ci"][1], "precision": m["precision"], "flag_rate": m["flag_rate"]})
+    return pd.DataFrame(rows)
+
+
 # ------------------------------------------------------------------ constrained repair outcomes
 
 def repair_outcomes(labels_df: pd.DataFrame, key_df: pd.DataFrame | None = None) -> dict:

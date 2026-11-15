@@ -1,13 +1,13 @@
-# Handoff: Phase 1 (2026-11-02; updated 2026-11-11 for verifier v1.1)
+# Handoff: Phase 1 (2026-11-02; updated 2026-11-11 for verifier v1.1; 2026-11-15 for the Option-2 build)
 
 ## State
 - Branch: `dev-phases` (off `main` at `5d02d64`)
-- Commit SHA: see `git log -1` on `dev-phases`; last updated after `33e930a` (run examples doc)
+- Commit SHA: see `git log -1` on `dev-phases`; last updated Nov 15 (audit + Option-2 build)
 - **Next agent:** start from [`AGENT_PROMPT_NEXT.md`](AGENT_PROMPT_NEXT.md) (tasks A–G with rules and commands)
 - run_id: `anthropic-v1`: real pilot done (dev set only), main run not started; `anthropic-v1-mock` runs end to end offline
 - Config: `config.anthropic.yaml` (SHA-256 prefix `10dd8ddccdd13230`); becomes `config.frozen.yaml` inside the run folder on first use
-- Tests: 161 passed / 0 failed (`make test`), covering Phase 1–4 code, verifier v1.1 and the Task A2 matrix code
-- Verifier: **v1.1** (Nov 11, tuned on dev only; see `docs/methods/verifier.md`). Pilot re-decided offline: 29 PASS / 11 REVIEW / 0 REJECT (v1.0: 17 / 22 / 1)
+- Tests: 221 passed / 0 failed (`make test`): Phase 1–4 code, verifier v1.1.1, the matrix code, lean labelling, cost controls and the Task H modules
+- Verifier: **v1.1.1** (Nov 11 + Nov 15, tuned on dev only; see `docs/methods/verifier.md`). Pilot re-decided offline: 29 PASS / 11 REVIEW / 0 REJECT (v1.0: 17 / 22 / 1)
 - API keys: an Anthropic key was supplied in-session on Nov 2 (not stored in the repo). For a new session, add `ANTHROPIC_API_KEY` to the environment's secrets.
 
 ## What was run
@@ -66,6 +66,23 @@
   - Dev pilot through the full matrix (`make pilot CFG=config.matrix.yaml`, then `verify.py ... --all-critics` on `pilot_generations.jsonl`): about **$2.3**. Ask the owner first.
   - Main run with the matrix: about **$40–45** (Opus critic ~$16, extraction ~$13, Sonnet critic ~$8, Qwen ≤ $4, generation ~$2). Ask the owner for a cap.
 
+## Option-2 build (Nov 15): decided and built, nothing run
+- **Owner decisions (Nov 15):**
+  - Option 2: full matrix with lean labelling.
+  - Fetch everything, including GSM1K. GSM-IC moves to future work.
+  - Budget is currently **$9**, so **no paid runs**; keys arrive after everything is built.
+- **Pick a tier before the first paid run** (`make estimate CFG=<config> CAP=9`):
+
+  | Config | Main run | Dev pilot |
+  |---|---|---|
+  | `config.matrix-budget.yaml` | ≈ $7.2 | ≈ $0.3 |
+  | `config.matrix-mid.yaml` | ≈ $18 | ≈ $0.8 |
+  | `config.matrix.yaml` | ≈ $58 | ≈ $2.5 |
+
+  Each config carries `budget_usd`; `run_phase1.py` refuses any paid step that would exceed it.
+- **Lean labelling:** about 850 of about 1,430 items are labelled, about 14 h per annotator (offline end-to-end check on `matrix-budget-v1-mock`). Merge the two sheets with `make adjudicate`.
+- **Keys needed:** `ANTHROPIC_API_KEY` (Anthropic) and `OPENROUTER_API_KEY` (Qwen). Add them through the environment's secrets, never in chat or files, and turn on OpenRouter's account-level training opt-out.
+
 ## Backup to Hugging Face
 `src/push_hf.py` stages everything hard to reproduce into `data/hf_staging/` (gitignored): frozen sample, real run outputs, extraction cache, ledger, labels and keys, the earlier pilot, calibration sheets, prompts, configs, checksums and a dataset card. It then uploads to the **private** dataset repo `harshitaggarwal/safeadapt-math`.
 - It drops GSM1K/GSM-IC text rows, skips mock runs and `data/raw`, aborts if anything looks like a secret, and refuses to upload to a public repo.
@@ -90,21 +107,21 @@ make conformal && make cascade && make ppi && make policy   # Phase 2 on real la
 Resume a partial run with `python src/run_phase1.py --config config.anthropic.yaml --from <step> --until <step>`; `.done/<step>` markers skip finished steps; `--force` reruns.
 
 ## Open decisions
-- [ ] Which rewriters go into the main run (Haiku, Sonnet, Qwen, and GPT/Gemini if keys arrive)? Full or 50% + PPI labelling for the open rewriter? (Task A2; code done, `config.matrix.yaml` includes Qwen)
-- [x] Dev-pilot matrix run (~$2.3): **approved in session on 2026-11-11, to run once `ANTHROPIC_API_KEY` and `OPENROUTER_API_KEY` are in the environment** (both unset on Nov 11). Commands:
+- [x] Rewriters and labelling: **Option 2** (Haiku, Sonnet, Qwen; lean labelling with PPI), decided Nov 15
+- [x] Dev-pilot matrix run (~$2.3): **approved in session on 2026-11-11, to run once `ANTHROPIC_API_KEY` and `OPENROUTER_API_KEY` are in the environment** (both unset on Nov 11). **Superseded Nov 15:** run the pilot on the chosen tier (budget tier ≈ $0.3; see "Next owner's first steps"). Original commands for the full config:
   ```bash
   python src/run_phase1.py --config config.matrix.yaml --from pilot --until pilot          # 3 rewriters x 2 styles x 10 dev
   python src/verify.py data/outputs/matrix-v1/pilot_generations.jsonl --config config.matrix.yaml --all-critics
   python src/ledger.py --run data/outputs/matrix-v1 --config config.matrix.yaml           # report actual cost
   ```
   Then check per Qwen call that `think_chars` is 0 and `served_by` is a no-retention provider. Stop and report if the ledger passes $3.
-- [ ] Set a cost cap for the matrix main run (~$40–45)
-- [ ] Add `ext_gsmic` to `partitions` in the config before main generation? (adds ~48 annotation items; supplies relevance-leakage positives)
+- [ ] Choose the checker tier (budget ≈ $7.2 fits the current $9; mid ≈ $18; full ≈ $58). `budget_usd` is already set in each config
+- [x] GSM-IC: future work (Nov 15). GSM1K: fetched by the run (`--gsm1k`), kept local
 - [ ] Choose λ, μ for the cascade objective, or report the frontier only
 - [ ] Which external tools pass the ToS check for Phase 3A
 - [ ] Submit the teacher survey for a CUHS determination this semester, or defer
 
-## Next owner's first three actions
-1. ~~Verifier precision fixes~~ done (v1.1, Nov 11); ~~Task A2 code~~ done (Nov 11). Next: add keys, run the dev-pilot matrix (ask first), then Task B once labels are in.
-2. Both teammates label the calibration sheets blind; run the agreement and disagreement commands; freeze rubric v1.
-3. With rubric v1 frozen and the key in the environment: `make phase1` (≈ $20; ask first).
+## Next owner's first steps (from Nov 15)
+1. Both teammates label the 70 calibration items blind (`data/calibration/pilot/sheet_A.csv`, `sheet_B.csv`). Run the agreement and disagreement commands, then freeze rubric v1. **This is the critical path; it needs no keys.**
+2. Add the keys. Run `make estimate CFG=config.matrix-budget.yaml CAP=9`, then the dev pilot on the chosen tier: `python src/run_phase1.py --config config.matrix-budget.yaml --from pilot --until pilot`, then `python src/verify.py data/outputs/matrix-budget-v1/pilot_generations.jsonl --config config.matrix-budget.yaml --all-critics` (about $0.3). Check `think_chars` = 0 and `served_by` on the Qwen rows.
+3. With the rubric frozen: `python src/run_phase1.py --config config.matrix-budget.yaml --until sheets` (fetch, including GSM1K → generate → … → lean sheets). Label (about 14 h each), then `make adjudicate ANN=data/annotations/matrix-budget-v1`, then run the `evaluate` and `report` steps, then the Task D/H analyses. Run `make hf-backup` after each milestone.

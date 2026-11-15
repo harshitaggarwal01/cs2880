@@ -48,6 +48,8 @@ def load_generations(run_dir: Path) -> pd.DataFrame:
                              "generator": gen, "transformation": r.get("transformation", "?"),
                              "source_id": r.get("source_id"), "status": r.get("status"),
                              "parse_error": bool(r.get("parse_error")), "api_error": bool(r.get("error")),
+                             "refusal": r.get("stop_reason") == "refusal",
+                             "empty": r.get("raw_output") == "" and r.get("stop_reason") != "refusal",
                              "has_text": bool(r.get("adapted_problem"))})
     cols = ["kind", "output_id", "generator", "transformation", "source_id", "status", "parse_error", "api_error",
             "has_text"]
@@ -80,7 +82,9 @@ def counts_table(gens: pd.DataFrame) -> pd.DataFrame:
                     free_text=gens["status"].eq("FREE_TEXT"))
     return (g.groupby(["kind", "generator", "transformation"])
             .agg(n=("output_id", "size"), rewritten=("rewritten", "sum"), no_rewrite=("no_rewrite", "sum"),
-                 free_text=("free_text", "sum"), parse_error=("parse_error", "sum"), api_error=("api_error", "sum"))
+                 free_text=("free_text", "sum"), parse_error=("parse_error", "sum"), api_error=("api_error", "sum"),
+                 **({"refusal": ("refusal", "sum")} if "refusal" in g else {}),
+                 **({"empty": ("empty", "sum")} if "empty" in g else {}))
             .reset_index())
 
 
@@ -355,7 +359,10 @@ def pipeline_sections(doc: Doc, run_dir: Path, fig_dir: Path) -> pd.DataFrame:
 
     doc.h("Outputs per condition")
     doc.p("Rows by source file (`main`, `ablation`, `pilot`, `repair`, `baseline`). `rewritten` and `no_rewrite` come from the "
-          "model's own status field; `parse_error` means the reply was not valid JSON; `api_error` means the call failed.")
+          "model's own status field; `parse_error` means the reply was not valid JSON; `api_error` means the call failed; "
+          "`refusal` means the provider's safety system declined (stop_reason refusal); `empty` means an empty reply. "
+          "Prespecified: refusals and empty replies are excluded from safety rates and reported here as their own rate "
+          "per condition (a refusal gives the teacher nothing, which is a usefulness cost, not a safety failure).")
     doc.table(counts_table(gens), "_No generation files found in the run folder._")
 
     if verify:
@@ -435,6 +442,25 @@ def labelled_sections(doc: Doc, run_dir: Path, labels: Path, key: Path | None, f
             doc.image(fig_repair(rep, fig_dir / "fig_repair.png"), "Before and after repair")
         else:
             doc.p("_No labelled repairs._")
+
+    ppi_csv = run_dir / "analysis" / "ppi.csv"
+    if ppi_csv.exists():
+        doc.h("Rates for every condition (PPI++ where a condition is partly labelled)")
+        doc.p("Prespecified (2026-11-15, lean labelling): human labels on a stratified sample of source problems, plus "
+              "the primary verifier's decision on every output as the predictor. `classical` uses labelled items only; "
+              "`ppi`/`ppipp` add the unlabelled ones (Angelopoulos et al. 2023; PPI++). Rates are UNSAFE = 1 - SAFE. "
+              "Fully labelled conditions (realistic prompt) give classical = PPI. Hypothesis tests above use labelled "
+              "items only.")
+        doc.table(pd.read_csv(ppi_csv))
+
+    if verify_rows and "output_id" in first:
+        sens = ev.policy_sensitivity(verify_rows, first, b)
+        doc.h("Checker version sensitivity (v1.1 vs v1.0-style rules)")
+        doc.p("Checker v1.1 was tuned on the 10 dev problems only. This table re-decides the same stored outputs with "
+              "the two v1.0 rules that v1.1 relaxed restored (relation types differing while answers match -> REVIEW; "
+              "a new count written as a number word -> REJECT), so the effect of the tuning on recall and review burden "
+              "is visible. The v1.1 synonym classes cannot be reversed offline and are not part of this comparison.")
+        doc.table(sens)
 
     lg = ev.logit_unsafe(first, sources)
     doc.h("Exploratory logistic regression of UNSAFE")

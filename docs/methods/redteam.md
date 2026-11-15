@@ -31,6 +31,12 @@ Confirmed misses are grouped by tactic. Each recurring pattern becomes a candida
 
 One attacker model and prompt cover part of the space. The set is small (50 attacks, 30 labelled), so intervals are wide. Tactic labels are self-reported. Attacks adapt to the deterministic layer only, not the critic. Mock runs test plumbing only.
 
+## Iterated mode
+
+`python src/redteam.py --config CFG --iterated --rounds K [--heldout-frac 0.3]` (`--mock` for offline plumbing). The attacked sources are split once, deterministically, into a feedback set and a **held-out set**. In round 1 every source gets the plain attacker prompt. In round k >= 2 the attacker prompt adds only the checker's verdicts from round k-1: for feedback sources, that source's own previous attempt, its verdict and a digest of round k-1 over the feedback set; for held-out sources, the digest alone. Nothing older than round k-1 is ever shown, and no verdict on a held-out attack ever enters a prompt. The checker is static across rounds (any callable can be supplied), so a rise in held-out evasion measures the attacker's adaptation, not a retuned checker. Each round's checker recall and evasion rate on the held-out attacks are written to `redteam/redteam_iterated_summary.csv`; records (with the exact attacker prompt) go to `redteam/redteam_iterated.jsonl`. Everything stays under `redteam/` (same quarantine rule, enforced by an assertion). Without `--iterated`, `--rounds` keeps its old meaning (attempts per source with deterministic-flag feedback).
+
+Limits: held-out recall here is the deterministic layer's flag rate, not human-confirmed leakage; labelling still follows the blinded-sheet procedure. One attacker model and a small set give wide intervals. If the checker is later updated between rounds, do it only by the documented rule set and never from held-out verdicts. Reference: Perez et al. (2022), cited below, for the automated red-teaming loop.
+
 ## References
 
 - Perez, E., et al. (2022). Red Teaming Language Models with Language Models. *EMNLP*.

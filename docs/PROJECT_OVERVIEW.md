@@ -68,6 +68,15 @@ docs/                   dossier, explainer, plan/, methods/, check-in note, deck
 
 ## 5. Status
 
+**Update, Nov 15:**
+- Option 2 is chosen and built: three rewriters (Haiku, Sonnet, Qwen), every critic on every output, and lean labelling, about 850 items and about 14 h per annotator.
+- Cost controls are in place: an estimator, a hard cap, and budget/mid/full checker tiers. The budget tier (≈ $7.2) fits the current $9.
+- All future-method modules are coded, with 221 tests passing.
+- No paid runs yet; the keys are pending.
+- The critical path is the 70-item calibration labelling.
+
+**Earlier status:**
+
 - **Done:**
   - All code above; 108 tests pass; the mock pipeline runs end to end.
   - Statistical review done (PPI split fixed, Firth fallback for the logit, conformal wording).

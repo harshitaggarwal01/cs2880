@@ -43,7 +43,7 @@ from common import FROZEN, append_jsonl, read_jsonl, sha256_text
 from deterministic_checks import check
 from llm import call_with_one_retry, done_ids, fill, load_prompt, make_provider, parse_json_block
 
-VERIFIER_VERSION = "1.1"
+VERIFIER_VERSION = "1.1.1"
 ALL_LAYERS = {"det", "critic", "program"}
 META_KEYS = ("returned_model", "response_id", "usage", "latency_s", "stop_reason", "reported_cost_usd", "served_by",
              "json_mode")

@@ -12,7 +12,7 @@ You are taking over **SafeAdapt-Math**, a Harvard COMPSCI 2880 (AI for Social Im
 5. `docs/dossier.md` §7–§15 (design and prespecified analysis) and `docs/annotation_guide.md` (rubric).
 6. Skim `CHANGELOG.md` and `docs/methods/*.md`.
 
-Then run `pip install -r requirements.txt && make test`. Expect **112 tests passing**. If not, fix that before anything else.
+Then run `pip install -r requirements.txt && make test`. Expect **221 tests passing**. If not, fix that before anything else.
 
 ## 1. Hard rules (do not break these)
 - **Git authorship:** every commit is authored *and* committed as `Harshit Aggarwal <51515489+harshitaggarwal01@users.noreply.github.com>`.
@@ -60,6 +60,14 @@ Then run `pip install -r requirements.txt && make test`. Expect **112 tests pass
   5. One chunked output lacked the leading "- " on its first line (`haiku55|chunked|gsm8k-train-5510`). This is a presentation-format slip, not a math issue.
 
 ## 3. Your tasks, in order
+
+> **Status as of 2026-11-15:**
+> - Tasks A, A2 and H are **built**. Next is Task B (humans label the 70 calibration items), then Task C on a checker tier chosen by the owner.
+> - Option 2 was chosen: full matrix with lean labelling, prespecified in `docs/plan/PHASE1.md`.
+> - Budget is $9 until further notice, so `config.matrix-budget.yaml` is the default tier (main run ≈ $7.2).
+> - Every paid step is guarded by `budget_usd`. Run `make estimate CFG=<config> CAP=<budget>` before any paid step.
+> - GSM-IC is future work. GSM1K is fetched by the run's `fetch` step.
+
 Order: **A → A2 → B → C → D → E → H → F (as keys arrive) → G.** H can run in parallel once A2 is merged; its modules need only synthetic data until labels exist.
 
 ### Task A: Verifier tuning v1.1 (dev only, ~$1) [do now]

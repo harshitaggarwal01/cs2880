@@ -7,6 +7,30 @@ and this project uses semantic versioning where applicable.
 
 ## [Unreleased]
 
+### Audit + Option-2 build (2026-11-15; code only, no paid API calls)
+- **Lean labelling (prespecified):** `make_annotation_sheets.py --config` reads a `labelling:` block.
+  - 50% of sources for the careful prompts, paired across rewriters and styles; all realistic-prompt outputs; repairs of labelled originals; 30% of the baseline, nested.
+  - Two annotators split the items with 30% shared. `LABEL_PLAN.json` gives counts and hours.
+  - Full design unchanged without the block.
+- **`src/adjudicate.py` + `make adjudicate`:** merges the two sheets, lists disagreements in `TO_ADJUDICATE.csv`, and writes `adjudicated.csv` (annotator ADJ, provenance column).
+- **PPI in the pipeline:** the `evaluate` step also runs `ppi.py`. The report gains a "Rates for every condition" section, a "Checker version sensitivity" section (`evaluate.policy_sensitivity`, `v10_style_decision`), and refusal/empty columns in the outputs table.
+- **Cost controls:**
+  - `src/estimate_cost.py` + `make estimate` (per step and model, from measured pilot tokens; upper bounds for OpenRouter).
+  - `budget_usd` in every config and `run_phase1.py --budget`: a paid step is refused when spent (ledger) + its estimate would exceed the cap.
+  - New tiers `config.matrix-budget.yaml` (Haiku primary critic + extractor, Qwen critics; about $7.2) and `config.matrix-mid.yaml` (Sonnet primary critic; about $18). The full `config.matrix.yaml` is about $58.
+- **"Fetch all":** the `fetch` step passes `--gsm1k` whenever `ext_gsm1k` is in the partitions (it was silently skipped before). GSM-IC moves to future work.
+- **Checker v1.1.1:** "left"/"other" offset a dropped "remaining" only in their quantity senses. Dev pilot unchanged (29/11/0). The known number-rule blind spot is documented in `docs/methods/verifier.md`.
+- **Task H, future methods** (synthetic tests now, real data later):
+  - `policy_online.py`: Thompson sampling, LinUCB, epsilon-greedy replay; IPS/SNIPS/DR off-policy evaluation; a feedback logger and demo widget.
+  - `audit_game.py`: Stackelberg SSE by multiple LPs, robust interval variant, uniform and proportional baselines.
+  - `critic_ensemble.py`: Dawid–Skene.
+  - `train_checker.py`: CPU classifier, with an optional GPU LoRA judge.
+  - Weighted conformal in `conformal.py` (opt-in; `--shift-demo`).
+  - `redteam.py --iterated` with a held-out attack set.
+  - `fetch_data.py --mgsm/--science` (licences verified: MGSM CC BY-SA 4.0, ARC CC BY-SA 4.0), `prompts/translate_plain_v1.txt`, `prompts/hint_levels_v1.txt`, `src/prompt_vars.py`, `docs/annotation_guide_hint_levels.md`, `docs/plan/STUDENT_STUDY.md`.
+- Method notes for each new module; new make targets.
+- Tests: `test_run_safety.py` (15) plus 45 from the Task H modules; 221 total.
+
 ### Open model + generator × critic matrix (2026-11-11, Task A2; code only, no real API calls)
 - `llm.OpenAICompatibleProvider` (`openai_compat`): any OpenAI-compatible host. json_schema → json_object fallback, schema validation, `<think>` stripping, host-reported cost and serving provider logged. The key is read from the env var named in `api_key_env`
 - `config.matrix.yaml` (run `matrix-v1`): rewriters Haiku 5.5, Sonnet 5.5, Qwen3.8-27B; critics Opus 5.5 (primary), Sonnet 5.5, Qwen3.8-27B, Qwen3.5-9B; `family` tags; OpenRouter routing `data_collection: deny`, `zdr: true`

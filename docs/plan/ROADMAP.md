@@ -37,6 +37,11 @@ Detailed phase docs: [PHASE1.md](PHASE1.md) · [PHASE2.md](PHASE2.md) · [PHASE3
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-11-15 | **Option 2: full matrix (Haiku, Sonnet, Qwen rewriters; every critic on every output) with lean labelling**, prespecified before any main-run generation: label 50% of source problems for the careful prompts (paired across rewriters and styles), all realistic-prompt outputs, every repair whose original is labelled, 30% of the non-AI baseline (nested); two annotators split the work with 30% shared. Rates for partly labelled conditions come from PPI++ (primary verifier as predictor); hypothesis tests use labelled items only | Keeps the open-model rewriter and the self-preference test while cutting labelling from about 1,430 to about 850 items (about 14 h per annotator). Uses our own PPI method for real |
+| 2026-11-15 | Fetch everything, GSM1K included (local only, never redistributed); GSM-IC moves to future work | Owner decision; without `--gsm1k` the 12 GSM1K problems were silently skipped |
+| 2026-11-15 | **No paid runs until the owner adds keys; current budget is $9.** Three checker tiers with the same rewriters, sample and labelling plan: `config.matrix-budget.yaml` (Haiku primary critic + extractor, Qwen critics; about $7.2 upper bound), `config.matrix-mid.yaml` (Sonnet primary critic; about $18), `config.matrix.yaml` (Opus; about $58). A hard cap (`budget_usd`) stops any paid step that would exceed it | The full Opus checker does not fit $9. Labels stay the ground truth in every tier; a weaker primary critic lowers verifier recall and PPI's precision gain, not validity |
+| 2026-11-15 | Checker v1.1.1: "left"/"other" count as synonyms of "remaining" only in their quantity senses | Audit probe: an incidental "other apples" or "turn left" masked a dropped "remaining". Dev pilot unchanged (29/11/0) |
+| 2026-11-15 | Refusals and empty replies are excluded from safety rates and reported per condition | A refusal gives the teacher nothing: a usefulness cost, not a safety failure |
 | 2026-10-16 | Realistic teacher prompt promoted from side ablation to co-primary condition on all 100 main problems | Pilot: 13/20 unsafe under the realistic prompt vs 0/50 under constrained prompts |
 | 2026-10-16 | Sample frozen: 10 dev (GSM8K train) + 100 main (GSM8K test, stratified) + 12 ASDiv + 12 GSM1K row ids; seed 2880 | Resolves the 124/135 inconsistency in the earlier documents |
 | 2026-11-02 | **Anthropic-only Phase-1 run first (`anthropic-v1`)**: generators `claude-haiku-5-5` + `claude-sonnet-5-5`, critic/extractor `claude-opus-5-5` | Only an Anthropic key is available. Same-family caveat (judge favours its own family; Panickssery et al. 2024, Kim et al. 2025) is disclosed. The cross-family run `main-v1` (gpt-6-luna + gemini-3.8-flash, Sonnet critic) is a config swap when keys arrive; together they give a 4-generator comparison |
@@ -65,16 +70,22 @@ Detailed phase docs: [PHASE1.md](PHASE1.md) · [PHASE2.md](PHASE2.md) · [PHASE3
 | Data backup to Hugging Face | done (Nov 2): private dataset `harshitaggarwal/safeadapt-math`; re-run `make hf-backup` after each milestone |
 | Verifier tuning v1.1 (RELATIONS_DIFFER, number words, synonyms, cue names, chunk format) | done (Nov 11), dev only; pilot re-decided offline: 29 PASS / 11 REVIEW / 0 REJECT (v1.0: 17/22/1); 135 tests |
 | Open model + generator × critic matrix code (Task A2) | done (Nov 11): provider, matrix config, multi-critic verify, critic_matrix.py; mock end to end; 161 tests. Not run on real APIs (no keys in the environment); dev-pilot matrix run ≈ $2.3, ask first |
-| Rubric v1 frozen | pending calibration relabel by both teammates |
+| Audit of Cathy's Nov 11 work + Option-2 build (Nov 15) | done: lean labelling design + adjudication script, PPI in the pipeline, refusal reporting, v1.0-vs-v1.1 sensitivity table, cost estimator, hard cap, budget/mid tiers, GSM1K fetch, checker v1.1.1; Task H future-method modules (online bandit + OPE, audit game, Dawid–Skene, small checker, weighted conformal, iterated red-team, scope adapters, student-study design) |
+| Rubric v1 frozen | pending: the 70 calibration items are still unlabelled (critical path) |
 | Main generation, annotation, adjudication | pending |
 | Phase 2–4 on real labels | pending |
 
 ## Budget
 
-| Item | Estimate |
-|---|---|
-| API, Anthropic-only run (≈700 generations, ≈900 critic calls on Opus, ≈1,000 extractions, ≈200 repairs) | ≈ $20; plan for $30 |
-| API, cross-family run when keys arrive | ≈ $13 |
-| Human annotation | ≈ 32 h total, ≈ 16 h per person |
+Estimates from `src/estimate_cost.py` (`make estimate CFG=... CAP=...`; upper bounds for OpenRouter models), including the variance check and the re-checking of repairs:
 
-If over budget, scope down in this order: external sets to 6 + 6 → realistic condition to 60 problems → drop the program layer.
+| Config | Checker | Main run | Dev pilot |
+|---|---|---|---|
+| `config.matrix-budget.yaml` (fits the current $9) | Haiku 5.5 primary critic + extractor; Qwen 27B and 9B critics | ≈ $7.2 | ≈ $0.3 |
+| `config.matrix-mid.yaml` | Sonnet 5.5 primary critic; Haiku extractor and critic; Qwen critics | ≈ $18 | ≈ $0.8 |
+| `config.matrix.yaml` | Opus 5.5 primary critic + extractor; Sonnet and Qwen critics | ≈ $58 | ≈ $2.5 |
+| `config.anthropic.yaml` (2 rewriters) | Opus | ≈ $32 | — |
+
+Human annotation under the lean plan: about 850 items, about 14 h per annotator (1.5 min/item); the exact count is written to `LABEL_PLAN.json` when the sheets are built.
+
+If over budget, scope down in this order: drop the variance check → external sets to 6 + 6 → realistic condition to 60 problems → drop the program layer.

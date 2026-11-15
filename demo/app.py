@@ -19,6 +19,14 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import core  # noqa: E402
 
+try:    # optional: thumbs feedback is skipped when the online-policy module is unavailable
+    sys.path.insert(0, str(core.ROOT / "src"))
+    from policy_online import log_feedback
+except Exception:  # pragma: no cover
+    log_feedback = None
+
+FEEDBACK_PATH = core.ROOT / "data" / "feedback" / "feedback.jsonl"
+
 BUTTONS = {"Deterministic split": None, "Plain language": "plain", "Chunked": "chunked",
            "Realistic teacher prompt": "naive"}
 CAVEAT = ("Same-family caveat: in the Anthropic-only configuration the generators and the critic are all Claude "
@@ -70,6 +78,25 @@ def show_result(source: str, res: dict, title: str) -> None:
         st.caption(res["risk_note"])
 
 
+def feedback_widget(source_id: str, arm: str, key: str) -> None:
+    """Optional thumbs up/down. Appends a JSON line to data/feedback/feedback.jsonl (gitignored).
+
+    The arm was picked by the user, not by a randomised policy, so propensity is stored as null and these rows
+    are not usable for IPS-type off-policy evaluation, only as rewards for the online policy.
+    """
+    if log_feedback is None:
+        return
+    cols = st.columns([1, 1, 6])
+    for col, thumbs, label in ((cols[0], "up", "Thumbs up"), (cols[1], "down", "Thumbs down")):
+        if col.button(label, key=f"{key}-{thumbs}"):
+            try:
+                log_feedback(FEEDBACK_PATH, {"source_id": source_id, "arm": arm, "propensity": None,
+                                             "thumbs": thumbs, "logging_policy": "user_choice"})
+                st.toast("Feedback saved locally.")
+            except Exception as e:  # never break the demo over logging
+                st.warning(f"Could not save feedback: {e}")
+
+
 def offline_mode(args: argparse.Namespace) -> None:
     run_dir = st.sidebar.text_input("Run directory", default_run_dir(args.offline) or "")
     if not run_dir or not Path(run_dir).is_dir():
@@ -90,12 +117,14 @@ def offline_mode(args: argparse.Namespace) -> None:
         res = {**core.live_check(source, core.deterministic_rewrite(source), "chunked"),
                "adapted_problem": core.deterministic_rewrite(source)}
         show_result(source, res, "Deterministic split (no model)")
+        feedback_widget(sid, "deterministic", f"fb-{sid}-det")
     else:
         match = [v for v in views if v["transformation"] == BUTTONS[pick]]
         if not match:
             st.write(f"No stored output for '{BUTTONS[pick]}' on this source.")
         for v in match:
             show_result(source, v, f"{v['generator']} / {v['transformation']}")
+            feedback_widget(sid, f"{v['generator']}:{v['transformation']}", f"fb-{sid}-{v['generator']}-{v['transformation']}")
     st.divider()
     st.markdown(f"**All {len(views)} stored outputs for this source**")
     table = pd.DataFrame([{"generator": v["generator"], "transformation": v["transformation"],

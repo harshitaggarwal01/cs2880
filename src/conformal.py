@@ -260,6 +260,147 @@ def synthetic(n_sources: int = 120, per_source: int = 6, seed: int = 0) -> tuple
     return pd.DataFrame(labels), rows
 
 
+# ------------------------------------------------------------------ weighted conformal under covariate shift (opt-in)
+
+def density_ratio_weights(X_study, X_new, clip: float | None = 20.0, C: float = 1.0) -> np.ndarray:
+    """Density ratios w(x) = p_new(x) / p_study(x) at the study rows, from a logistic classifier of new-tool vs study.
+
+    X_study (n, d) and X_new (m, d) are features of outputs (transformation, length, readability, source difficulty:
+    anything observable for the NEW tool's outputs without labels). By Bayes, w(x) = P(new|x)/P(study|x) * n/m. Weights
+    are clipped at `clip` (None = no clipping; clipping trades a little bias for variance) and returned for the study rows.
+    Opt-in; nothing in this module calls it unless you do. Tibshirani, Foygel Barber, Candes & Ramdas (2019).
+    """
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.preprocessing import StandardScaler
+    Xs, Xn = np.asarray(X_study, dtype=float), np.asarray(X_new, dtype=float)
+    Xs, Xn = Xs.reshape(len(Xs), -1), Xn.reshape(len(Xn), -1)
+    sc = StandardScaler().fit(np.vstack([Xs, Xn]))
+    clf = LogisticRegression(C=C, max_iter=2000).fit(sc.transform(np.vstack([Xs, Xn])),
+                                                     np.r_[np.zeros(len(Xs)), np.ones(len(Xn))])
+    p = clf.predict_proba(sc.transform(Xs))[:, 1]
+    w = p / np.clip(1 - p, 1e-12, None) * len(Xs) / len(Xn)
+    return np.minimum(w, clip) if clip is not None else w
+
+
+def effective_sample_size(w: np.ndarray) -> float:
+    """Kish effective sample size (sum w)^2 / sum w^2; equals n when w is constant."""
+    w = np.asarray(w, dtype=float)
+    return float(w.sum() ** 2 / (w ** 2).sum()) if len(w) else 0.0
+
+
+def _weighted_unit_losses(scores, losses, weights, grid, groups):
+    """(units x grid) weighted loss and (units,) unit weights. Item units: loss_i and w_i. Group units: the
+    weight-averaged loss within the group, with the mean weight as the group's weight. With w = 1 this is exactly
+    `_unit_losses` and unit weights of 1."""
+    w = np.asarray(weights, dtype=float)
+    li = np.asarray(losses, dtype=float)[:, None] * (np.asarray(scores, dtype=float)[:, None] <= grid[None, :])
+    if groups is None:
+        return li, w
+    _, codes = np.unique(np.asarray(groups), return_inverse=True)
+    k = codes.max() + 1
+    sums = np.zeros((k, len(grid)))
+    np.add.at(sums, codes, li * w[:, None])
+    wsum = np.bincount(codes, weights=w)
+    return sums / wsum[:, None], wsum / np.bincount(codes)
+
+
+def weighted_crc_threshold(scores: np.ndarray, losses: np.ndarray, alpha: float, weights: np.ndarray,
+                           B: float = 1.0, groups=None, w_test: float | None = None) -> float:
+    """Weighted Conformal Risk Control under covariate shift (Angelopoulos et al. 2024, Sec. on covariate shift, built on
+    Tibshirani et al. 2019). Calibration units carry density-ratio weights w_i = p_new(x_i)/p_study(x_i); the test unit's
+    weight w_test = w(X_{n+1}) is unknown, so the default is the largest calibration weight (conservative: valid for any
+    test point whose ratio is at most that, which is what clipping the weights enforces). Largest lambda on the grid of
+    observed scores with
+
+        ( sum_i w_i L_i(lambda) + B * w_test ) / ( sum_i w_i + w_test )  <=  alpha,
+
+    so E_new[L(lambda_hat)] <= alpha when the weights are the true ratios and P(unsafe | x) is shared by study and new tool
+    (covariate shift only). With all w_i = 1 and w_test = 1 this is crc_threshold exactly. Estimated weights make it
+    approximate: the guarantee is only as good as the density-ratio estimate; check effective_sample_size. Returns -inf if
+    no lambda qualifies.
+    """
+    scores = np.asarray(scores, dtype=float)
+    if len(scores) == 0:
+        return NEG_INF
+    grid = _grid(scores)
+    units, uw = _weighted_unit_losses(scores, losses, weights, grid, groups)
+    wt = float(np.max(uw)) if w_test is None else float(w_test)
+    adj = ((uw[:, None] * units).sum(axis=0) + B * wt) / (uw.sum() + wt)
+    ok = np.flatnonzero(adj <= alpha)
+    return float(grid[ok[-1]]) if len(ok) else NEG_INF
+
+
+def _weighted_test_metrics(test: pd.DataFrame, lam: float, w: np.ndarray) -> dict:
+    """Importance-weighted test metrics (estimates of the NEW distribution's risk from study test items)."""
+    passed = test["score"].to_numpy() <= lam
+    unsafe = test["unsafe"].to_numpy().astype(bool)
+    W = max(float(w.sum()), 1e-12)
+    wp = float(w[passed].sum())
+    return {"n_test": len(test), "pass_rate": wp / W, "review_rate": 1 - wp / W,
+            "cond_risk": float(w[unsafe & passed].sum() / wp) if wp > 0 else 0.0,
+            "unsafe_pass": float(w[unsafe & passed].sum() / W)}
+
+
+def guarantee_curve_weighted(data: pd.DataFrame, weights, alphas=ALPHAS, n_splits: int = 200, seed: int = SEED,
+                             B: float = 1.0, cluster: bool = True, target: pd.DataFrame | None = None,
+                             w_test: float | None = None) -> pd.DataFrame:
+    """Weighted analogue of guarantee_curve (CRC only): repeated source-level splits, lambda calibrated with
+    weighted_crc_threshold on one half, risk measured on the other.
+
+    data: study frame from attach_scores (score, unsafe, source_id, output_id). weights: array aligned to data rows or a
+    {output_id: w} mapping (estimated once, held fixed over splits). Evaluation: with `target` (a labelled frame from the
+    new tool with score and unsafe) the realized risk is the plain mean on it; without it, study test items are
+    importance-weighted by w, which estimates the new-distribution risk. Columns mirror guarantee_curve, plus `unweighted_*`:
+    the same split's lambda from plain crc_threshold evaluated the same way, so the two can be compared directly.
+    """
+    data = data.reset_index(drop=True)
+    w_all = (data["output_id"].map(weights).to_numpy(float) if isinstance(weights, dict) else np.asarray(weights, float))
+    if len(w_all) != len(data):
+        raise ValueError("weights must align with data rows")
+    data = data.assign(_w=w_all)
+    recs = []
+    for s in range(n_splits):
+        cal, test = split_by_source(data, 0.5, seed + s)
+        groups = cal["source_id"].to_numpy() if cluster else None
+        for alpha in alphas:
+            lam_w = weighted_crc_threshold(cal["score"].to_numpy(), cal["unsafe"].to_numpy(), alpha,
+                                           cal["_w"].to_numpy(), B, groups, w_test)
+            lam_u = crc_threshold(cal["score"].to_numpy(), cal["unsafe"].to_numpy(), alpha, B, groups)
+            for tag, lam in (("weighted", lam_w), ("unweighted", lam_u)):
+                m = (_test_metrics(target, lam) if target is not None
+                     else _weighted_test_metrics(test, lam, test["_w"].to_numpy()))
+                recs.append({"variant": tag, "alpha": alpha, "split": s, "lam": lam, **m})
+    r = pd.DataFrame(recs)
+    r["finite"] = np.isfinite(r["lam"])
+    rows = []
+    for (variant, a), g in r.groupby(["variant", "alpha"], sort=False):
+        fin = g.loc[g["finite"], "lam"]
+        rows.append({"method": "crc_weighted" if variant == "weighted" else "crc", "variant": variant, "alpha": a,
+                     "n_splits": len(g), "lambda_mean": float(fin.mean()) if len(fin) else NEG_INF,
+                     "frac_splits_pass_nothing": float(1 - g["finite"].mean()),
+                     "review_rate_mean": g["review_rate"].mean(), "pass_rate_mean": g["pass_rate"].mean(),
+                     "realized_risk_mean": g["cond_risk"].mean(),
+                     "realized_unsafe_pass_mean": g["unsafe_pass"].mean(),
+                     "realized_unsafe_pass_hi": np.percentile(g["unsafe_pass"], 97.5),
+                     "frac_splits_unsafe_pass_below_alpha": float((g["unsafe_pass"] <= a).mean()),
+                     "evaluated_on": "target" if target is not None else "study_test_weighted"})
+    return pd.DataFrame(rows)
+
+
+def synthetic_shift(n_study: int = 3000, n_new: int = 3000, shift: float = 1.0, seed: int = 0):
+    """Planted covariate shift. A feature x ~ N(0,1) in the study, N(shift,1) for the new tool; P(unsafe | x) is the same
+    in both (logistic in x, so the new tool has more unsafe outputs); the verifier score is 2*unsafe + N(0,1). One source
+    per item. Returns (study frame, new frame) with output_id, source_id, x, score, unsafe."""
+    rng = np.random.default_rng(seed)
+
+    def draw(n, mu, tag):
+        x = rng.normal(mu, 1.0, n)
+        unsafe = (rng.random(n) < 1 / (1 + np.exp(-(-1.5 + 1.0 * x)))).astype(int)
+        return pd.DataFrame({"output_id": [f"{tag}-{i}" for i in range(n)], "source_id": [f"{tag}-s{i}" for i in range(n)],
+                             "x": x, "unsafe": unsafe, "SAFE": 1 - unsafe, "score": 2.0 * unsafe + rng.normal(0, 1, n)})
+    return draw(n_study, 0.0, "study"), draw(n_new, shift, "new")
+
+
 # ------------------------------------------------------------------ cli
 
 def _md(df: pd.DataFrame) -> str:
@@ -299,7 +440,16 @@ def main() -> None:
     ap.add_argument("--delta", type=float, default=0.1, help="LTT failure probability")
     ap.add_argument("--seed", type=int, default=SEED)
     ap.add_argument("--out")
+    ap.add_argument("--shift-demo", action="store_true",
+                    help="opt-in: planted covariate shift, weighted vs unweighted CRC (see docs/methods/conformal_weighted.md)")
     args = ap.parse_args()
+    if args.shift_demo:
+        study, new = synthetic_shift()
+        w = density_ratio_weights(study[["x"]], new[["x"]])
+        print(f"## Weighted CRC under planted shift (ESS {effective_sample_size(w):.0f} of {len(w)}; "
+              f"risk measured on the new-tool set)\n")
+        print(_md(guarantee_curve_weighted(study, w, tuple(args.alphas), min(args.splits, 100), args.seed, target=new)))
+        return
     if args.synthetic:
         df, rows = synthetic()
         out = Path(args.out) if args.out else None

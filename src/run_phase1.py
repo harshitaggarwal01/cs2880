@@ -56,7 +56,10 @@ class Ctx:
 def fetch(c: Ctx) -> str | None:
     if c.mock:
         return "mock run uses the frozen sources only"
-    c.sh("fetch_data.py", mock_flag=False)
+    # "fetch all": GSM1K text is fetched locally (never redistributed) whenever the config uses ext_gsm1k;
+    # without it collect_outputs would silently skip those problems.
+    extra = ["--gsm1k"] if "ext_gsm1k" in c.cfg.get("partitions", []) else []
+    c.sh("fetch_data.py", *extra, mock_flag=False)
 
 
 def pilot(c: Ctx) -> None:
@@ -119,7 +122,7 @@ def verify_repairs(c: Ctx) -> str | None:
 
 def sheets(c: Ctx) -> None:
     files = _existing(c, "generations.jsonl", "ablation_generations.jsonl", "baseline.jsonl", "repairs.jsonl")
-    c.sh("make_annotation_sheets.py", *map(str, files), mock_flag=False)
+    c.sh("make_annotation_sheets.py", *map(str, files), "--config", c.cfg_path, mock_flag=False)
 
 
 def ledger(c: Ctx) -> None:
@@ -140,6 +143,9 @@ def evaluate(c: Ctx) -> str | None:
     print(c.sh("evaluate.py", "--labels", str(c.ann_dir / "adjudicated.csv"), "--key",
                str(c.ann_dir / "KEY_DO_NOT_OPEN.csv"), "--verify", *map(str, ver),
                "--analysis-dir", str(c.run_dir / "analysis"), mock_flag=False))
+    # prespecified (2026-11-15): rates for every condition, PPI++ wherever only part of a condition is labelled
+    print(c.sh("ppi.py", "--run", str(c.run_dir), "--labels", str(c.ann_dir / "adjudicated.csv"),
+               "--key", str(c.ann_dir / "KEY_DO_NOT_OPEN.csv"), mock_flag=False))
 
 
 def report(c: Ctx) -> str | None:
@@ -156,8 +162,39 @@ STEPS: list[tuple[str, Callable[[Ctx], str | None]]] = [
 ]
 
 
+SPENDING_STEPS = {"pilot", "generate", "ablation", "verify", "critics", "repair", "verify_repairs"}
+
+
+def spent_usd(c: "Ctx") -> float:
+    """Actual spend so far in this run folder, from the ledger built over the run's files."""
+    from ledger import build_ledger
+    try:
+        led = build_ledger(c.run_dir, c.cfg)
+    except Exception:  # noqa: BLE001 - an empty or partial run folder has nothing billed yet
+        return 0.0
+    return float(led["usd"].sum()) if len(led) else 0.0
+
+
+def budget_check(c: "Ctx", step: str, budget: float | None) -> str | None:
+    """Refuse a spending step when spent + the step's estimated cost would exceed the budget (mock runs are free).
+
+    The estimate (src/estimate_cost.py) is an upper bound per step; the ledger gives what was actually spent. A step
+    stopped here can be resumed with a higher `budget_usd` / --budget; finished calls are never repeated."""
+    if c.mock or budget is None or step not in SPENDING_STEPS:
+        return None
+    from estimate_cost import step_estimates
+    est = step_estimates(c.cfg, pilot=(step == "pilot"))
+    key = "pilot" if step == "pilot" else step
+    need = float(est.get(key, 0.0))
+    spent = spent_usd(c)
+    if spent + need > budget:
+        return (f"BUDGET: spent ${spent:.2f} + this step's estimate ${need:.2f} > budget ${budget:.2f}; "
+                f"raise budget_usd (config) or --budget to continue")
+    return None
+
+
 def run(cfg_path: str, from_step: str | None = None, until_step: str | None = None, mock: bool = False,
-        force: bool = False) -> None:
+        force: bool = False, budget: float | None = None) -> None:
     names = [n for n, _ in STEPS]
     for s in (from_step, until_step):
         if s is not None and s not in names:
@@ -180,6 +217,9 @@ def run(cfg_path: str, from_step: str | None = None, until_step: str | None = No
         if marker.exists() and not force:
             status = "skipped (already done)"
         else:
+            if stop := budget_check(c, name, budget):
+                print(f"[{i}/{len(STEPS)}] {name:<15} STOPPED  {stop}")
+                return
             reason = fn(c)
             status = f"skipped ({reason})" if reason else "done"
             if not reason:
@@ -196,12 +236,17 @@ def main() -> None:
     ap.add_argument("--mock", action="store_true", help="offline dry run with the mock provider")
     ap.add_argument("--force", action="store_true", help="rerun steps even if marked done")
     ap.add_argument("--list", action="store_true", help="print the steps and exit")
+    ap.add_argument("--budget", type=float, help="USD cap for this run folder (default: budget_usd in the config); "
+                                                 "a spending step is refused if spent + its estimate would exceed it")
     args = ap.parse_args()
     if args.list:
         for i, n in enumerate(names, 1):
             print(f"{i:>2}. {n}")
         return
-    run(args.config, args.from_step, args.until_step, args.mock, args.force)
+    budget = args.budget
+    if budget is None:
+        budget = (yaml.safe_load(Path(args.config).read_text()) or {}).get("budget_usd")
+    run(args.config, args.from_step, args.until_step, args.mock, args.force, budget)
 
 
 if __name__ == "__main__":

@@ -69,7 +69,10 @@ RELATIONAL_PHRASES = [
 # "\btotal\b" also matches "in total".
 SYNONYM_CLASSES = [
     [r"\baltogether\b", r"\btotal\b", r"\bcombined\b"],
-    [r"\bremaining\b", r"\bthe rest\b", r"\bleft\b", r"\bother\b"],
+    # v1.1.1 (Nov 15): "left" / "other" only in their quantity senses, so an incidental "turn left" or
+    # "other apples in the store" cannot offset a dropped "remaining"
+    [r"\bremaining\b", r"\bthe rest\b", r"\b(?:is|are|was|were|be|been) left\b|\bleft over\b|\bleftover\b",
+     r"\bthe other\b"],
 ]
 # "each ... each" in the source: keeping one "each" is enough (presence, not count)
 PRESENCE_ONLY = {r"\beach\b"}
