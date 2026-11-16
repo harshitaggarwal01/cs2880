@@ -107,6 +107,10 @@
   - Gemma 12B: unsafe on 5.
   - Llama 3B: **unsafe on 45 of 50.**
   - One critic is a rubber stamp and another is an alarm. All 20 flags that mattered came from the rules and the recomputation layer.
+- **At scale, 620 careful-prompt rewrites (main run):**
+  - Qwen 32B and Gemma 12B each call **3%** unsafe, and they agree on only **4** rewrites.
+  - **54 rewrites change the answer when both versions are recomputed. The two large critics catch 7 and 4 of them.**
+  - Llama 3B calls 85% unsafe.
 - **Paid critics, same 50 rewrites (3¢ in total):**
   - Claude Haiku 5.5: unsafe on 5.
   - GPT-6 Luna: unsafe on 6, plus 2 unsure.
