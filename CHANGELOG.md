@@ -13,6 +13,7 @@ and this project uses semantic versioning where applicable.
 - `data/outputs/ollama-v1/`: final dev pilot (job 9153208, gate PASS), pilot generations, verify files for the three local critics, extractions, ledger, frozen config. The main run continues in the same job.
 - `config.ollama-paid.yaml`: `config.ollama.yaml` plus four OpenRouter critics (anthropic/claude-haiku-5.5, anthropic/claude-sonnet-5.5, openai/gpt-6-luna, openai/gpt-6.1-sol), their prices, and `budget_usd: 30`. Everything else is identical (checked by diff), so primary decisions are unchanged. Data-retention routing: `provider: {data_collection: deny, zdr: true}`.
 - `scripts/paid_critics.py` + `.sbatch`: CPU job that runs the paid critics cheapest first. It projects each critic's cost, from dev-pilot cost per row (+25%) or list prices, and skips any critic that would pass the cap. It fails fast without a key, stops at >5% critic errors, and never calls the extractor (it reuses the GPU job's cache; main stage waits for `.done/verify`).
+- Paid-critic dev pilot (job 9156405): Haiku 5.5 unsafe on 5/50 and GPT-6 Luna unsafe on 6/50 (overlap 1); both catch gsm8k-train-5378 (Llama plain), which Qwen 32B and Gemma 12B pass. $0.029 total. Sonnet failed with HTTP 402: the OpenRouter account holds $0 credits. Sonnet/Sol and the main stage wait for a top-up.
 - `docs/slides_nov16.md`: re-pilot numbers, calibration result, and slide 8 reframed (no single judge can be trusted); paid-critic plan and cost.
 
 ### Free tier on OSCAR: models set, dev pilot attempt 1 (2026-11-15)

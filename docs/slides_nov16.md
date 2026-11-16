@@ -97,8 +97,13 @@
   - Gemma 12B: unsafe on 5.
   - Llama 3B: **unsafe on 45 of 50.**
   - One critic is a rubber stamp and another is an alarm. All 20 flags that mattered came from the rules and the recomputation layer.
+- **Paid critics, same 50 rewrites (3¢ in total):**
+  - Claude Haiku 5.5: unsafe on 5.
+  - GPT-6 Luna: unsafe on 6, plus 2 unsure.
+  - **They agree on only 1 of the 10 rewrites they flag.**
 - **The example that matters** (Llama 3B rewrite, plain): *"The remaining floors are each 3 feet taller."* → *"The remaining **10** stories are **15** feet tall each."*
   - Qwen 32B and Gemma 12B critics: SAFE.
+  - Claude Haiku and GPT-6 Luna: **UNSAFE**.
   - The free rule: **REJECT**, because two intermediate values were computed for the student.
 - **Humans:** two blind annotators agree on SAFE at κ 0.79 (93%, n = 70), and every disagreement runs the same way: A said unsafe, B said safe (5 of A's 18). The Claude labeller showed the identical pattern against A.
   - The accommodation/modification line is where judgment diverges, for people and models alike.
