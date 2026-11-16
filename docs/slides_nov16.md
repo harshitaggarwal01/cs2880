@@ -82,18 +82,28 @@
 | · Claude Opus, realistic | **0/10** | 0–28% |
 | · Claude Haiku, realistic | 6/10 | 31–83% |
 
+**At scale, free models on OSCAR (main run, checker decisions, Nov 16):**
+
+| Prompt | Rewrites checked | REJECT | Leak flagged | Recomputed answer differs |
+|---|---|---|---|---|
+| Careful, plain (3 free rewriters) | 371 | 47 (13%) | 16 | 27 |
+| Careful, chunked (Qwen, Gemma)* | 248 | 35 (14%) | 7 | 27 |
+| **Realistic teacher prompt** | **300** | **297 (99%)** | **297** | **58** |
+
+- Rewriters: Qwen 14B, Gemma 12B, Llama 3B. Problems: 124 study problems (careful prompts) and the first 100 (realistic prompt).
+- \*Llama 3B returned a usable chunked rewrite for only 1 of 124 problems.
 - **What it means:** the risk lives in how teachers ask, not in model capability. The most capable model was the *least* safe: Opus added "steps to try" to every rewrite.
 - A more helpful model is more eager to scaffold, and scaffolding is exactly the modification we're trying to catch.
 - So a safeguard can't rely on prompt discipline. It has to check the output.
 
-*Footnote:* Preliminary: annotator A's labels, 70 outputs on 10 practice problems. The second annotator has finished; adjudication is pending. The CIs are wide; the main study has 124 problems.
+*Footnote:* Table 1 is preliminary: annotator A's labels, 70 outputs on 10 practice problems. Table 2 is automated checker decisions (rules, Qwen 32B critic, answer recomputation), not human labels; the realistic prompt ran on the first 100 study problems. The second annotator has finished; adjudication is pending. The CIs are wide; the main study has 124 problems.
 
 ---
 
 ## 8 · Result 2: no single judge can be trusted with the line (1.5 min)
 **Large AI judges wave everything through, small ones flag everything, and even humans split in one direction.**
 - **Free AI critics on OSCAR, same 50 rewrites:**
-  - Qwen 32B: **SAFE on 50 of 50.**
+  - Qwen 32B: **SAFE on 50 of 50.** On the main run it flags 286 of 300 realistic-prompt rewrites, so it catches blatant step-giving and misses subtle value leaks.
   - Gemma 12B: unsafe on 5.
   - Llama 3B: **unsafe on 45 of 50.**
   - One critic is a rubber stamp and another is an alarm. All 20 flags that mattered came from the rules and the recomputation layer.
