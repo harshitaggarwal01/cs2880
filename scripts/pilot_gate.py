@@ -50,9 +50,18 @@ def main() -> int:
               f"stop={dict(Counter(r.get('stop_reason') for r in rs))} think_chars>0={sum((r.get('think_chars') or 0) > 0 for r in rs)} "
               f"out_tok_mean={st.mean([r['usage']['output_tokens'] for r in rs if r.get('usage')] or [0]):.0f} "
               f"latency_mean={st.mean(lat or [0]):.1f}s")
-    pe = sum(bool(r.get("parse_error")) for r in gens) / len(gens)
+    # Parse (format) failures: a stop rule for standard rewriters, an OUTCOME for a rewriter tagged `tier: cheap`
+    # (owner decision 2026-11-15). Every other rule below still applies to cheap-tier rows.
+    cheap = {g["name"] for g in cfg["generators"] if g.get("tier") == "cheap"}
+    std = [r for r in gens if r["generator"] not in cheap]
+    pe = sum(bool(r.get("parse_error")) for r in std) / max(len(std), 1)
     if pe > 0.05:
-        fails.append(f"generation parse errors {pe:.1%} > 5%")
+        fails.append(f"generation parse errors {pe:.1%} > 5% (standard rewriters)")
+    for name in sorted(cheap):
+        rs = by_gen.get(name, [])
+        for tf in sorted({r["transformation"] for r in rs}):
+            sub = [r for r in rs if r["transformation"] == tf]
+            print(f"  [cheap tier, reported not gated] {name} {tf}: usable {sum(not r.get('parse_error') for r in sub)}/{len(sub)}")
     if any(r.get("error") for r in gens):
         fails.append(f"{sum(bool(r.get('error')) for r in gens)} generation API errors")
     if any(r.get("stop_reason") == "length" for r in gens):

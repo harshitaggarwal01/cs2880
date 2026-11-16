@@ -35,12 +35,14 @@ generators:
     provider: openai_compat
     base_url: http://localhost:11434/v1
     model: llama3.2:3b                          # cheap/weak tier
+    tier: cheap      # pilot gate: format (parse) failures are REPORTED as an outcome, not a stop rule; all other rules apply
     settings: {max_tokens: 2048, temperature: 0.7, top_p: 0.9, seed: 2880}
 
 primary_critic: qwen_big_c   # prespecified for this tier: drives REVIEW/REJECT, repair and the Phase-1 analysis
 critics:
-  # A size ladder within families (Qwen 32B vs 4B) plus a same-family critic for every rewriter, so
-  # self-preference is identified for each one. Extra critics reuse the same labels: GPU time only.
+  # A same-family critic for every rewriter (self-preference identified for each) and a size ladder (32B / 12B / 3B).
+  # Extra critics reuse the same labels: GPU time only. qwen3:4b was dropped after the dev pilot (2026-11-15): it kept
+  # reasoning despite reasoning_effort "none" (2.3k-4k tokens, ~200 s per verdict, ~80 GPU-hours for the main run).
   - name: qwen_big_c
     family: alibaba-qwen
     provider: openai_compat
@@ -53,12 +55,6 @@ critics:
     base_url: http://localhost:11434/v1
     model: gemma3:12b
     settings: {max_tokens: 2048, temperature: 0, seed: 2880}
-  - name: qwen_small_c
-    family: alibaba-qwen
-    provider: openai_compat
-    base_url: http://localhost:11434/v1
-    model: qwen3:4b                             # cheap/weak critic
-    settings: {max_tokens: 4096, temperature: 0, seed: 2880, extra_body: {reasoning_effort: none}}
   - name: llama_small_c
     family: meta-llama
     provider: openai_compat
@@ -99,7 +95,6 @@ labelling:
 prices:
   qwen3:14b: {in: 0, out: 0}
   qwen3:32b: {in: 0, out: 0}
-  qwen3:4b: {in: 0, out: 0}
   gemma3:12b: {in: 0, out: 0}
   llama3.2:3b: {in: 0, out: 0}
   claude-haiku-5-5: {in: 0.10, out: 0.50}

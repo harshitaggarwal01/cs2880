@@ -7,6 +7,16 @@ and this project uses semantic versioning where applicable.
 
 ## [Unreleased]
 
+### Free tier on OSCAR: models set, dev pilot attempt 1 (2026-11-15)
+- `config.ollama.yaml`: CCV-hosted models (`/oscar/data/shared/ollama_models`). Rewriters qwen3:14b, gemma3:12b, llama3.2:3b (`tier: cheap`); critics qwen3:32b (primary), gemma3:12b, llama3.2:3b; extractor qwen3:32b. Qwen thinking off via `reasoning_effort: none` (verified 2 vs ~450 output tokens). qwen3:4b critic dropped: it reasons regardless (~200 s per verdict).
+- `src/llm.py parse_json_block`: `json.loads(strict=False)`, so raw newlines inside JSON strings parse (Gemma 3 chunked rewrites; 9/9 recovered on dev). Content unchanged; non-JSON replies still fail. Not a checker-rule change.
+- `scripts/oscar_ollama.sbatch`: one job, one GPU (`pri-gpu`, 48 GB constraint); `STAGE=all` runs pilot → gate → main → label-free future methods. `scripts/oscar_ollama_env.sh`: CCV model store, never pulls, fails closed if another server holds port 11434.
+- `scripts/pilot_gate.py`: section-4 stop rules + slide-8 table. Parse failures of a `tier: cheap` rewriter are reported per style, not gated (owner decision); all other rules apply to it.
+- `scripts/oscar_smoke.*`, `oscar_candidates.*`, `oscar_bench.sbatch`: smoke test, cheap-rewriter screen, throughput check.
+- `requirements.txt`: add `openpyxl` (xlsx sheets; 2 tests errored without it).
+- `data/outputs/ollama-v1-attempt1/`: the first dev pilot (gate failed; kept as a record, see its README). Cheap rewriters, usable chunked outputs on dev: llama3.2:3b 0/10, phi3 0/10, qwen3:4b 0/10 (reasons until cut off), mistral:7b 8/10, gemma3:4b 10/10.
+- `docs/slides_nov16.md`: 10-slide deck in the course format (motivation, problem, approach, two results, summary) + backups.
+
 ### Free tier + first human labels (2026-11-16)
 - Branch `oscar-free-tier` cut from `dev-phases`. Added `docs/plan/AGENT_PROMPT_OSCAR.md`, a prompt for a Claude Code agent on OSCAR: setup, model choice, smoke test, dev pilot, main run, blinding rules.
 - `docs/slides_progress_2.md`: 12-slide presentation content.

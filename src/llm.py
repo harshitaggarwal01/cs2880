@@ -39,12 +39,16 @@ def fill(template: str, **kw: str) -> str:
 
 
 def parse_json_block(text: str) -> dict | None:
-    """Parse the first JSON object in a model reply (tolerates ```json fences)."""
+    """Parse the first JSON object in a model reply (tolerates ```json fences and raw newlines inside strings).
+
+    strict=False accepts literal control characters (e.g. an unescaped newline between chunked bullet lines) inside
+    JSON strings: Gemma 3 writes chunked rewrites that way (dev pilot, ollama-v1, 9/9 such failures). Content is
+    unchanged; a reply that is not JSON at all still returns None."""
     m = re.search(r"\{.*\}", text, re.S)
     if not m:
         return None
     try:
-        return json.loads(m.group(0))
+        return json.loads(m.group(0), strict=False)
     except json.JSONDecodeError:
         return None
 

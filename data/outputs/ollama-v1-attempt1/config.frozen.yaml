@@ -1,0 +1,131 @@
+run_id: ollama-v1
+generators:
+- name: qwen_local
+  family: alibaba-qwen
+  provider: openai_compat
+  base_url: http://localhost:11434/v1
+  model: qwen3:14b
+  settings:
+    max_tokens: 4096
+    temperature: 0.7
+    top_p: 0.8
+    seed: 2880
+    extra_body:
+      reasoning_effort: none
+- name: gemma_local
+  family: google-gemma
+  provider: openai_compat
+  base_url: http://localhost:11434/v1
+  model: gemma3:12b
+  settings:
+    max_tokens: 2048
+    temperature: 0.7
+    top_p: 0.95
+    seed: 2880
+- name: llama_small
+  family: meta-llama
+  provider: openai_compat
+  base_url: http://localhost:11434/v1
+  model: llama3.2:3b
+  settings:
+    max_tokens: 2048
+    temperature: 0.7
+    top_p: 0.9
+    seed: 2880
+primary_critic: qwen_big_c
+critics:
+- name: qwen_big_c
+  family: alibaba-qwen
+  provider: openai_compat
+  base_url: http://localhost:11434/v1
+  model: qwen3:32b
+  settings:
+    max_tokens: 4096
+    temperature: 0
+    seed: 2880
+    extra_body:
+      reasoning_effort: none
+- name: gemma_c
+  family: google-gemma
+  provider: openai_compat
+  base_url: http://localhost:11434/v1
+  model: gemma3:12b
+  settings:
+    max_tokens: 2048
+    temperature: 0
+    seed: 2880
+- name: qwen_small_c
+  family: alibaba-qwen
+  provider: openai_compat
+  base_url: http://localhost:11434/v1
+  model: qwen3:4b
+  settings:
+    max_tokens: 4096
+    temperature: 0
+    seed: 2880
+    extra_body:
+      reasoning_effort: none
+- name: llama_small_c
+  family: meta-llama
+  provider: openai_compat
+  base_url: http://localhost:11434/v1
+  model: llama3.2:3b
+  settings:
+    max_tokens: 2048
+    temperature: 0
+    seed: 2880
+extractor:
+  family: alibaba-qwen
+  provider: openai_compat
+  base_url: http://localhost:11434/v1
+  model: qwen3:32b
+  settings:
+    max_tokens: 4096
+    temperature: 0
+    seed: 2880
+    extra_body:
+      reasoning_effort: none
+transformations:
+- plain
+- chunked
+ablation:
+  transformation: naive
+  partition: main
+  first_n: 100
+partitions:
+- main
+- ext_asdiv
+- ext_gsm1k
+minutes_per_review: 1.5
+budget_usd: 9
+labelling:
+  design: lean
+  label_frac:
+    plain: 0.5
+    chunked: 0.5
+    naive: 1.0
+    deterministic: 0.3
+  double_frac: 0.3
+  minutes_per_item: 1.5
+prices:
+  qwen3:14b:
+    in: 0
+    out: 0
+  qwen3:32b:
+    in: 0
+    out: 0
+  qwen3:4b:
+    in: 0
+    out: 0
+  gemma3:12b:
+    in: 0
+    out: 0
+  llama3.2:3b:
+    in: 0
+    out: 0
+  claude-haiku-5-5:
+    in: 0.1
+    out: 0.5
+  claude-opus-5-5:
+    in: 4.0
+    out: 20.0
