@@ -7,6 +7,14 @@ and this project uses semantic versioning where applicable.
 
 ## [Unreleased]
 
+### Calibration complete, final dev pilot, paid critics prepared (2026-11-15, night)
+- `data/calibration/pilot/sheet_B.xlsx` / `.csv`: annotator B's 70 calibration labels (imported with `sheets_xlsx.py import`, 70/70, no validation problems).
+- `data/calibration/pilot/agreement_A_vs_B.md`: agreement table, SAFE κ 0.79 / AC1 0.89 / 93% raw (n = 70). Low: adaptation_needed (AC1 0.46), presentation (0.53), failure_codes (0.45, n = 19). All SAFE disagreements are A unsafe / B safe (5).
+- `data/outputs/ollama-v1/`: final dev pilot (job 9153208, gate PASS), pilot generations, verify files for the three local critics, extractions, ledger, frozen config. The main run continues in the same job.
+- `config.ollama-paid.yaml`: `config.ollama.yaml` plus four OpenRouter critics (anthropic/claude-haiku-5.5, anthropic/claude-sonnet-5.5, openai/gpt-6-luna, openai/gpt-6.1-sol), their prices, and `budget_usd: 30`. Everything else is identical (checked by diff), so primary decisions are unchanged. Data-retention routing: `provider: {data_collection: deny, zdr: true}`.
+- `scripts/paid_critics.py` + `.sbatch`: CPU job that runs the paid critics cheapest first. It projects each critic's cost, from dev-pilot cost per row (+25%) or list prices, and skips any critic that would pass the cap. It fails fast without a key, stops at >5% critic errors, and never calls the extractor (it reuses the GPU job's cache; main stage waits for `.done/verify`).
+- `docs/slides_nov16.md`: re-pilot numbers, calibration result, and slide 8 reframed (no single judge can be trusted); paid-critic plan and cost.
+
 ### Free tier on OSCAR: models set, dev pilot attempt 1 (2026-11-15)
 - `config.ollama.yaml`: CCV-hosted models (`/oscar/data/shared/ollama_models`). Rewriters qwen3:14b, gemma3:12b, llama3.2:3b (`tier: cheap`); critics qwen3:32b (primary), gemma3:12b, llama3.2:3b; extractor qwen3:32b. Qwen thinking off via `reasoning_effort: none` (verified 2 vs ~450 output tokens). qwen3:4b critic dropped: it reasons regardless (~200 s per verdict).
 - `src/llm.py parse_json_block`: `json.loads(strict=False)`, so raw newlines inside JSON strings parse (Gemma 3 chunked rewrites; 9/9 recovered on dev). Content unchanged; non-JSON replies still fail. Not a checker-rule change.

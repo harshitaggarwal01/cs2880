@@ -1,7 +1,7 @@
 # SafeAdapt-Math — Nov 16 presentation (10 slides + backup, ~11 min)
 
-> **Before presenting:** slides 7–8 use annotator A's preliminary labels on the 70 calibration items. Cathy is still labelling those items blind, so she should finish her sheet before she sees them (or Harshit presents 7–8).
-> **Accuracy rules:** every number states its n. "Preliminary" = one annotator, 10 practice problems. OSCAR numbers are checker decisions on practice problems, not human labels.
+> **Status (Nov 15, 21:45):** both annotators have finished the 70 calibration items (blind). Slide 7 still uses annotator A's labels, because adjudication hasn't happened yet. **Check before presenting:** B-vs-A on SAFE (13 / 5 / 0 / 52) is cell-for-cell the same table as the AI-labeller-vs-A comparison. Confirm that B's SAFE labels are not the AI's: `python src/calibrate.py --compare-preliminary data/calibration/pilot/sheet_B.csv data/calibration/pilot/KEY_DO_NOT_OPEN.csv` prints aggregate agreement only. If they match exactly, drop the "second human" bullet on slide 8.
+> **Accuracy rules:** every number states its n. "Preliminary" = labels not yet adjudicated, 10 practice problems. OSCAR numbers are checker decisions on practice problems, not human labels.
 
 ---
 
@@ -55,7 +55,7 @@
   - **Rules (free):** numbers, relations, quantifiers, leaked operations and derived values.
   - **AI critic:** rubric-based verdict with cited evidence.
   - **Program check:** extract both versions as programs and recompute; a different answer means a REJECT.
-- **Labels:** two annotators, blind; rubric calibrated first (κ/AC1 ≥ 0.7); about 850 items, about 14 h each.
+- **Labels:** two annotators, blind; rubric calibrated first (target κ/AC1 ≥ 0.7). **Calibration done: SAFE κ 0.79, AC1 0.89, 93% raw (n = 70).** Two labels missed the bar and are being revised before the freeze: "adaptation needed" (AC1 0.46) and presentation (AC1 0.53). After that, about 850 items, about 14 h each.
 
 ---
 
@@ -86,20 +86,25 @@
 - A more helpful model is more eager to scaffold, and scaffolding is exactly the modification we're trying to catch.
 - So a safeguard can't rely on prompt discipline. It has to check the output.
 
-*Footnote:* Preliminary: one annotator, 70 outputs on 10 practice problems; the second annotator is labelling now. The CIs are wide; the main study has 124 problems.
+*Footnote:* Preliminary: annotator A's labels, 70 outputs on 10 practice problems. The second annotator has finished; adjudication is pending. The CIs are wide; the main study has 124 problems.
 
 ---
 
-## 8 · Result 2: AI judges fail in one direction, toward "safe" (1.5 min)
-**AI judges agree with humans most of the time, but their errors all point the dangerous way.**
-- **Claude as labeller vs human:** 93% agreement, κ = 0.79. **All 5 disagreements were unsafe rewrites it called safe.** It missed 5 of 18 unsafe rewrites.
-- **Free Qwen 32B critic on OSCAR:** called **41 of 41** rewrites safe. Every one of the 16 flags came from the rules or the program check.
-- **The example that matters** (Llama 3B, plain): *"The remaining floors are each 3 feet taller."* → *"The remaining **10** stories are **15** feet tall each."*
-  - Both AI critics (Qwen 32B, Gemma 12B): SAFE.
+## 8 · Result 2: no single judge can be trusted with the line (1.5 min)
+**Large AI judges wave everything through, small ones flag everything, and even humans split in one direction.**
+- **Free AI critics on OSCAR, same 50 rewrites:**
+  - Qwen 32B: **SAFE on 50 of 50.**
+  - Gemma 12B: unsafe on 5.
+  - Llama 3B: **unsafe on 45 of 50.**
+  - One critic is a rubber stamp and another is an alarm. All 20 flags that mattered came from the rules and the recomputation layer.
+- **The example that matters** (Llama 3B rewrite, plain): *"The remaining floors are each 3 feet taller."* → *"The remaining **10** stories are **15** feet tall each."*
+  - Qwen 32B and Gemma 12B critics: SAFE.
   - The free rule: **REJECT**, because two intermediate values were computed for the student.
-- **What it means:** an AI judge alone is a leniency machine. Fidelity checks need layers that can't be talked into "looks fine": rules and recomputation. Human labels must stay the ground truth, with AI verdicts used only as a bias-corrected predictor (PPI).
+- **Humans:** two blind annotators agree on SAFE at κ 0.79 (93%, n = 70), and every disagreement runs the same way: A said unsafe, B said safe (5 of A's 18). The Claude labeller showed the identical pattern against A.
+  - The accommodation/modification line is where judgment diverges, for people and models alike.
+- **What it means:** an AI verdict is a signal, not a decision. Rules and recomputation can't be talked into "looks fine". Adjudicated human labels stay the ground truth, and AI verdicts enter only as a bias-corrected predictor (PPI).
 
-*Footnote:* Labeller result: preliminary, n = 70. OSCAR: checker decisions on 10 practice problems, no human labels yet.
+*Footnote:* OSCAR: checker decisions on 10 practice problems, no human labels. Humans: calibration set, before adjudication.
 
 ---
 
@@ -110,7 +115,11 @@
   - Mistral 7B: 8/10. Gemma 4B: 10/10.
   - **Llama 3B, Phi-3 3.8B: 0/10.** **Qwen 4B: 0/10:** it reasons until it is cut off.
 - A small model isn't automatically cheap: the Qwen 4B critic used 2,300–4,000 tokens per verdict, **~25× slower** than the 32B (~200 s vs ~8.5 s).
-- **Next:** main run on OSCAR (in progress) → calibration agreement → rubric freeze → labelling (~1 week) → guarantees, cascade, audit game on real labels.
+- **Next:**
+  - Main run on OSCAR: running, all three free rewriters, about 1.5 days.
+  - Claude (Haiku, Sonnet) and GPT (Luna, Sol) critics judge the same rewrites, under $30 with no new labels. This gives a free vs frontier judge comparison.
+  - Revise the two weak labels, freeze the rubric, then labelling (about 1 week).
+  - Guarantees, cascade and audit game on real labels.
 - **Feedback we want:**
   1. Is "accommodation vs modification" the right operational line for leakage?
   2. Which deployment framing is most useful: teacher tool, district audit, or vendor certification?
@@ -120,7 +129,7 @@
 
 ## 10 · Summary (45 s)
 - **The failure is real:** with the prompt teachers type, most rewrites stopped being the same task (6/20 safe, preliminary).
-- **The obvious fix doesn't hold:** AI judges err toward "safe", so layered checks and human ground truth are required.
+- **The obvious fix doesn't hold:** a 32B AI judge passed 50 of 50 rewrites, including ones the rules rejected, and a 3B judge flagged 45 of 50. Layered checks and adjudicated human labels are required.
 - **The safeguard:** free rules + AI critic + answer recomputation, wrapped in guarantees ("of what we pass, ≤ α is unsafe"), label-efficient statistics and an audit budget.
 - **Equity:** we test whether a $0 model on a school's own hardware can rewrite *and* check safely. Early answer: only above a size threshold.
 - **Same problem, easier to read, and verified before it reaches a student.**
@@ -133,11 +142,17 @@
 | Rewriter (local, $0) | rewrites checked | pass | review | reject | same answer recomputed |
 |---|---|---|---|---|---|
 | Qwen3 14B | 20 | 12 | 8 | 0 | 19/20 |
-| Gemma3 12B | 11* | 6 | 5 | 0 | 10/11 |
-| Llama3.2 3B | 10** | 7 | 0 | 3 | 9/10 |
+| Gemma3 12B | 20* | 11 | 9 | 0 | 18/20 |
+| Llama3.2 3B | 10** | 7 | 0 | 3 | 10/10 |
 
-- \*9 more Gemma rewrites became readable after a parser fix (raw line breaks inside its JSON); they're re-checked in tonight's re-run.
-- \*\*Llama 3B produced no usable chunked rewrites (0/10).
+- Final dev pilot, job 9153208: gate passed, and the main run started on the same GPU at 20:59, Nov 15.
+- \*All 20 Gemma rewrites became readable after a parser fix (raw line breaks inside its JSON).
+- \*\*Llama 3B produced no usable chunked rewrites (0/10). That's kept as a result, not tuned away.
+- Critics on the 50 rewrites:
+  - Qwen 32B (primary): SAFE 50 of 50, about 7.5 s each.
+  - Gemma 12B: unsafe on 5.
+  - Llama 3B: unsafe on 45, with one invalid reply.
+  - Program check: 47 MATCH, 3 uncheckable.
 - Brown OSCAR, one L40S GPU, no API keys; student materials never leave campus. 10 practice problems; no human labels.
 - **Clean (Qwen 14B, chunked):** "Lisa has 18 more dresses than Ana. If the number of their dresses combined is 48, how many dresses does Ana have?" → "- Lisa has 18 more dresses than Ana. / - The number of their dresses combined is 48. / Question: How many dresses does Ana have?" PASS; both versions recompute to 15.
 - **Flagged (Llama 3B, plain):** "The remaining floors are each 3 feet taller" → "The remaining 10 stories are 15 feet tall each." REJECT (`LEAK_DERIVED_VALUE`, `QTY_OMIT_OR_CHANGE`).
@@ -147,8 +162,17 @@
 
 ## B3 · Cost
 - Whole study: **$0** local · ≈ $7 Haiku checker · ≈ $18 Sonnet · ≈ $58 Opus (upper bounds; a hard cap stops overruns).
+- Frontier judges on the free rewrites (OpenRouter, list prices checked Nov 15): Haiku 5.5 and GPT-6 Luna ≈ $0.40 each, Sonnet 5.5 and GPT-6.1 Sol ≈ $8 each. All four come to about $17 upper bound, against a $30 cap enforced per critic.
 - At today's flag rate, about 16 min of teacher review per 20 problems vs about 60¢ of API. **Teacher time, not dollars, is the binding cost**, which is why false alarms matter.
 
 ## B4 · Labelling design
+- Calibration (two blind annotators, n = 70; κ / Gwet AC1):
+  - SAFE: 0.79 / 0.89.
+  - Leakage level: 0.95 / 0.97.
+  - Leakage type: 0.92 / 0.97.
+  - Ambiguity: 0.62 / 0.94.
+  - Math fidelity: κ 0 / AC1 0.90. Almost every item is faithful, so κ collapses; that prevalence effect is why AC1 is prespecified alongside it.
+  - Presentation: 0.50 / 0.53. Being revised.
+  - Adaptation needed: 0.13 / 0.46. Being revised.
 - Lean, prespecified: about 850 of about 1,430 outputs labelled (all realistic-prompt outputs, half of the careful-prompt sources paired across models, all repairs of labelled items); 30% double-labelled.
 - Remaining rates by PPI: human labels correct the checker's bias.

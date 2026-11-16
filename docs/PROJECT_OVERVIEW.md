@@ -68,6 +68,18 @@ docs/                   dossier, explainer, plan/, methods/, check-in note, deck
 
 ## 5. Status
 
+**Update, Nov 15 (night):**
+- **Calibration complete.** Both annotators labelled the 70 items blind. On SAFE: κ 0.79, AC1 0.89, 93% raw, so the target is met. Table: `data/calibration/pilot/agreement_A_vs_B.md`.
+  - Every SAFE disagreement runs one way: A unsafe, B safe, 5 of A's 18.
+  - "adaptation needed" (AC1 0.46) and presentation (AC1 0.53) miss the bar and get revised before the rubric freeze.
+  - Next: adjudication (`src/adjudicate.py`).
+- **OSCAR free tier.** Final dev pilot passed the gate (job 9153208); the main run has been running since 20:59.
+  - Primary critic Qwen 32B: SAFE on 50 of 50 dev rewrites, so every flag came from the rules or the program check.
+  - Llama 3B critic: unsafe on 45 of 50.
+- **Paid critics prepared.** Claude Haiku/Sonnet 5.5 and GPT-6 Luna / GPT-6.1 Sol via OpenRouter, on the same rewrites with no new labels.
+  - Files: `config.ollama-paid.yaml`, `scripts/paid_critics.{py,sbatch}`.
+  - About $17 upper bound under a $30 cap.
+
 **Update, Nov 16:**
 - First human labels (annotator A, preliminary): careful prompts 92% SAFE vs the realistic prompt 30%.
 - The AI labeller agreed with the human 93% of the time (κ 0.79) but missed 5 of 18 unsafe rewrites.

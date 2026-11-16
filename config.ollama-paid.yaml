@@ -1,0 +1,142 @@
+# PAID-CRITIC EXTENSION of config.ollama.yaml (2026-11-15). Identical except: four OpenRouter critics appended to
+# `critics:`, their prices, and budget_usd. Run with scripts/paid_critics.sbatch (CPU job), never run_phase1.
+# FREE TIER: open-weight models served by Ollama on Brown's OSCAR cluster (no API keys, $0). Same sample, prompts,
+# lean labelling plan and analysis as config.matrix*.yaml. Run it ON OSCAR (scripts/oscar_ollama.sbatch): this
+# cloud session cannot reach OSCAR's network.
+#
+# Model tags verified 2026-11-15 against the CCV-hosted store /oscar/data/shared/ollama_models (OLLAMA_MODELS).
+#
+# Labels attach to rewrites, not critics: closed-model critics (Claude via ANTHROPIC_API_KEY, GPT via OPENAI_API_KEY)
+# can be added later as extra critics on the SAME outputs and labels (verify.py --critic NAME). Closed-model
+# REWRITERS added later need their own labelling batch (or 50% + PPI).
+run_id: ollama-v1   # same run folder: this file only ADDS critics to config.ollama.yaml
+
+generators:
+  # Three rewriters, three families, three sizes. The 3B model is the deliberately cheap/weak tier: it runs on a
+  # school laptop (~2 GB), so the study can ask whether a model anyone can afford is as safe as a mid-size one.
+  # Qwen3 thinking is turned off (reasoning_effort "none"), matching the low-effort settings of the paid tiers.
+  - name: qwen_local
+    family: alibaba-qwen
+    provider: openai_compat
+    base_url: http://localhost:11434/v1        # Ollama's OpenAI-compatible endpoint; no api_key_env needed
+    model: qwen3:14b                            # CCV-hosted (/oscar/data/shared/ollama_models)
+    settings:
+      max_tokens: 4096
+      temperature: 0.7
+      top_p: 0.8
+      seed: 2880
+      extra_body: {reasoning_effort: none}
+  - name: gemma_local
+    family: google-gemma
+    provider: openai_compat
+    base_url: http://localhost:11434/v1
+    model: gemma3:12b
+    settings: {max_tokens: 2048, temperature: 0.7, top_p: 0.95, seed: 2880}
+  - name: llama_small
+    family: meta-llama
+    provider: openai_compat
+    base_url: http://localhost:11434/v1
+    model: llama3.2:3b                          # cheap/weak tier
+    tier: cheap      # pilot gate: format (parse) failures are REPORTED as an outcome, not a stop rule; all other rules apply
+    settings: {max_tokens: 2048, temperature: 0.7, top_p: 0.9, seed: 2880}
+
+primary_critic: qwen_big_c   # prespecified for this tier: drives REVIEW/REJECT, repair and the Phase-1 analysis
+critics:
+  # A same-family critic for every rewriter (self-preference identified for each) and a size ladder (32B / 12B / 3B).
+  # Extra critics reuse the same labels: GPU time only. qwen3:4b was dropped after the dev pilot (2026-11-15): it kept
+  # reasoning despite reasoning_effort "none" (2.3k-4k tokens, ~200 s per verdict, ~80 GPU-hours for the main run).
+  - name: qwen_big_c
+    family: alibaba-qwen
+    provider: openai_compat
+    base_url: http://localhost:11434/v1
+    model: qwen3:32b                            # largest dense instruct model that fits a 48 GB GPU with context
+    settings: {max_tokens: 4096, temperature: 0, seed: 2880, extra_body: {reasoning_effort: none}}
+  - name: gemma_c
+    family: google-gemma
+    provider: openai_compat
+    base_url: http://localhost:11434/v1
+    model: gemma3:12b
+    settings: {max_tokens: 2048, temperature: 0, seed: 2880}
+  - name: llama_small_c
+    family: meta-llama
+    provider: openai_compat
+    base_url: http://localhost:11434/v1
+    model: llama3.2:3b                          # cheap/weak critic
+    settings: {max_tokens: 2048, temperature: 0, seed: 2880}
+  # Paid critics via OpenRouter (added 2026-11-15, owner cap $30): judge the SAME ollama-v1 rewrites; labels reused,
+  # no new labelling. A cheap and a strong model per vendor. Rewriters, prompts, primary critic and extractor are
+  # unchanged from config.ollama.yaml (frozen copy: data/outputs/ollama-v1/config.frozen.yaml), so primary decisions
+  # and every analysis prespecified on qwen_big_c are untouched. Prices checked on openrouter.ai/api/v1/models 2026-11-15.
+  - name: haiku55c
+    family: anthropic
+    provider: openai_compat
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+    model: anthropic/claude-haiku-5.5
+    settings: &paid_anthropic
+      max_tokens: 4096
+      extra_body: {reasoning: {effort: low}, provider: {data_collection: deny, zdr: true}}
+  - name: sonnet55c
+    family: anthropic
+    provider: openai_compat
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+    model: anthropic/claude-sonnet-5.5
+    settings: *paid_anthropic
+  - name: luna6c
+    family: openai
+    provider: openai_compat
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+    model: openai/gpt-6-luna
+    settings: &paid_openai
+      max_tokens: 4096
+      temperature: 0
+      seed: 2880
+      extra_body: {reasoning: {effort: none}, provider: {data_collection: deny, zdr: true}}
+  - name: sol61c
+    family: openai
+    provider: openai_compat
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+    model: openai/gpt-6.1-sol
+    settings: *paid_openai
+
+extractor:               # one extractor so the program layer is constant across critics
+  family: alibaba-qwen
+  provider: openai_compat
+  base_url: http://localhost:11434/v1
+  model: qwen3:32b
+  settings: {max_tokens: 4096, temperature: 0, seed: 2880, extra_body: {reasoning_effort: none}}
+
+transformations: [plain, chunked]
+ablation:
+  transformation: naive
+  partition: main
+  first_n: 100
+
+partitions: [main, ext_asdiv, ext_gsm1k]
+
+minutes_per_review: 1.5
+
+# Hard spending cap (USD). Local models cost $0; the cap still guards any paid critic added later.
+budget_usd: 30           # owner cap for the paid critics (scripts/paid_critics.py enforces it per critic)
+
+labelling:
+  design: lean
+  label_frac: {plain: 0.5, chunked: 0.5, naive: 1.0, deterministic: 0.3}
+  double_frac: 0.30
+  minutes_per_item: 1.5
+
+# Local models are free; keep a $0 entry for every local tag you use (the estimator and ledger need one).
+prices:
+  qwen3:14b: {in: 0, out: 0}
+  qwen3:32b: {in: 0, out: 0}
+  gemma3:12b: {in: 0, out: 0}
+  llama3.2:3b: {in: 0, out: 0}
+  claude-haiku-5-5: {in: 0.10, out: 0.50}
+  claude-opus-5-5: {in: 4.00, out: 20.00}
+  anthropic/claude-haiku-5.5: {in: 0.10, out: 0.50}
+  anthropic/claude-sonnet-5.5: {in: 2.00, out: 10.00}
+  openai/gpt-6-luna: {in: 0.10, out: 0.50}
+  openai/gpt-6.1-sol: {in: 2.00, out: 10.00}
