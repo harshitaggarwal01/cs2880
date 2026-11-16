@@ -3,6 +3,7 @@ numpy>=2.0
 pandas>=2.2
 pyyaml>=6.0
 tabulate>=0.9          # markdown tables in evaluate.py
+openpyxl>=3.1          # Excel labelling sheets (make_annotation_sheets / sheets-xlsx / import-sheets)
 jsonschema>=4.20
 scipy>=1.13            # exact tests, distributions (variance check)
 statsmodels>=0.14      # GEE / clustered models in report.py

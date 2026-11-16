@@ -2,9 +2,7 @@
 # lean labelling plan and analysis as config.matrix*.yaml. Run it ON OSCAR (scripts/oscar_ollama.sbatch): this
 # cloud session cannot reach OSCAR's network.
 #
-# >>> Set the `model:` tags below to what `ollama list` shows on OSCAR. The tags here are EXAMPLES, not verified for
-# >>> your OSCAR install. Pick two rewriters from DIFFERENT families (e.g. Qwen and Llama or Gemma) so the
-# >>> self-preference test is identified, and the largest model the GPU fits as the primary critic and extractor.
+# Model tags verified 2026-11-15 against the CCV-hosted store /oscar/data/shared/ollama_models (OLLAMA_MODELS).
 #
 # Labels attach to rewrites, not critics: closed-model critics (Claude via ANTHROPIC_API_KEY, GPT via OPENAI_API_KEY)
 # can be added later as extra critics on the SAME outputs and labels (verify.py --critic NAME). Closed-model
@@ -12,36 +10,60 @@
 run_id: ollama-v1
 
 generators:
+  # Three rewriters, three families, three sizes. The 3B model is the deliberately cheap/weak tier: it runs on a
+  # school laptop (~2 GB), so the study can ask whether a model anyone can afford is as safe as a mid-size one.
+  # Qwen3 thinking is turned off (reasoning_effort "none"), matching the low-effort settings of the paid tiers.
   - name: qwen_local
     family: alibaba-qwen
     provider: openai_compat
     base_url: http://localhost:11434/v1        # Ollama's OpenAI-compatible endpoint; no api_key_env needed
-    model: qwen3:14b                            # EXAMPLE tag; set from `ollama list`
+    model: qwen3:14b                            # CCV-hosted (/oscar/data/shared/ollama_models)
     settings:
-      max_tokens: 4096                          # Qwen3 may think first; <think> blocks are stripped and logged
+      max_tokens: 4096
       temperature: 0.7
       top_p: 0.8
       seed: 2880
-  - name: llama_local
+      extra_body: {reasoning_effort: none}
+  - name: gemma_local
+    family: google-gemma
+    provider: openai_compat
+    base_url: http://localhost:11434/v1
+    model: gemma3:12b
+    settings: {max_tokens: 2048, temperature: 0.7, top_p: 0.95, seed: 2880}
+  - name: llama_small
     family: meta-llama
     provider: openai_compat
     base_url: http://localhost:11434/v1
-    model: llama3.1:8b                          # EXAMPLE tag; set from `ollama list`
+    model: llama3.2:3b                          # cheap/weak tier
     settings: {max_tokens: 2048, temperature: 0.7, top_p: 0.9, seed: 2880}
 
 primary_critic: qwen_big_c   # prespecified for this tier: drives REVIEW/REJECT, repair and the Phase-1 analysis
 critics:
+  # A size ladder within families (Qwen 32B vs 4B) plus a same-family critic for every rewriter, so
+  # self-preference is identified for each one. Extra critics reuse the same labels: GPU time only.
   - name: qwen_big_c
     family: alibaba-qwen
     provider: openai_compat
     base_url: http://localhost:11434/v1
-    model: qwen3:32b                            # EXAMPLE tag; the largest model that fits the GPU
-    settings: {max_tokens: 4096, temperature: 0, seed: 2880}
-  - name: llama_c
+    model: qwen3:32b                            # largest dense instruct model that fits a 48 GB GPU with context
+    settings: {max_tokens: 4096, temperature: 0, seed: 2880, extra_body: {reasoning_effort: none}}
+  - name: gemma_c
+    family: google-gemma
+    provider: openai_compat
+    base_url: http://localhost:11434/v1
+    model: gemma3:12b
+    settings: {max_tokens: 2048, temperature: 0, seed: 2880}
+  - name: qwen_small_c
+    family: alibaba-qwen
+    provider: openai_compat
+    base_url: http://localhost:11434/v1
+    model: qwen3:4b                             # cheap/weak critic
+    settings: {max_tokens: 4096, temperature: 0, seed: 2880, extra_body: {reasoning_effort: none}}
+  - name: llama_small_c
     family: meta-llama
     provider: openai_compat
     base_url: http://localhost:11434/v1
-    model: llama3.1:8b                          # EXAMPLE tag
+    model: llama3.2:3b                          # cheap/weak critic
     settings: {max_tokens: 2048, temperature: 0, seed: 2880}
   # Later, with keys (labels are reused, so these add API cost only):
   # - {name: haiku55c, family: anthropic, provider: anthropic, model: claude-haiku-5-5, settings: {effort: low, max_tokens: 4096}}
@@ -51,8 +73,8 @@ extractor:               # one extractor so the program layer is constant across
   family: alibaba-qwen
   provider: openai_compat
   base_url: http://localhost:11434/v1
-  model: qwen3:32b                              # EXAMPLE tag
-  settings: {max_tokens: 4096, temperature: 0, seed: 2880}
+  model: qwen3:32b
+  settings: {max_tokens: 4096, temperature: 0, seed: 2880, extra_body: {reasoning_effort: none}}
 
 transformations: [plain, chunked]
 ablation:
@@ -77,6 +99,8 @@ labelling:
 prices:
   qwen3:14b: {in: 0, out: 0}
   qwen3:32b: {in: 0, out: 0}
-  llama3.1:8b: {in: 0, out: 0}
+  qwen3:4b: {in: 0, out: 0}
+  gemma3:12b: {in: 0, out: 0}
+  llama3.2:3b: {in: 0, out: 0}
   claude-haiku-5-5: {in: 0.10, out: 0.50}
   claude-opus-5-5: {in: 4.00, out: 20.00}
