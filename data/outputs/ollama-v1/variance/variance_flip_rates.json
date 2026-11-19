@@ -1,0 +1,74 @@
+{
+ "overall": {
+  "n_pairs": 180,
+  "n_verified": 99,
+  "text_identical_rate": 0.93125,
+  "det_decision_flip_rate": 0.010101010101010102,
+  "full_decision_flip_rate": null
+ },
+ "by_condition": {
+  "gemma_local|chunked": {
+   "n_pairs": 20,
+   "n_verified": 20,
+   "text_identical_rate": 1.0,
+   "det_decision_flip_rate": 0.0,
+   "full_decision_flip_rate": null
+  },
+  "gemma_local|naive": {
+   "n_pairs": 20,
+   "n_verified": 0,
+   "text_identical_rate": 1.0,
+   "det_decision_flip_rate": null,
+   "full_decision_flip_rate": null
+  },
+  "gemma_local|plain": {
+   "n_pairs": 20,
+   "n_verified": 20,
+   "text_identical_rate": 1.0,
+   "det_decision_flip_rate": 0.0,
+   "full_decision_flip_rate": null
+  },
+  "llama_small|chunked": {
+   "n_pairs": 20,
+   "n_verified": 0,
+   "text_identical_rate": null,
+   "det_decision_flip_rate": null,
+   "full_decision_flip_rate": null
+  },
+  "llama_small|naive": {
+   "n_pairs": 20,
+   "n_verified": 0,
+   "text_identical_rate": 1.0,
+   "det_decision_flip_rate": null,
+   "full_decision_flip_rate": null
+  },
+  "llama_small|plain": {
+   "n_pairs": 20,
+   "n_verified": 19,
+   "text_identical_rate": 0.75,
+   "det_decision_flip_rate": 0.0,
+   "full_decision_flip_rate": null
+  },
+  "qwen_local|chunked": {
+   "n_pairs": 20,
+   "n_verified": 20,
+   "text_identical_rate": 0.95,
+   "det_decision_flip_rate": 0.05,
+   "full_decision_flip_rate": null
+  },
+  "qwen_local|naive": {
+   "n_pairs": 20,
+   "n_verified": 0,
+   "text_identical_rate": 0.75,
+   "det_decision_flip_rate": null,
+   "full_decision_flip_rate": null
+  },
+  "qwen_local|plain": {
+   "n_pairs": 20,
+   "n_verified": 20,
+   "text_identical_rate": 1.0,
+   "det_decision_flip_rate": 0.0,
+   "full_decision_flip_rate": null
+  }
+ }
+}

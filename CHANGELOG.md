@@ -7,6 +7,12 @@ and this project uses semantic versioning where applicable.
 
 ## [Unreleased]
 
+### Free main run complete; paid judges relaunched (2026-11-19)
+- Job 9153208 finished all stages on one A40 (21.5 h, $0, 6,483 calls): 1,044 AI rewrites + 124 controls checked by rules, three local critics and recomputation; 585 flagged rewrites repaired and rechecked; labelling sheets written (`data/annotations/ollama-v1/`, kept local: blinding + GSM1K licence).
+- LABEL_PLAN: 1,597 items, 1,062 to label (323 double), about 693 per annotator, about 17.3 h each. That is above the earlier ~850 / 14 h estimate, because the realistic prompt sends all 300 outputs, and all 300 of their repairs, to labelling.
+- Label-free methods: variance check (93% of regenerations identical text; rules decision flips 1/99), iterated red-team (held-out recall 0.73 -> 0.67 over 3 rounds, n = 15 per round), unsupervised critic ensemble, and weighted vs unweighted conformal risk control under a planted shift (synthetic). Report: `docs/results/ollama-v1_report.md`.
+- `config.ollama-paid.yaml`: GPT-6.1 Sol uses reasoning effort `low` (the endpoint rejects `none`: HTTP 400). `scripts/paid_critics.py --critics` runs a subset, so each judge runs as its own CPU job against the shared $30 cap. `paid_critics.sbatch`: exit 0 on a successful main stage.
+
 ### Calibration complete, final dev pilot, paid critics prepared (2026-11-15, night)
 - `data/calibration/pilot/sheet_B.xlsx` / `.csv`: annotator B's 70 calibration labels (imported with `sheets_xlsx.py import`, 70/70, no validation problems).
 - `data/calibration/pilot/agreement_A_vs_B.md`: agreement table, SAFE κ 0.79 / AC1 0.89 / 93% raw (n = 70). Low: adaptation_needed (AC1 0.46), presentation (0.53), failure_codes (0.45, n = 19). All SAFE disagreements are A unsafe / B safe (5).

@@ -17,6 +17,6 @@ KEYFILE="$HOME/.config/safeadapt/openrouter.env"
 set +x; . "$KEYFILE"
 STAGE=${STAGE:-pilot}
 echo "== paid critics, stage $STAGE, $(date -Iseconds)"
-python scripts/paid_critics.py --stage "$STAGE"
-[ "$STAGE" = pilot ] && python scripts/pilot_gate.py --run data/outputs/ollama-v1 --config config.ollama-paid.yaml | sed -n '/== critic/,/== extractions/p'
+python scripts/paid_critics.py --stage "$STAGE" ${CRITICS:+--critics "$CRITICS"}
+if [ "$STAGE" = pilot ]; then python scripts/pilot_gate.py --run data/outputs/ollama-v1 --config config.ollama-paid.yaml | sed -n '/== critic/,/== extractions/p'; fi
 echo "== done $(date -Iseconds)"

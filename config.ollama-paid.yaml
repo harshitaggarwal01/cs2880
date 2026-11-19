@@ -100,7 +100,10 @@ critics:
     base_url: https://openrouter.ai/api/v1
     api_key_env: OPENROUTER_API_KEY
     model: openai/gpt-6.1-sol
-    settings: *paid_openai
+    settings:              # Sol rejects reasoning effort "none" (HTTP 400 "Reasoning is mandatory", 2026-11-16): lowest allowed
+      max_tokens: 4096
+      seed: 2880
+      extra_body: {reasoning: {effort: low}, provider: {data_collection: deny, zdr: true}}
 
 extractor:               # one extractor so the program layer is constant across critics
   family: alibaba-qwen

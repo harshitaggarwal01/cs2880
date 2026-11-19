@@ -49,11 +49,14 @@ def main() -> int:
     ap.add_argument("--config", default="config.ollama-paid.yaml")
     ap.add_argument("--run", default="data/outputs/ollama-v1")
     ap.add_argument("--cap", type=float, help="USD (default: budget_usd in the config)")
+    ap.add_argument("--critics", help="comma-separated subset to run (default: all paid critics); parallel jobs each check the shared cap")
     a = ap.parse_args()
     cfg = yaml.safe_load(open(ROOT / a.config))
     run, cap, prices = ROOT / a.run, a.cap if a.cap is not None else float(cfg["budget_usd"]), cfg["prices"]
     paid = [c for c in cfg["critics"] if "openrouter.ai" in (c.get("base_url") or "")]
     paid.sort(key=lambda c: prices[c["model"]]["out"])          # cheapest first
+    only = set(a.critics.split(",")) if a.critics else None
+    run_list = [c for c in paid if only is None or c["name"] in only]
 
     def spent() -> float:
         return sum(row_cost(v, prices) for c in paid for f in sum(FILES.values(), [])
@@ -67,7 +70,7 @@ def main() -> int:
         print("WAIT: the GPU job has not finished its verify step (no .done/verify), so extractions are incomplete")
         return 3
     skipped = []
-    for c in paid:
+    for c in run_list:
         pilot_rows = rows(out_path(run, "pilot_generations.jsonl", c["name"]))
         if a.stage == "main":
             if not pilot_rows:

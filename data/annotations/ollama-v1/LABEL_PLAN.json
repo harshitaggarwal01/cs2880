@@ -1,0 +1,185 @@
+{
+  "design": "lean",
+  "seed": 2880,
+  "label_frac": {
+    "plain": 0.5,
+    "chunked": 0.5,
+    "naive": 1.0,
+    "deterministic": 0.3
+  },
+  "double_frac": 0.3,
+  "n_items": 1597,
+  "n_labelled": 1062,
+  "n_double": 323,
+  "per_annotator": {
+    "A": 693,
+    "B": 692
+  },
+  "hours_per_annotator": {
+    "A": 17.3,
+    "B": 17.3
+  },
+  "minutes_per_item": 1.5,
+  "strata": {
+    "deterministic|chunked|ext_asdiv|first": {
+      "items": 12,
+      "labelled": 4
+    },
+    "deterministic|chunked|ext_gsm1k|first": {
+      "items": 12,
+      "labelled": 4
+    },
+    "deterministic|chunked|main|first": {
+      "items": 100,
+      "labelled": 30
+    },
+    "gemma_local|chunked|ext_asdiv|first": {
+      "items": 12,
+      "labelled": 6
+    },
+    "gemma_local|chunked|ext_asdiv|repair": {
+      "items": 6,
+      "labelled": 3
+    },
+    "gemma_local|chunked|ext_gsm1k|first": {
+      "items": 12,
+      "labelled": 6
+    },
+    "gemma_local|chunked|ext_gsm1k|repair": {
+      "items": 8,
+      "labelled": 4
+    },
+    "gemma_local|chunked|main|first": {
+      "items": 100,
+      "labelled": 50
+    },
+    "gemma_local|chunked|main|repair": {
+      "items": 53,
+      "labelled": 25
+    },
+    "gemma_local|naive|main|first": {
+      "items": 100,
+      "labelled": 100
+    },
+    "gemma_local|naive|main|repair": {
+      "items": 100,
+      "labelled": 100
+    },
+    "gemma_local|plain|ext_asdiv|first": {
+      "items": 12,
+      "labelled": 6
+    },
+    "gemma_local|plain|ext_asdiv|repair": {
+      "items": 5,
+      "labelled": 3
+    },
+    "gemma_local|plain|ext_gsm1k|first": {
+      "items": 12,
+      "labelled": 6
+    },
+    "gemma_local|plain|ext_gsm1k|repair": {
+      "items": 6,
+      "labelled": 4
+    },
+    "gemma_local|plain|main|first": {
+      "items": 100,
+      "labelled": 50
+    },
+    "gemma_local|plain|main|repair": {
+      "items": 55,
+      "labelled": 25
+    },
+    "llama_small|chunked|ext_gsm1k|first": {
+      "items": 1,
+      "labelled": 0
+    },
+    "llama_small|naive|main|first": {
+      "items": 100,
+      "labelled": 100
+    },
+    "llama_small|naive|main|repair": {
+      "items": 73,
+      "labelled": 73
+    },
+    "llama_small|plain|ext_asdiv|first": {
+      "items": 12,
+      "labelled": 6
+    },
+    "llama_small|plain|ext_asdiv|repair": {
+      "items": 2,
+      "labelled": 1
+    },
+    "llama_small|plain|ext_gsm1k|first": {
+      "items": 12,
+      "labelled": 6
+    },
+    "llama_small|plain|ext_gsm1k|repair": {
+      "items": 5,
+      "labelled": 2
+    },
+    "llama_small|plain|main|first": {
+      "items": 99,
+      "labelled": 50
+    },
+    "llama_small|plain|main|repair": {
+      "items": 30,
+      "labelled": 16
+    },
+    "qwen_local|chunked|ext_asdiv|first": {
+      "items": 12,
+      "labelled": 6
+    },
+    "qwen_local|chunked|ext_asdiv|repair": {
+      "items": 5,
+      "labelled": 3
+    },
+    "qwen_local|chunked|ext_gsm1k|first": {
+      "items": 12,
+      "labelled": 6
+    },
+    "qwen_local|chunked|ext_gsm1k|repair": {
+      "items": 8,
+      "labelled": 4
+    },
+    "qwen_local|chunked|main|first": {
+      "items": 100,
+      "labelled": 50
+    },
+    "qwen_local|chunked|main|repair": {
+      "items": 60,
+      "labelled": 32
+    },
+    "qwen_local|naive|main|first": {
+      "items": 100,
+      "labelled": 100
+    },
+    "qwen_local|naive|main|repair": {
+      "items": 100,
+      "labelled": 100
+    },
+    "qwen_local|plain|ext_asdiv|first": {
+      "items": 12,
+      "labelled": 6
+    },
+    "qwen_local|plain|ext_asdiv|repair": {
+      "items": 2,
+      "labelled": 0
+    },
+    "qwen_local|plain|ext_gsm1k|first": {
+      "items": 12,
+      "labelled": 6
+    },
+    "qwen_local|plain|ext_gsm1k|repair": {
+      "items": 2,
+      "labelled": 1
+    },
+    "qwen_local|plain|main|first": {
+      "items": 100,
+      "labelled": 50
+    },
+    "qwen_local|plain|main|repair": {
+      "items": 33,
+      "labelled": 18
+    }
+  }
+}
