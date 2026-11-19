@@ -7,6 +7,16 @@ and this project uses semantic versioning where applicable.
 
 ## [Unreleased]
 
+### Rubric v1.1 frozen; AI stand-in labels for a dry run of every method (2026-11-19)
+- Calibration adjudicated by an AI adjudicator (pending owner review); rubric v1.1 frozen (`docs/annotation_guide.md`).
+- **Owner decision:** Cathy is busy, so every label-dependent method first runs on **AI stand-in labels**. These are not ground truth, and the methods are rerun on human labels later.
+  - `scripts/ai_label.py` + `ai_label.sbatch`: mistral-small3.2:24b, a family that is neither a rewriter nor a judge here. It reads only the annotator sheets, 4 GPU shards, $0.
+  - It is scored first against the adjudicated calibration labels.
+  - Output: `data/annotations/ollama-v1-standin/`.
+- `scripts/standin_methods.sbatch`: evaluate, PPI, conformal (CRC + LTT), cascade, critic matrix, audit game, policy (offline + online), distill, trained checker, failure gallery (local only), report.
+  - Everything runs in a mirror run folder, `data/outputs/ollama-v1-standin/`, so the real `ollama-v1` analysis stays untouched.
+- `scripts/oscar_ollama_env.sh`: `OLLAMA_PORT` (default 11434, the frozen pipeline's), so jobs sharing a node don't collide.
+
 ### Free main run complete; paid judges relaunched (2026-11-19)
 - Job 9153208 finished all stages on one A40 (21.5 h, $0, 6,483 calls): 1,044 AI rewrites + 124 controls checked by rules, three local critics and recomputation; 585 flagged rewrites repaired and rechecked; labelling sheets written (`data/annotations/ollama-v1/`, kept local: blinding + GSM1K licence).
 - LABEL_PLAN: 1,597 items, 1,062 to label (323 double), about 693 per annotator, about 17.3 h each. That is above the earlier ~850 / 14 h estimate, because the realistic prompt sends all 300 outputs, and all 300 of their repairs, to labelling.

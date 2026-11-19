@@ -17,3 +17,5 @@ docs/results/*-mock*
 docs/results/figures/*-mock*
 data/hf_staging/
 data/feedback/
+data/outputs/*-standin/
+data/annotations/*-standin/KEY_DO_NOT_OPEN.csv
