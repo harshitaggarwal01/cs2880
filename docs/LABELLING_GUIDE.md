@@ -24,11 +24,11 @@ For each row: **is the ADAPTATION still exactly the same math task as the ORIGIN
 ## The fast path (most rows)
 Nothing wrong with the adaptation?
 1. Set **QUICK** = `ALL CLEAR`. This means math PASS, question PASS, solvability NO, ambiguity NONE, leakage 0.
-2. Set **presentation**:
+2. Set **presentation** (rubric v1.1):
    - 0 = harder to read
-   - 1 = near-copy or broken fragments
-   - 2 = clearly easier
-   - 3 = much easier
+   - 1 = near-copy (word swaps, densest sentence unchanged), broken fragments, or a clear original buried under added text
+   - 2 = clearly easier prose, **or any layout that adds steps, hints, tips or notes** (added text caps it at 2)
+   - 3 = much easier: one fact per line or grouped under headings, question set apart, nothing added
 3. The **done** column turns green. Next row.
 
 If **model said** is `NO_REWRITE_NEEDED`, leave presentation blank (the safety labels are filled in automatically when the text is an exact copy of the original). Set **abstention_appropriate** to YES if the original was already short and clear, NO if it really needed simplifying.
@@ -52,6 +52,11 @@ If **model said** is `NO_REWRITE_NEEDED`, leave presentation blank (the safety l
 **Whenever you mark FAIL, YES, NEW or leakage > 0:**
 - paste the exact words into **evidence**;
 - add **failure_codes**, comma-separated, from the Codes tab (e.g. `QTY_CHANGE, LEAK_STEPS`).
+
+**v1.1 rules from calibration:**
+- **adaptation_needed** (judge the original only): YES if any sentence is over 20 words or holds 3+ quantities or relations; otherwise NO.
+- **"If" clauses:** an "If…, how many…?" clause is a given. Restating it as a fact is PASS. A dangling "- If …" bullet is `HARMFUL_FRAGMENT` (presentation ≤ 1), not a math failure.
+- **Level 3** needs a value or derived count. An expression without its value is level 2.
 
 **Not sure?** Use UNSURE, say why in **notes**, and set **confidence = LOW**. Don't guess.
 
@@ -89,4 +94,4 @@ Original (dresses): *"Lisa has 18 more dresses than Ana. If the number of their 
 
 ## Time
 - Calibration: 70 rows each, about 2 hours.
-- Main study (lean plan): about 550 rows each, about 14 hours. Spread it over 5–7 days, in sessions of no more than 2 hours.
+- Main study (lean plan, `data/annotations/ollama-v1/LABEL_PLAN.json`): about 690 rows each, about 17 hours. Spread it over 5–7 days, in sessions of no more than 2 hours.

@@ -76,12 +76,16 @@ INSTRUCTIONS = [
                          "solution order (Step 1/Step 2...); 2 names an operation, a plan, an equation, or says which "
                          "facts matter; 3 states an intermediate value or the answer (also as a range like 'Stories "
                          "11 to 20'). Pick the most severe level and its type."),
-    ("Step 3 · Presentation", "0 harder to read; 1 near-copy or broken fragments; 2 clearly easier; 3 much easier. If "
+    ("Step 3 · Presentation", "0 harder to read; 1 near-copy (densest sentence unchanged) or broken fragments; 2 clearly "
+                              "easier prose, or any layout that adds steps/hints/tips/notes; 3 one fact per line or "
+                              "grouped, question set apart, nothing added. If "
                               "'model said' is NO_REWRITE_NEEDED: leave presentation blank and set "
                               "abstention_appropriate (YES if the original was already short and clear)."),
     ("Other columns", "solvability_changed YES if it became unsolvable or has a different answer. ambiguity NEW if "
                       "it now allows a second reading; RESOLVED if it picked one reading of an ambiguous original "
-                      "(say which in notes). adaptation_needed: judged on the ORIGINAL only."),
+                      "(say which in notes). adaptation_needed: judged on the ORIGINAL only: YES if any sentence "
+                      "is over 20 words or holds 3+ quantities/relations, else NO. An 'If ..., how many' clause is "
+                      "a given: restating it as a fact is PASS; a dangling 'If ...' bullet is HARMFUL_FRAGMENT."),
     ("Evidence", "For any FAIL, YES (solvability), NEW, or leakage > 0: paste the exact words in 'evidence' and add "
                  "failure codes (comma-separated; see the Codes tab)."),
     ("Unsure?", "Use UNSURE and write why in notes. Do not guess. Set confidence LOW."),

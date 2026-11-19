@@ -1,4 +1,4 @@
-# Annotation Guide (rubric v1, to be frozen after dev calibration)
+# Annotation Guide (rubric v1.1, frozen 2026-11-19 after dev calibration)
 
 **Read this before labelling anything.** The schema is `schemas/annotation_schema.json`. Examples come from the real dev pilot (`docs/professor_examples.md`).
 
@@ -52,11 +52,11 @@ YES if the adaptation can no longer be solved (e.g., "each" → "some"), has a d
 
 Record the most severe level and type. An intermediate value counts even when it is written in another form: a range, a heading, or "20 + 4" written for 24.
 
-### presentation 0–3
-- **0** harder to read than the original;
-- **1** negligible change (near-copy, `NO_ADAPT`) or a flawed result (fragments: `HARMFUL_FRAGMENT`);
-- **2** clearly improved;
-- **3** substantially improved.
+### presentation 0–3 (judge the student-facing problem only; v1.1 anchors)
+- **0** harder to read than the original: longer, denser, or reordered so the facts are harder to find.
+- **1** near-copy: word swaps or trims with the densest sentence left unchanged (`NO_ADAPT`); broken fragments (`HARMFUL_FRAGMENT`); or an already-clear original buried under added text (`OVER_EDIT`).
+- **2** clearly easier: every long sentence split or shortened, but still prose. **Added text caps presentation at 2:** any solution steps, hints, tips or teacher notes, whatever the layout.
+- **3** much easier: one fact per line or facts grouped under headings, the question set apart, every base and referent kept ("5% *of her weekly earnings*"), and nothing added.
 
 Leave blank for `NO_REWRITE_NEEDED` outputs and fill `abstention_appropriate` instead.
 
@@ -64,8 +64,17 @@ Leave blank for `NO_REWRITE_NEEDED` outputs and fill `abstention_appropriate` in
 - **YES** if the original is already short and clear (Example 2: "Lisa has 18 more dresses than Ana…").
 - **NO** if it was dense enough to benefit from the transformation (Sonnet on the payroll problem).
 
-### adaptation_needed (judged on the original, once per source)
-Would a reader who struggles with dense text plausibly benefit from the requested transformation? YES / NO / UNCLEAR.
+### adaptation_needed (judged on the original, once per source; v1.1 rule)
+**YES** if any sentence of the original has more than 20 words, or carries three or more given quantities or relations, or the task depends on a word a struggling reader is unlikely to know. Otherwise **NO**. UNCLEAR only with a note.
+- YES: Vikki (one sentence holds three deductions), Cora, Katherine, Javier, Mary, Carly.
+- NO: Lisa (two short sentences), Karl's stickers, James's building, John's missions.
+
+### Clarifications added in v1.1 (from the calibration disagreements)
+- **"If" clauses that state a given.** In GSM8K-style problems ("If he ate half of the remaining cookies, how many…?") the "if" clause is a given, not a hypothesis. Restating it as a fact ("Javier ate half of the remaining cookies.") is **PASS**: every value and the answer are unchanged. Use `COND_OMIT` / math FAIL only when a real condition that limits the case is dropped or changed.
+- **Dangling fragments.** A bullet that keeps the "If" as a fragment ("- If Jenny collected 30 red marbles and 25 blue marbles.") is a presentation defect: code `HARMFUL_FRAGMENT`, presentation ≤ 1 for that reason alone. Math stays PASS while the values remain givens the question needs.
+- **Level 3 needs a value.** An expression without its value ("20 hours, plus an extra 1/4 of 20 hours") is level 2 (STEPS/OPERATION), not 3. A stated range or count the student had to derive ("Stories 11 to 20", "the other 10 floors") is level 3.
+- **Headings.** A heading that groups facts ("What she has read so far") without saying which facts to use or ignore is level 0. "The red marble facts are extra information you don't need" is level 2 RELEVANCE.
+- **Target wording.** "How many were not eaten?" for "how many did they not eat?" is the same target. Choosing one reading of an ambiguous original is ambiguity RESOLVED, not a target change.
 
 ## Allowed versus not allowed
 
@@ -101,3 +110,10 @@ SAFE_AND_USEFUL = SAFE and ((presentation >= 2 and no NO_ADAPT/HARMFUL_FRAGMENT)
 1. Both annotators independently re-label the 70 pilot outputs (`pilot/pilot_outputs.jsonl`) without looking at the preliminary labels.
 2. Compute agreement (`src/evaluate.py --double`) and discuss every disagreement.
 3. Edit this guide wherever a disagreement came from an unclear rule. Then freeze it as **rubric v1** with a date, before any main-set output is opened.
+
+**Outcome (2026-11-19).** Both annotators labelled all 70 items blind.
+- Agreement on SAFE: κ 0.79, AC1 0.89, so the 0.7 target was met. Presentation (AC1 0.53) and adaptation_needed (AC1 0.46) were low.
+- 30 items were adjudicated (`data/calibration/pilot/TO_ADJUDICATE.csv` → `adjudicated.csv`). The adjudication was done by an AI adjudicator (Claude), every decision with a written reason, and is pending owner review.
+- All 5 SAFE disagreements were "if"-clause and fragment cases. They resolve to SAFE under the clarifications above.
+- Adjudicated SAFE: careful prompts 50/50, realistic prompt 7/20.
+- The anchors above were added and the rubric frozen as **v1.1**. No main-study output had been labelled.

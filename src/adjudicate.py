@@ -30,8 +30,16 @@ def _filled(v) -> bool:
     return not (pd.isna(v) or str(v).strip() == "")
 
 
+def _required(model_status) -> list[str]:
+    """Key labels an item must have. The guide leaves presentation blank when the model abstained
+    (NO_REWRITE_NEEDED returns the original unchanged), so it is not required there."""
+    if str(model_status).strip() == "NO_REWRITE_NEEDED":
+        return [c for c in KEY_LABELS if c != "presentation"]
+    return KEY_LABELS
+
+
 def _done(row: pd.Series, suffix: str = "") -> bool:
-    return all(_filled(row.get(c + suffix)) for c in KEY_LABELS)
+    return all(_filled(row.get(c + suffix)) for c in _required(row.get("model_status")))
 
 
 def merge(sheet_a: Path, sheet_b: Path) -> tuple[pd.DataFrame, pd.DataFrame, list[str]]:
@@ -60,9 +68,12 @@ def merge(sheet_a: Path, sheet_b: Path) -> tuple[pd.DataFrame, pd.DataFrame, lis
 
 def apply_resolved(final: pd.DataFrame, resolved: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
     rows, warn = [], []
+    done_ids = set(final["annotation_id"]) if len(final) else set()
     for _, r in resolved.iterrows():
+        if r["annotation_id"] in done_ids:   # already final (e.g. listed before a rule change); never count twice
+            continue
         vals = {c: r.get(f"{c}_final") for c in LABEL_COLUMNS}
-        if not all(_filled(vals[c]) for c in KEY_LABELS):
+        if not all(_filled(vals[c]) for c in _required(r.get("model_status"))):
             warn.append(f"{r['annotation_id']}: *_final key labels not all filled")
             continue
         rows.append({**{c: r[c] for c in META}, **vals, "source": "adjudicated"})
