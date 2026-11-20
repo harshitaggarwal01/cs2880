@@ -176,6 +176,13 @@ class OpenAICompatibleProvider(Provider):
                 + json.dumps(schema))
 
     def _request(self, system: str, user: str, json_schema: dict | None, mode: str):
+        gap = float(self.settings.get("min_interval_s", 0) or 0)   # client-side throttle (host rate limits), not sent
+        if gap:
+            import time
+            wait = getattr(self, "_last_call", 0.0) + gap - time.monotonic()
+            if wait > 0:
+                time.sleep(wait)
+            self._last_call = time.monotonic()
         kwargs = dict(model=self.model, max_tokens=self.settings.get("max_tokens", 2048))
         kwargs.update({k: self.settings[k] for k in self.SAMPLING if k in self.settings})
         if self.settings.get("extra_body"):

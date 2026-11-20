@@ -75,6 +75,7 @@ critics:
     model: anthropic/claude-haiku-5.5
     settings: &paid_anthropic
       max_tokens: 4096
+      min_interval_s: 3.2   # OpenRouter new-account limit: 20 requests/min per model (HTTP 429, 2026-11-19)
       extra_body: {reasoning: {effort: low}, provider: {data_collection: deny, zdr: true}}
   - name: sonnet55c
     family: anthropic
@@ -91,6 +92,7 @@ critics:
     model: openai/gpt-6-luna
     settings: &paid_openai
       max_tokens: 4096
+      min_interval_s: 3.2   # OpenRouter new-account limit: 20 requests/min for this model (HTTP 429, 2026-11-19)
       temperature: 0
       seed: 2880
       extra_body: {reasoning: {effort: none}, provider: {data_collection: deny, zdr: true}}
@@ -102,6 +104,7 @@ critics:
     model: openai/gpt-6.1-sol
     settings:              # Sol rejects reasoning effort "none" (HTTP 400 "Reasoning is mandatory", 2026-11-16): lowest allowed
       max_tokens: 4096
+      min_interval_s: 3.2
       seed: 2880
       extra_body: {reasoning: {effort: low}, provider: {data_collection: deny, zdr: true}}
 
