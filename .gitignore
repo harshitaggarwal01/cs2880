@@ -19,3 +19,6 @@ data/hf_staging/
 data/feedback/
 data/outputs/*-standin/
 data/annotations/*-standin/KEY_DO_NOT_OPEN.csv
+# main-study labelling sheets and key: local only (blinding + GSM1K licence)
+data/annotations/ollama-v1/sheet_*
+data/annotations/ollama-v1/KEY_DO_NOT_OPEN.csv

@@ -65,7 +65,7 @@ Reading:
 - **Annotators A vs B (70 items, 10 practice problems):** SAFE κ 0.79, AC1 0.89, 93% raw. All 5 SAFE disagreements were A unsafe / B safe.
 - **Adjudication:** 45 items agreed and 25 were adjudicated, giving `data/calibration/pilot/adjudicated.csv`.
   - Adjudicated SAFE: careful 50/50, realistic 7/20. Annotator A alone had 92% and 30%.
-  - The adjudicator was an AI stand-in (owner decision 2026-11-19), with a reason recorded for each item. **The owner still needs to review the 5 SAFE adjudications** (`TO_ADJUDICATE.csv` rows 2, 3, 4, 18 and 27).
+  - The adjudicator was an AI stand-in (owner decision 2026-11-19), with a reason recorded for each item. **The owner still needs to review the 5 SAFE adjudications** (annotation ids `ad4d9631c4d`, `a70d86fe508`, `ade58418190`, `aaee7a94013`, `a0b93bad8c5`; in all five the AI adjudicator sided with B, SAFE).
 - **Rubric v1.1, frozen 2026-11-19** (`docs/annotation_guide.md`):
   - presentation anchors made explicit, which fixes the weak label (AC1 0.53);
   - adaptation_needed given an objective trigger, which fixes the other weak label (AC1 0.46);
@@ -114,7 +114,7 @@ Labels come from `data/annotations/ollama-v1-standin/` (1,062 of 1,062 items, Mi
 
 ## Part 4 — What remains
 
-1. **Owner review** of the 5 SAFE adjudications (`data/calibration/pilot/TO_ADJUDICATE.csv` rows 2, 3, 4, 18 and 27).
+1. **Owner review** of the 5 SAFE adjudications (`data/calibration/pilot/TO_ADJUDICATE.csv`, annotation ids `ad4d9631c4d`, `a70d86fe508`, `ade58418190`, `aaee7a94013`, `a0b93bad8c5`). Full checklist: `docs/HUMAN_ACTIONS.md`.
 2. **Human labelling** of `data/annotations/ollama-v1/sheet_A.xlsx` and `sheet_B.xlsx`:
    - 1,062 items, 323 of them double-labelled;
    - about 693 items and about 17.3 h per annotator.
