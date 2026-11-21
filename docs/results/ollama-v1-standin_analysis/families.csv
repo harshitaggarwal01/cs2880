@@ -1,0 +1,12 @@
+family,comparison,n_pairs,diff,ci_lo,ci_hi,A_only,B_only,mcnemar_p,holm_p
+realistic_vs_constrained_chunked,gemma_local: naive vs chunked,50,-0.98,-1.0,-0.94,0,49,3.552713678800501e-15,7.105427357601002e-15
+realistic_vs_constrained_chunked,qwen_local: naive vs chunked,50,-0.82,-0.92,-0.7,1,42,1.000444171950221e-11,1.000444171950221e-11
+generator_A_vs_B,plain: gemma_local vs llama_small,62,0.08064516129032258,0.016129032258064516,0.16129032258064516,5,0,0.0625,0.3125
+generator_A_vs_B,plain: gemma_local vs qwen_local,62,0.0,0.0,0.0,0,0,1.0,1.0
+generator_A_vs_B,plain: llama_small vs qwen_local,62,-0.08064516129032258,-0.16129032258064516,-0.016129032258064516,0,5,0.0625,0.3125
+generator_A_vs_B,chunked: gemma_local vs qwen_local,62,0.03225806451612903,0.0,0.08064516129032258,2,0,0.5,1.0
+generator_A_vs_B,naive: gemma_local vs llama_small,100,0.01,0.0,0.03,1,0,1.0,1.0
+generator_A_vs_B,naive: gemma_local vs qwen_local,100,-0.14,-0.21,-0.07,1,15,0.000518798828125,0.00311279296875
+generator_A_vs_B,naive: llama_small vs qwen_local,100,-0.15,-0.22,-0.08,0,15,6.103515625e-05,0.00042724609375
+plain_vs_chunked,gemma_local: plain vs chunked,62,0.0,0.0,0.0,0,0,1.0,1.0
+plain_vs_chunked,qwen_local: plain vs chunked,62,0.03225806451612903,0.0,0.08064516129032258,2,0,0.5,1.0

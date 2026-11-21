@@ -115,6 +115,10 @@
 | Qwen 32B (free, primary) | 18 (3%) | **7** | 11 |
 | Gemma 12B (free) | 19 (3%) | **4** | 10 |
 | Llama 3B (free) | 524 (85%) | 45 | 64 |
+| Claude Haiku 5.5 ($0.47) | 41 (7%) | 13 | 23 |
+| Claude Sonnet 5.5 ($7.08) | 41 (7%) | 16 | 25 |
+| GPT-6 Luna ($0.16) | 53 (9%) | 12 | 18 |
+| GPT-6.1 Sol ($3.71) | 63 (10%) | **18** | 28 |
 
 - Qwen 32B and Gemma 12B agree on only **4** of the rewrites they flag.
 - The paid judges on 50 practice rewrites (3¢):
@@ -148,8 +152,9 @@
 - Labelling sheets, then red-team (3 rounds), critic ensemble, variance check, conformal shift demo and report: tonight.
 
 **Pending**
-- Claude Sonnet and GPT-6.1 Sol judges, then all four paid judges on the main run. About $17 at most, under a $30 cap. Waiting on API credit.
-- Adjudicate calibration disagreements, revise two labels, freeze the rubric.
+- ~~All four paid judges on the main run~~ done 2026-11-20: $11.42 of the $30 cap. Best paid judge (Sol) catches 18 of 54 answer changes.
+- ~~Adjudicate calibration, revise two labels, freeze the rubric~~ done 2026-11-19 (rubric v1.1; owner review of 5 SAFE adjudications pending).
+- Every label-dependent method dry-run on AI stand-in labels (not ground truth): see `docs/results/STATUS_REPORT_2026-11-20.md`.
 
 **Next 2 weeks**
 - Blind labelling: about 850 items, about 14 h per annotator.

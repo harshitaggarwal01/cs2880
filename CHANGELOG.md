@@ -7,6 +7,12 @@ and this project uses semantic versioning where applicable.
 
 ## [Unreleased]
 
+### Paid judges complete; stand-in dry run of every method; status report (2026-11-20)
+- All four OpenRouter judges finished on the 920 main rewrites. Rate-limited rows (new-account 20 rpm) were rerun with the `min_interval_s` throttle. Total paid spend $11.42 of $30.
+- Seven-judge comparison (label-free), careful prompts: unsafe calls 3–10% for every judge except Llama 3B (85%). Of the 54 answer-changed rewrites: Sol 18, Sonnet 16, Haiku 13, Luna 12, Qwen 7, Gemma 4.
+- Stand-in methods job 9403951: all 15 steps exit 0. Report `docs/results/ollama-v1-standin_report.md` (banner: AI stand-in labels, not ground truth); aggregate tables in `docs/results/ollama-v1-standin_analysis/` (failure gallery stays local).
+- `docs/results/STATUS_REPORT_2026-11-20.md`: consolidated report (label-free results, calibration, stand-in dry run, caveats, what remains).
+
 ### Rubric v1.1 frozen; AI stand-in labels for a dry run of every method (2026-11-19)
 - Calibration adjudicated by an AI adjudicator (pending owner review); rubric v1.1 frozen (`docs/annotation_guide.md`).
 - **Owner decision:** Cathy is busy, so every label-dependent method first runs on **AI stand-in labels**. These are not ground truth, and the methods are rerun on human labels later.

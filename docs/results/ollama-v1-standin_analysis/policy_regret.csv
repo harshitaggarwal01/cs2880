@@ -1,0 +1,3 @@
+t,n_sources,regret_mean,regret_lo,regret_hi,per_step_mean,best_fixed_arm,context_key,n_orders
+25,25,9.212,5.0,14.0,0.36848,gemma_local:chunked,step_bucket,500
+all,38,13.792,9.0,19.524999999999977,0.36294736842105263,gemma_local:chunked,step_bucket,500

@@ -1,0 +1,9 @@
+algorithm,t,regret_vs_best_fixed,vs_best_fixed_lo,vs_best_fixed_hi,regret_vs_oracle,vs_oracle_lo,vs_oracle_hi,per_step_oracle,best_fixed_arm,n_orders
+thompson,25,9.81,5.0,14.0,9.81,5.0,14.0,0.3924,gemma_local:chunked,100
+thompson,38,14.49,9.475,18.0,14.49,9.475,18.0,0.3813157894736842,gemma_local:chunked,100
+linucb,25,6.39,0.0,12.0,6.39,0.0,12.0,0.2556,gemma_local:chunked,100
+linucb,38,9.08,0.0,17.0,9.08,0.0,17.0,0.23894736842105263,gemma_local:chunked,100
+eps_greedy,25,9.55,5.0,14.0,9.55,5.0,14.0,0.382,gemma_local:chunked,100
+eps_greedy,38,14.81,10.475,19.52499999999999,14.81,10.475,19.52499999999999,0.38973684210526316,gemma_local:chunked,100
+uniform,25,10.33,6.0,15.0,10.33,6.0,15.0,0.4132,gemma_local:chunked,100
+uniform,38,15.7,10.0,21.0,15.7,10.0,21.0,0.4131578947368421,gemma_local:chunked,100

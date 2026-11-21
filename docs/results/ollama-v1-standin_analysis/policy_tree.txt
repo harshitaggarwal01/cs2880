@@ -1,0 +1,5 @@
+IF NOT conditional AND NOT money: use deterministic   [n=10, mean reward 1.000]
+IF NOT conditional AND money: use gemma_local:chunked   [n=8, mean reward 1.000]
+IF conditional AND NOT n_quantities=q3-4: use gemma_local:chunked   [n=9, mean reward 1.000]
+IF conditional AND n_quantities=q3-4: use gemma_local:chunked   [n=11, mean reward 1.000]
+OTHERWISE: use gemma_local:chunked
