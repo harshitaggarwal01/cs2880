@@ -24,24 +24,24 @@ def clean(ax, grid_axis="x"):
     ax.tick_params(length=0)
 
 
-# 1. The prompt decides it: careful vs realistic, checker (main run) and humans (practice set)
-fig, ax = plt.subplots(figsize=(12, 5.6))
+# 1. The prompt decides it: careful vs realistic, checker (main run) and each annotator (practice set)
+AQUA = "#1baf7a"
+fig, ax = plt.subplots(figsize=(12, 6))
 groups = ["Careful prompts", "Prompt teachers type\n(\"make it easier for a student\nwith ADHD or dyslexia\")"]
-checker = [82 / 620, 297 / 300]
-human = [4 / 50, 14 / 20]
-y = [1, 0]
+series = [("Checker REJECT (main run, n = 620 / 300)", BLUE, [82 / 620, 297 / 300], ("82/620", "297/300")),
+          ("Humans: unsafe (adjudicated labels, n = 50 / 20)", ORANGE, [4 / 50, 14 / 20], ("4/50", "14/20"))]
 h = 0.36
-b1 = ax.barh([v + h / 2 + 0.01 for v in y], checker, h, color=BLUE, label="Checker REJECT (main run, n = 620 / 300)")
-b2 = ax.barh([v - h / 2 - 0.01 for v in y], human, h, color=ORANGE, label="Human: unsafe (practice set, n = 50 / 20)")
-for bars, ns in ((b1, ("82/620", "297/300")), (b2, ("4/50", "14/20"))):
+for k, (lab, col, vals, ns) in enumerate(series):
+    ys = [1 + (0.5 - k) * (h + 0.02), 0 + (0.5 - k) * (h + 0.02)]
+    bars = ax.barh(ys, vals, h, color=col, label=lab)
     for bar, n in zip(bars, ns):
         ax.text(bar.get_width() + 0.012, bar.get_y() + bar.get_height() / 2, f"{bar.get_width():.0%}  ({n})",
-                va="center", color=INK, fontsize=15)
-ax.set_yticks(y, groups, color=INK, fontsize=15)
+                va="center", color=INK, fontsize=14)
+ax.set_yticks([1, 0], groups, color=INK, fontsize=15)
 ax.set_xlim(0, 1.18)
 ax.set_xticks([0, .25, .5, .75, 1], ["0%", "25%", "50%", "75%", "100%"])
 clean(ax)
-ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.1), ncol=2, frameon=False, fontsize=13, labelcolor=INK2)
+ax.legend(loc="upper center", bbox_to_anchor=(0.45, -0.09), ncol=1, frameon=False, fontsize=13, labelcolor=INK2)
 fig.suptitle("Same models, same problems: the prompt decides whether the task survives", x=0.02, ha="left", color=INK, fontsize=18)
 fig.tight_layout()
 fig.savefig(OUT / "fig_prompt.png", dpi=200)
@@ -57,14 +57,14 @@ vals = [j[1] for j in judges][::-1]
 cols = [MUTED if "Llama" in n else BLUE for n in names]
 bars = ax.barh(names, vals, color=cols, height=0.62)
 for bar, (n, v, flag) in zip(bars, judges[::-1]):
-    note = f"{v} of 54   (flags {flag}% of all rewrites)"
+    note = f"{v} of 54   (flags {flag}% of the 620)"
     ax.text(v + 0.6, bar.get_y() + bar.get_height() / 2, note, va="center", color=INK, fontsize=14)
 ax.set_xlim(0, 84)
 ax.set_xticks([0, 10, 20, 30, 40, 50])
 ax.tick_params(axis="y", labelsize=14, labelcolor=INK)
 clean(ax)
-fig.suptitle("AI judges miss most rewrites whose answer changed", x=0.02, ha="left", color=INK, fontsize=18)
-ax.set_xlabel("Called unsafe, of the 54 careful-prompt rewrites whose answer changed", loc="left")
+fig.suptitle("AI judges miss most real errors", x=0.02, ha="left", color=INK, fontsize=18)
+ax.set_xlabel("Caught, of the 54 careful-prompt rewrites whose answer verifiably changed", loc="left", fontsize=13)
 fig.tight_layout()
 fig.savefig(OUT / "fig_judges.png", dpi=200)
 plt.close(fig)

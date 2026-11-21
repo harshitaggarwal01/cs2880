@@ -27,7 +27,7 @@ def narration() -> dict[int, str]:
     text = (VID / "VIDEO_DECK_nov23.md").read_text(encoding="utf-8")
     out = {}
     for m in re.finditer(r"^## (\d+) · .*?(?=^---$|\Z)", text, re.M | re.S):
-        paras = [ln[2:].replace("**Narration.** ", "") for ln in m.group(0).splitlines() if ln.startswith("> ")]
+        paras = [ln[2:].replace("**", "") for ln in m.group(0).splitlines() if ln.startswith("> ")]
         out[int(m.group(1))] = "\n\n".join(paras)
     return out
 
@@ -132,8 +132,8 @@ def build(template: Path, out: Path) -> None:
     header(s, "Problem statement", "Did the AI rewrite keep the same task?")
     q = box(s, L, Inches(1.95), W, Inches(1.35), PALE)
     text(s, L + Inches(0.3), Inches(2.05), W - Inches(0.6), Inches(1.2),
-         "Given a math word problem and an AI rewrite of it, decide automatically, at low cost and with a stated "
-         "error guarantee, whether the rewrite is the same task: an accommodation, not a modification.",
+         "Given a math word problem and an AI rewrite of it, decide automatically, at low cost and with a "
+         "statistical guarantee, whether the rewrite is the same task: an accommodation, not a modification.",
          21, NAVY, SERIF, anchor=MSO_ANCHOR.MIDDLE)
     bullets(s, [("Same task (fidelity): ", "every quantity, relation, condition and the question survive, so the answer is unchanged."),
                 ("Nothing given away (no leakage): ", "no added steps, operations, relevance hints or derived values."),
@@ -145,9 +145,9 @@ def build(template: Path, out: Path) -> None:
     s = new_slide(prs)
     header(s, "Main finding", "The prompt teachers type breaks the task")
     cw = Inches(3.65)
-    stat(s, L, Inches(2.0), cw, "99%", "of rewrites rejected under the prompt teachers type (297 of 300), against 13% with careful prompts (82 of 620)", RUST)
-    stat(s, L + Inches(3.95), Inches(2.0), cw, "18 / 54", "rewrites with a provably changed answer that the best AI judge caught (best free large judge: 7)", BLUE)
-    stat(s, L + Inches(7.9), Inches(2.0), cw, "5 / 5", "disputed cases where AI sided with the lenient human reading (overruled on review)", NAVY)
+    stat(s, L, Inches(2.0), cw, "99%", "rejected under the prompt teachers type (297/300), against 13% with careful prompts (82/620). Humans: 70% vs 8% unsafe", RUST)
+    stat(s, L + Inches(3.95), Inches(2.0), cw, "18 / 54", "verified errors caught by the best AI judge. Two-thirds slip through (best free large judge: 7)", BLUE)
+    stat(s, L + Inches(7.9), Inches(2.0), cw, "5 / 5", "hard cases where AI took the lenient side, and all 5 were unsafe", NAVY)
     text(s, L, Inches(5.35), W, Inches(1.2),
          [[("So: ", {"bold": True, "color": RUST}),
            ("a safeguard can't rely on prompt discipline or on another AI. It has to check the output with rules and "
@@ -189,7 +189,7 @@ def build(template: Path, out: Path) -> None:
                 ("Conditions: ", "careful plain-language and chunked prompts · the realistic teacher prompt · a non-AI sentence splitter (control)."),
                 ("Rewriters: ", "Qwen 14B, Gemma 12B, Llama 3B (free, open weights)."),
                 ("Checker: ", "rules (numbers, relations, leaked operations and values) → AI critic with cited evidence → program recomputation."),
-                ("Judges compared: ", "3 free local models and 4 paid frontier models (Claude Haiku and Sonnet 5.5, GPT-6 Luna, GPT-6.1 Sol): $11.42 in total."),
+                ("Judges compared: ", "3 free local models and 4 paid frontier models (Claude Haiku and Sonnet 5.5, GPT-6 Luna, GPT-6.1 Sol): $11.42 including a pilot."),
                 ("Labels: ", "1,062 items, two blind annotators, 30% double-labelled (due Dec 1).")], size=18)
     S.append(s)
 
@@ -199,9 +199,10 @@ def build(template: Path, out: Path) -> None:
     s.shapes.add_picture(str(VID / "fig_prompt.png"), L, Inches(1.85), height=Inches(4.15))
     text(s, Inches(9.45), Inches(2.0), Inches(3.4), Inches(4.5),
          [[("Control: ", {"bold": True}), ("a non-AI splitter gets 0 REJECT of 124.", {})],
-          [("Realistic prompt adds, ", {"bold": True}), ("of 300: an operation (266), precomputed values (260), equations (239), steps (201).", {})]],
+          [("Realistic prompt adds, ", {"bold": True}), ("of 300: an operation (266), precomputed values (260), equations (239), steps (201).", {})],
+          [("Not memorization: ", {"bold": True}), ("held-out GSM1K rejects at 16%, matching GSM8K's 13%.", {})]],
          16, space=14)
-    text(s, L, Inches(6.25), W, Inches(0.6), "Checker: automated decisions on the main run. Human: adjudicated labels on 70 practice-problem rewrites.", 13, BLUE)
+    text(s, L, Inches(6.25), W, Inches(0.6), "Checker: automated decisions on the main run. Humans: adjudicated labels on 70 practice-problem rewrites.", 13, BLUE)
     S.append(s)
 
     # 9 result 2
@@ -210,16 +211,17 @@ def build(template: Path, out: Path) -> None:
     s.shapes.add_picture(str(VID / "fig_judges.png"), L, Inches(1.85), height=Inches(4.3))
     text(s, Inches(9.75), Inches(2.0), Inches(3.1), Inches(4.6),
          ["Paid judges catch 2–3× more than large free ones; the best still misses 36 of 54.",
-          "Price buys little: Haiku ($0.47) ≈ Sonnet ($7.08).",
+          "Price buys little: Sonnet costs about 15× Haiku for 3 more catches.",
+          "All 54 errors were flagged by recomputation and verified by hand.",
           "Qwen 32B and Gemma 12B agree on only 4 of the rewrites they flag."], 16, space=14)
     S.append(s)
 
     # 10 result 3
     s = new_slide(prs)
     header(s, "Evaluation · result 3", "The line is a value judgement; AI leans lenient")
-    stat(s, L, Inches(2.0), Inches(3.6), "κ 0.79", "two blind annotators on SAFE (n = 70). All 5 disagreements: one strict, one lenient.", BLUE)
-    stat(s, L + Inches(3.95), Inches(2.0), Inches(3.6), "5 / 5", "an AI adjudicator sided with the lenient label. The owner reviewed all 30 and overrode all 5 to UNSAFE.", RUST)
-    stat(s, L + Inches(7.9), Inches(2.0), Inches(3.6), "κ 0.79", "an AI labeller (Mistral 24B) vs the final labels: the same as the lenient annotator.", NAVY)
+    stat(s, L, Inches(2.0), Inches(3.6), "κ 0.79", "two blind annotators on SAFE, n = 70. Every disagreement: one strict, one lenient.", BLUE)
+    stat(s, L + Inches(3.95), Inches(2.0), Inches(3.6), "5 / 5", "an AI adjudicator sided with the lenient label, and all 5 were unsafe on review.", RUST)
+    stat(s, L + Inches(7.9), Inches(2.0), Inches(3.6), "κ 0.79", "an AI labeller (Mistral 24B) vs the final labels: lenient, on the same side as the AI adjudicator.", NAVY)
     text(s, L, Inches(4.95), W, Inches(1.6),
          [[("Disputed cases: ", {"bold": True}), ("“If he ate half…, how many…?” restated as a fact · a dangling “If…” fragment · “Here is what you need to know”.", {})],
           [("Response: ", {"bold": True}), ("rubric v1.2 states the strict reading, with examples, before main-study labelling. Final labels are human.", {})]],
@@ -229,21 +231,19 @@ def build(template: Path, out: Path) -> None:
     # 11 result 4
     s = new_slide(prs)
     header(s, "Evaluation · result 4", "What “free” buys a school")
-    bullets(s, [("$0 on one GPU: ", "the whole study runs in about 1.5 days. Student materials never leave campus."),
+    bullets(s, [("$0 on one GPU: ", "the whole study ran in about 21.5 hours. Student materials never leave campus."),
                 ("A size floor: ", "Llama 3B produced a usable chunked rewrite for 1 of 124 problems (Qwen 14B and Gemma 12B: 124 of 124). As a judge it flags 85%."),
-                ("Small isn't cheap: ", "the Qwen 4B critic was about 25× slower than the 32B. It reasons until cut off."),
-                ("Teacher time is the binding cost: ", "one REVIEW takes about 1.5 min, and a third of careful-prompt rewrites go to REVIEW."),
-                ("Stable outputs: ", "93% of regenerations are text-identical; SAFE flipped on 2 of the 10 that changed.")])
+                ("Teacher time is the binding cost: ", "at about 1.5 min per REVIEW, a third of careful-prompt rewrites going to REVIEW is about 10 min per 20-problem worksheet.")])
     S.append(s)
 
     # 12 decision layer
     s = new_slide(prs)
     header(s, "Solution approach · from checker to decision", "A checker is not a policy")
-    bullets(s, [("Guaranteed PASS ", "(conformal risk control, Learn-then-Test): of what we pass, at most α is unsafe, with probability ≥ 1 − δ."),
-                ("Label-efficient rates ", "(prediction-powered inference, stratum-weighted): unbiased failure rates from a labelled subset plus checker verdicts."),
+    bullets(s, [("Guaranteed PASS ", "(conformal risk control, Learn-then-Test): the unsafe rate among passed rewrites stays below α, with high probability."),
+                ("A fraction of the labels ", "(prediction-powered inference, stratum-weighted): unbiased failure rates from a labelled subset plus checker verdicts."),
                 ("Cost-aware cascade: ", "the cheapest order of rules → AI critic → human for a target safety level (Pareto frontier)."),
                 ("Where to audit ", "(Stackelberg audit game): spend a district's limited audit budget where a lenient tool would do most harm."),
-                ("Robustness: ", "a red-team attacker cuts held-out recall from 0.73 to 0.67 over 3 rounds (n = 15 per round); weighted conformal holds under shift (synthetic).")],
+                ("Holds under attack: ", "an adaptive red-team attacker barely moved held-out recall (11/15 → 10/15); weighted conformal keeps its guarantee under shift.")],
             size=18, h=3.9)
     text(s, L, Inches(6.0), W, Inches(0.6), "Built, unit-tested (230 tests) and run end to end. Final numbers on human labels: Dec 3.", 16, BLUE, bold=True)
     S.append(s)
@@ -257,8 +257,10 @@ def build(template: Path, out: Path) -> None:
           "Students with disabilities get the access they are owed without the bar silently dropping.",
           "Districts can audit vendor tools.",
           [("Scope", {"bold": True, "color": BLUE, "font": SERIF, "size": 22})],
-          "English, GSM-style arithmetic, one rubric, no student outcomes yet."], 16, space=8)
-    bullets(s, [("False reassurance: ", "a PASS is evidence, not proof. Mitigations: a stated error guarantee, REVIEW goes to a person, humans have final authority."),
+          "English, GSM-style arithmetic, one rubric, no student outcomes yet.",
+          [("Transparency", {"bold": True, "color": BLUE, "font": SERIF, "size": 22})],
+          "AI assistance (Claude) was used for code and analysis drafts."], 15, space=6)
+    bullets(s, [("False reassurance: ", "a PASS is evidence, not proof. Mitigations: a statistical guarantee, REVIEW goes to a person, humans have final authority."),
                 ("Whose line? ", "The rubric reflects two annotators, not special-education teachers, students or families. Validate with them before deployment."),
                 ("Over-blocking: ", "a false REJECT also hurts the student, so we report false alarms, not just catches."),
                 ("Equity and privacy: ", "cheaper models fail more often. The free on-campus tier keeps student data local."),
@@ -270,7 +272,7 @@ def build(template: Path, out: Path) -> None:
     s = new_slide(prs)
     header(s, "Limitations and next steps", "What's done, what's left")
     bullets(s, [("Done: ", "the frozen design, the 1,044-rewrite main run, 7 judges, calibration, rubric v1.2, and every decision method built and tested."),
-                ("Dec 1–3: ", "main-study human labels (1,062 items, two blind annotators), then joint adjudication, final rates, the guaranteed-PASS threshold, cascade and audit game."),
+                ("Dec 1–3: ", "main-study human labels (1,062 items, two blind annotators), then joint adjudication, final rates, the guaranteed PASS threshold, cascade and audit game."),
                 ("Limitations: ", "human labels so far cover 70 practice items · 8% of rewrites can't be recomputed · 3 rewriters · English only."),
                 ("Next: ", "validate the rubric with special-education teachers · a student study (do safe rewrites help?) · beyond arithmetic word problems.")])
     S.append(s)
@@ -279,7 +281,7 @@ def build(template: Path, out: Path) -> None:
     s = new_slide(prs, NAVY)
     header(s, "Take-home", "Easier to read, verified before a student sees it", dark=True)
     paras = [[("The failure is real: ", {"bold": True, "color": PEACH}), ("with the prompt teachers type, 297 of 300 rewrites gave away operations, values or steps.", {"color": LIGHT})],
-             [("AI can't grade AI here: ", {"bold": True, "color": PEACH}), ("the best judge caught 18 of 54 rewrites whose answer provably changed, and AI sided with the lenient reading.", {"color": LIGHT})],
+             [("AI can't grade AI here: ", {"bold": True, "color": PEACH}), ("the best judge caught 18 of 54 verified errors, and AI was lenient on every hard case.", {"color": LIGHT})],
              [("What works: ", {"bold": True, "color": PEACH}), ("rules plus answer recomputation, AI as one signal, humans as ground truth, guarantees on what passes. It runs at $0.", {"color": LIGHT})]]
     text(s, L, Inches(2.4), W, Inches(3.5), paras, 21, space=18)
     text(s, L, Inches(6.4), W, Inches(0.4), "Code, data card and technical appendix: github.com/harshitaggarwal01/cs2880", 14, MUTE)

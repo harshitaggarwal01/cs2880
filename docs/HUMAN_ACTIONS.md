@@ -15,11 +15,14 @@ Everything that can run without a person has run (`docs/results/STATUS_REPORT_20
 | 6 | P0 | Joint adjudication of the disagreements among the 323 items both label. Run `python src/adjudicate.py --ann data/annotations/ollama-v1`, fill the `*_final` columns, then rerun with `--resolved TO_ADJUDICATE.csv`. | A + B | **TODO**, 2026-12-02 to 12-03. Expect the strict-vs-lenient gap again; adjudicate it, don't average it. |
 | 7 | P2 | Variance flip check (10 pairs) | Owner | **DONE.** 2 SAFE flips (v003, v009), in `variance/flip_check_scored.json`. |
 | 8 | P1 | D2: stratum-weighted pooled PPI | Owner decided FIX | **DONE.** `src/ppi_pooled.py`; `ppi.py` and the per-stratum rows are untouched. |
-| 9 | P1 | Rotate the OpenRouter key | Owner | **TODO** (only the owner can do it). Revoke the pasted key; put the new one in `~/.config/safeadapt/openrouter.env` and chmod 600. |
+| 9 | **P0** | Rotate the OpenRouter key (it is in a session transcript) | Owner | **TODO, now** (only the owner can do it). Revoke the pasted key; put the new one in `~/.config/safeadapt/openrouter.env` and chmod 600. |
 | 10 | P2 | D3: remaining OpenRouter credit (about $18.58) | Owner | **DONE**: keep it unused. |
-| 11 | P0 | Rerun every method on the human labels; review the final report | Claude runs, owner reviews | **Waiting on 6.** Check the careful-prompt rate against the five calibration overrides before quoting it. |
+| 11 | P0 | Rerun every method on the human labels (`sbatch scripts/human_methods.sbatch`); review the final report | Claude runs, owner reviews | **Waiting on 6.** Check the careful-prompt rate against the five calibration overrides before quoting it. |
+| 12 | P0 | Cathy confirms her calibration labels (sheet B) were entered by hand; they match the AI labeller's SAFE calls on all 70 items (the audit finding) | B | **TODO** before recording |
+| 13 | P2 | Agree the tie-break for strict-vs-lenient cases before the Dec 2 joint adjudication (write it into `annotation_guide.md`) | A + B | **TODO** by Dec 1 |
 
 **Critical path:** 4 ∥ 5 (by 12-01) → 6 (12-02 to 12-03) → 11.
+
 
 ## Decisions recorded (2026-11-20)
 

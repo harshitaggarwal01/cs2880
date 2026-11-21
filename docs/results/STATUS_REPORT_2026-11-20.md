@@ -29,7 +29,7 @@ Run `ollama-v1` (free tier, Brown OSCAR), branch `oscar-free-tier`.
   - **Realistic prompt** (100 problems × 3 generators = 300): the rules REJECT 297 of 300.
 - **Output contract:** Llama 3.2 3B returned a usable chunked rewrite for 1 of 124 problems (kept as a finding, `tier: cheap`). Qwen 14B and Gemma 12B returned 124/124.
 - **Variance:** 93% of regenerations are text-identical, and the rules decision flips on 1 of 99.
-- **Iterated red team:** held-out recall goes 0.73 → 0.67 over 3 rounds (n = 15 per round).
+- **Iterated red team:** rules-layer held-out recall 11/15 → 10/15 over 3 rounds (one item; no detectable degradation; leaks not human-confirmed).
 - **Conformal shift demo (synthetic):** weighted CRC holds α under a planted shift; unweighted CRC does not.
 
 ### 1.2 Seven judges on the same rewrites
@@ -91,7 +91,7 @@ Labels come from `data/annotations/ollama-v1-standin/` (1,062 of 1,062 items, Mi
 
 - **Careful prompts:** 92–100% SAFE per generator and transformation. The lowest is Llama 3B plain, 57/62 = 92% (CI 84–98%).
 - **Realistic prompt:** 0–15% SAFE (Qwen 15/100, Gemma 1/100, Llama 0/100).
-- **Paired comparisons (prespecified):** realistic vs constrained-chunked differs by −0.98 for Gemma and −0.82 for Qwen (Holm p < 0.001). The generator and plain-vs-chunked contrasts are not significant.
+- **Paired comparisons (prespecified):** realistic vs constrained-chunked differs by −0.98 for Gemma and −0.82 for Qwen (Holm p < 0.001). On the realistic prompt, Qwen differs from Gemma and from Llama (Holm p = 0.003 and 0.0004, `families.csv`). The other generator and plain-vs-chunked contrasts are not significant (stand-in labels; not a finding).
 
 ### 3.2 Methods
 
@@ -130,7 +130,7 @@ Done 2026-11-20 by the owner:
 Still blocking:
 1. **Human labelling** of `data/annotations/ollama-v1/sheet_A.xlsx` and `sheet_B.xlsx` (re-exported with v1.2). Both are due **2026-12-01**: 1,062 items, 323 double-labelled, about 17.3 h per annotator, labelled independently. B must not see the owner's calibration overrides before finishing.
 2. **Joint adjudication** (A + B), 2026-12-02 to 12-03. Adjudicate the strict-vs-lenient gap; don't average it away.
-3. **Rerun Part 3 on human labels** with the same steps as `scripts/standin_methods.sbatch`, using `ANN=data/annotations/ollama-v1` and `--run data/outputs/ollama-v1`, plus `src/ppi_pooled.py`. Check the careful-prompt rate against the five calibration overrides before quoting it.
+3. **Rerun Part 3 on human labels** with `sbatch scripts/human_methods.sbatch` (refuses to run on stand-in labels).py`. Check the careful-prompt rate against the five calibration overrides before quoting it.
 4. **Rotate the OpenRouter key.** Revoke the pasted key and write the new one to `~/.config/safeadapt/openrouter.env` (chmod 600). Only the owner can do this.
 5. The remaining OpenRouter credit (about $18.58) stays unused (D3).
 

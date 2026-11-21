@@ -79,15 +79,15 @@ How to read this:
   - equations or symbols (239);
   - numbered steps (201);
   - a quantity (95).
-- **Repair** of flagged rewrites: 585 repaired and rechecked.
+- **Repair** of flagged rewrites: 585 repair attempts; 553 parsed and rechecked (32 Llama 3B repairs could not be parsed).
 - **Variance:**
-  - 93% of regenerations are text-identical;
+  - 93% of regenerations are text-identical. Generation uses a fixed seed (2880), so this mostly shows reproducibility, not sampling variability;
   - the rules decision flips on 1 of 99;
   - human SAFE flipped on 2 of the 10 regenerations whose text changed (Clopper–Pearson 95% CI 3–56%).
 
 ## A4. Seven judges on the same rewrites (label-free)
 
-| Judge | Cost, main run | Careful: unsafe (n = 620) | Of 54 answer-changed | Of 75 rejected by rules or recompute | Of 24 leak-flagged | Realistic: unsafe (n = 300) | No verdict |
+| Judge | Paid spend (incl. pilot) | Careful: unsafe (n = 620) | Of 54 answer-changed | Of 75 rejected by rules or recompute | Of 24 with any LEAK_* flag | Realistic: unsafe (n = 300) | No verdict |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Qwen3 32B (free, primary) | $0 | 18 (3%) | 7 | 11 | 4 | 286 | 0 |
 | Gemma 3 12B (free) | $0 | 19 (3%) | 4 | 10 | 6 | 296 | 0 |
@@ -99,7 +99,8 @@ How to read this:
 
 - Qwen 32B and Gemma 12B agree on only 4 of the rewrites they flag.
 - Total paid spend, including the pilot and retries, was $11.42 of a $30 cap.
-- The small Qwen 4B critic was about 25× slower than the 32B (about 200 s vs 8.5 s per verdict).
+- Source: `data/outputs/ollama-v1/analysis/judges_labelfree.csv`, `judge_overlap.csv` and `flags_labelfree.csv` (`scripts/labelfree_summary.py`). "Answer-changed" means automated recomputation (an LLM-extracted program) differs; all 54 were verified by hand by the owner (2026-11-20).
+- The small Qwen 4B critic was much slower than the 32B in a cancelled pilot (about 200 s per verdict, 4 verdicts, against 11.2 s average for the 32B on the main run).
 
 ## A5. Calibration (human, n = 70 rewrites of 10 practice problems)
 
@@ -117,10 +118,11 @@ How to read this:
 | Adaptation needed | 0.13 | 0.46 |
 
 **Adjudication:**
-- 45 items agreed; 30 disagreements went to adjudication.
-  - A first AI adjudicator sided with the lenient label on all 5 SAFE disagreements.
-  - The owner then reviewed all 30: 16 ACCEPT, 14 OVERRIDE. All 5 SAFE disagreements became UNSAFE.
-- Final SAFE: careful prompts 46/50 (92%); realistic prompt 6/20 (30%).
+- 45 items agreed (including 5 abstention items first listed for adjudication by mistake); 25 adjudicated.
+  - A first AI adjudicator (Claude) sided with the lenient label on all 5 SAFE disagreements.
+  - The owner, who is **annotator A**, then reviewed all 30 listed items: 16 ACCEPT, 14 OVERRIDE. All 5 SAFE disagreements became UNSAFE. Annotator B (Cathy) has not adjudicated; main-study disagreements will be adjudicated jointly.
+- Final SAFE: careful prompts 46/50 (92%); realistic prompt 6/20 (30%). These equal annotator A's own labels on all 70 items.
+- **Per annotator, unsafe:** A 4/50 careful and 14/20 realistic; B 0/50 careful and 13/20 realistic. The 4 careful-prompt cases are 4 of the 5 disputed items.
 
 **Agreement with the final labels, on SAFE:**
 - Annotator A: κ 1.00. This is partly by construction: the owner adjudicated.
@@ -130,7 +132,7 @@ How to read this:
 **Interpretation:** the disputed cases are dropped "if" conditions, dangling fragments and relevance cues. AI reads these leniently.
 
 ## A6. Robustness and methods with label-free results
-- **Iterated red-team** (an attacker learns to leak while passing the checker): held-out recall goes 0.73 → 0.67 over 3 rounds (n = 15 per round).
+- **Iterated red-team** (an attacker prompted to leak while passing the checker): rules-layer held-out recall 11/15 → 10/15 over 3 rounds. That is one item, with no detectable degradation, and the leaks are not human-confirmed.
 - **Conformal under distribution shift** (synthetic, planted shift): weighted CRC holds α; unweighted CRC does not.
 - **Unsupervised critic ensemble** (Dawid–Skene-style posterior): `data/outputs/ollama-v1/analysis/critic_ensemble*.csv`.
 
@@ -138,7 +140,7 @@ How to read this:
 These need the human labels before they produce final values:
 - **Outcome rates per condition:** source-clustered bootstrap; prespecified McNemar families with Holm correction.
 - **PPI / PPI++ failure rates:** per stratum, plus a **stratum-weighted pooled rate** (`src/ppi_pooled.py`). The unweighted pooled row is invalid under unequal labelling fractions.
-- **Conformal risk control and Learn-then-Test:** the guaranteed-PASS threshold (α = 0.02 / 0.05 / 0.10).
+- **Conformal risk control and Learn-then-Test:** the risk-controlled PASS threshold (α = 0.02 / 0.05 / 0.10). CRC bounds the expected share of all rewrites that are both passed and unsafe; LTT bounds the unsafe share among passes with probability ≥ 1 − δ. Both assume exchangeable problems.
 - **Cost-aware cascade:** the Pareto frontier of unsafe-shipped vs teacher minutes vs dollars, per judge.
 - **Critic matrix:** each judge's recall and precision against human labels; a self-preference test (Firth logistic, bootstrap).
 - **Stackelberg audit game:** the district's audit allocation across tool × prompt.
@@ -151,8 +153,8 @@ Status:
 - The final values come from rerunning the same commands on the human labels after joint adjudication (Dec 2–3).
 
 ## A8. Cost and compute
-- **Free tier:** one A40 GPU for 21.5 h of wall time; $0; 6,483 local model calls. Generation took about 1.9 GPU-hours. The critic plus extraction take about 36–44 s per rewrite.
-- **Teacher time:** one REVIEW is about 1.5 minutes. With careful prompts a third of rewrites go to REVIEW, about 10 minutes per 20 rewrites.
+- **Free tier:** one A40 GPU for 21.5 h of wall time; $0; 6,259 local LLM calls. Generation took about 2.0 GPU-hours. The critic plus extraction take about 36–44 s per rewrite.
+- **Teacher time:** we *assume* one REVIEW takes about 1.5 minutes (a planning parameter in `config.ollama.yaml`, not a measurement). With careful prompts a third of rewrites go to REVIEW, about 10 minutes per 20 rewrites.
 
 ## A9. Ethics, limitations, reproducibility
 - **Ethics** (summary of video slide 13):
@@ -161,7 +163,8 @@ Status:
   - over-blocking also hurts students;
   - cheaper models fail more, so there is an equity gap;
   - the red team is dual-use.
-  - Mitigations: stated error guarantees, routing to a person, local free models, and human final authority.
+  - Mitigations: stated error bounds with their assumptions, routing to a person, local free models, and human final authority.
+  - Transparency: the annotators are the authors; the owner adjudicated his own calibration disagreements; AI assistance (Claude) was used for code, analysis drafts and a first-pass adjudication.
 - **Limitations:**
   - human labels so far cover 70 practice items;
   - 8% of rewrites can't be checked by recomputation;
@@ -171,7 +174,7 @@ Status:
 - **Reproducibility:**
   - Frozen config: `config.ollama.yaml` (`run_id: ollama-v1`).
   - Paid judges: `config.ollama-paid.yaml`.
-  - Jobs: `scripts/oscar_ollama.sbatch`, `scripts/paid_critics.sbatch`, `scripts/standin_methods.sbatch`.
+  - Jobs: `scripts/oscar_ollama.sbatch`, `scripts/paid_critics.sbatch`, `scripts/standin_methods.sbatch` (dry run), `scripts/human_methods.sbatch` (final, after adjudication).
   - 230 unit tests.
   - Full status: `docs/results/STATUS_REPORT_2026-11-20.md`.
   - What humans still do: `docs/HUMAN_ACTIONS.md`.

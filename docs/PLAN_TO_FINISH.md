@@ -35,7 +35,7 @@
 
 ## After labels (Dec 2–4; Claude runs it, the owner reviews)
 1. Run `python src/adjudicate.py --ann data/annotations/ollama-v1`. Joint adjudication of TO_ADJUDICATE.csv, then rerun with `--resolved`.
-2. Rerun every method on the human labels, using the same steps as `scripts/standin_methods.sbatch` with `ANN=data/annotations/ollama-v1` and `--run data/outputs/ollama-v1`, plus `src/ppi_pooled.py`. That's one CPU job, about 1 h.
+2. Rerun every method on the human labels, with `sbatch scripts/human_methods.sbatch` (refuses to run on stand-in labels).py`. That's one CPU job, about 1 h.
 3. Final report: replace Part 3 of the status report, and check the careful-prompt rate against the five calibration overrides.
 4. Owner only: rotate the OpenRouter key.
 

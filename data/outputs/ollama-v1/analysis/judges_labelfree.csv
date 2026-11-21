@@ -1,0 +1,8 @@
+critic,careful_n,careful_unsafe,careful_unsafe_rate,answer_mismatch_n,caught_of_mismatch,rules_or_recompute_reject_n,caught_of_reject,any_leak_flag_n,caught_of_leak,realistic_n,realistic_unsafe,careful_no_verdict,verifier_reject_careful,paid_spend_usd_incl_pilot
+qwen_big_c,620,18,0.029,54,7,75,11,24,4,300,286,0,82,0.0
+gemma_c,620,19,0.0306,54,4,75,10,24,6,300,296,0,84,0.0
+llama_small_c,620,524,0.8452,54,45,75,64,24,22,300,274,29,465,0.0
+haiku55c,620,41,0.0661,54,13,75,23,24,11,300,253,15,92,0.47
+sonnet55c,620,41,0.0661,54,16,75,25,24,10,300,298,0,91,7.08
+luna6c,620,53,0.0855,54,12,75,18,24,7,300,294,0,98,0.16
+sol61c,620,63,0.1016,54,18,75,28,24,12,300,293,0,109,3.71

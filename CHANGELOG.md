@@ -7,6 +7,23 @@ and this project uses semantic versioning where applicable.
 
 ## [Unreleased]
 
+### Audit fixes; script split between Cathy and Harshit (2026-11-20, evening)
+- `docs/results/AUDIT_2026-11-20.md`: a read-only audit of all plans, results and claims, with the status of every planned method.
+  - The bandits, CRC/LTT, the audit game, PPI, the cascade, the judge matrix, distillation and the trained checker are coded and tested, but have run only on stand-in labels.
+  - The red team, variance and Dawid–Skene ran on the real run. Weighted conformal is synthetic only.
+  - The LoRA judge, external audit and teacher survey were never run. GSM-IC and the paid rewriter matrix were dropped.
+- **Video script:**
+  - Labelled by speaker (Cathy: 1–5, 11, 13; Harshit: 6–10, 12, 14, 15); conversational, bold and confident, about 2,170 words.
+  - The owner verified all 54 answer-changed rewrites by hand (2026-11-20), so the video calls them verified errors.
+  - Human rates are the adjudicated labels: 4/50 careful, 14/20 realistic.
+  - Corrected numbers: 21.5 h (not 1.5 days); Sonnet about 15× Haiku; relations 53 added and 45 lost (not 43/35); red team 11/15 → 10/15. The 25× and 93% claims were cut.
+  - Precise caveats stay in `TECHNICAL_APPENDIX.md`.
+  - `fig_judges.png` now reads "verified"; the PPTX was rebuilt with speaker-labelled notes.
+- `scripts/labelfree_summary.py` writes `analysis/judges_labelfree.csv`, `judge_overlap.csv` and `flags_labelfree.csv`, so every judge number has a file. This corrects the relation counts to 53 added and 45 lost (they were quoted as 43/35).
+- Appendix fixes: 45 agreed / 25 adjudicated; 553 repairs rechecked; 6,259 local calls; spend includes the pilot; the seed caveat on regeneration identity.
+- `scripts/human_methods.sbatch`: the final run on human labels. It writes into `ollama-v1` and refuses to start if `adjudicated.csv` holds AI stand-in labels. The stand-in job would have overwritten the human folder.
+- `HUMAN_ACTIONS`: key rotation raised to P0; Cathy to confirm her calibration labels; tie-break rule before Dec 2.
+
 ### Nov 23 video package and plan to finish (2026-11-20)
 - `docs/video/VIDEO_DECK_nov23.md`: 15 slides with full narration, about 2,200 words (15–16 min). The problem statement comes first, the main finding right after it, and there is a new ethics slide.
 - `docs/video/SafeAdapt-Math_video_nov23.pptx`: the Nov 16 v3 style, with the narration in the speaker notes. Built by `scripts/build_video_deck.py`.
