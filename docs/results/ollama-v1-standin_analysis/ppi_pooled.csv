@@ -1,0 +1,4 @@
+estimator,weighting,estimate,lo,hi,width,n_strata,n_all_used,n_all,n_lab,valid_draws,dropped_strata
+classical,stratum N_h/N,0.28563696532953947,0.2743634565975014,0.29668124336372836,0.022317786766226977,9,1043,1044,648,2000,"chunked|llama_small (n_all 1, n_lab 0)"
+ppi,stratum N_h/N,0.2735540485928704,0.21094039032348674,0.33977203454624366,0.12883164422275692,9,1043,1044,648,2000,"chunked|llama_small (n_all 1, n_lab 0)"
+ppipp,stratum N_h/N,0.28503264073733875,0.2740752029400806,0.2962130881126394,0.022137885172558824,9,1043,1044,648,2000,"chunked|llama_small (n_all 1, n_lab 0)"

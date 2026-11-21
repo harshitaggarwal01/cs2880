@@ -1,0 +1,31 @@
+{
+ "labeller": "owner (human), 2026-11-20",
+ "n_pairs": 10,
+ "safe_label_flips": 2,
+ "flip_rate": 0.2,
+ "clopper_pearson_95": [
+  0.025,
+  0.556
+ ],
+ "by_transformation": {
+  "chunked": {
+   "n": 1,
+   "flips": 0,
+   "unsafe_both": 0,
+   "safe_both": 1
+  },
+  "naive": {
+   "n": 5,
+   "flips": 1,
+   "unsafe_both": 4,
+   "safe_both": 0
+  },
+  "plain": {
+   "n": 4,
+   "flips": 1,
+   "unsafe_both": 1,
+   "safe_both": 2
+  }
+ },
+ "note": "Blind pairs (original vs one regeneration, random order). Label-level stability, complementing variance_flip_rates.json (text and decision flips)."
+}

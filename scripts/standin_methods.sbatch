@@ -21,6 +21,7 @@ V="$RUN/generations.verify-critic-det-program.jsonl $RUN/ablation_generations.ve
 run python src/calibrate.py --agreement data/calibration/pilot/adjudicated.csv data/calibration/pilot/standin/adjudicated.csv
 run python src/evaluate.py --labels $L --key $K --verify $V --analysis-dir $RUN/analysis
 run python src/ppi.py --run $RUN --labels $L --key $K --out $RUN/analysis/ppi.csv
+run python src/ppi_pooled.py --run $RUN --labels $L --key $K --out $RUN/analysis/ppi_pooled.csv
 run python src/ppi.py --run $RUN --labels $L --key $K --predictor critic --out $RUN/analysis/ppi_critic.csv
 run python src/conformal.py --run $RUN --labels $L --key $K --alphas 0.02 0.05 0.1 --out $RUN/analysis/conformal.csv
 run python src/conformal.py --run $RUN --labels $L --key $K --method ltt --by transformation --out $RUN/analysis/conformal_ltt.csv

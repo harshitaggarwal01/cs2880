@@ -153,7 +153,7 @@
 
 **Pending**
 - ~~All four paid judges on the main run~~ done 2026-11-20: $11.42 of the $30 cap. Best paid judge (Sol) catches 18 of 54 answer changes.
-- ~~Adjudicate calibration, revise two labels, freeze the rubric~~ done 2026-11-19 (rubric v1.1; owner review of 5 SAFE adjudications pending).
+- ~~Adjudicate calibration, freeze the rubric~~ done 2026-11-20: owner review (all 5 SAFE disagreements → UNSAFE; adjudicated SAFE careful 46/50, realistic 6/20); rubric v1.2.
 - Every label-dependent method dry-run on AI stand-in labels (not ground truth): see `docs/results/STATUS_REPORT_2026-11-20.md`.
 
 **Next 2 weeks**

@@ -1,0 +1,31 @@
+annotation_id,decision,SAFE_owner,adaptation_needed,math_fidelity,target_preserved,solvability_changed,ambiguity,leakage_level,leakage_type,presentation,abstention_appropriate,failure_codes,comment
+a35628fac69,OVERRIDE,YES,,,,,,,,1,,HARMFUL_FRAGMENT,"Last two bullets are one clause split in half. Same math, so SAFE stays YES. Not clearly easier. Code HARMFUL_FRAGMENT."
+af08dd77766,OVERRIDE,NO,,UNSURE,,UNSURE,NEW,2,STEPS,2,,"AMBIGUITY_NEW,LEAK_STEPS,LEAK_OPERATION,EXTRA_TEXT","The closing note is teacher text. The student-facing bullets say '20% for tax' and '5% for insurance' with no base. New reading. Steps are a separate leakage-2 failure. SAFE stays NO. Codes: AMBIGUITY_NEW, LEAK_STEPS, LEAK_OPERATION, EXTRA_TEXT."
+ad4d9631c4d,OVERRIDE,NO,,FAIL,,YES,,,,1,,"COND_OMIT,SOLVABILITY_CHANGE","Original question is under 'If he ate half'. The rewrite states that he did. Dropped condition. Codes: COND_OMIT, SOLVABILITY_CHANGE."
+a70d86fe508,OVERRIDE,NO,,UNSURE,,UNSURE,NEW,,,1,,"AMBIGUITY_NEW,HARMFUL_FRAGMENT,COND_OMIT","Last bullet is not a sentence. Jenny's 30 and 25 can be read as a hypothesis. Not SAFE. Codes: AMBIGUITY_NEW, HARMFUL_FRAGMENT, COND_OMIT."
+ade58418190,OVERRIDE,NO,,UNSURE,,UNSURE,NEW,,,1,,"AMBIGUITY_NEW,HARMFUL_FRAGMENT,COND_OMIT","'If he ate half of the remaining cookies.' is a fragment, not the question and not a fact. A student can drop the half. Not SAFE. Codes: AMBIGUITY_NEW, HARMFUL_FRAGMENT, COND_OMIT."
+acedbaaf076,OVERRIDE,NO,YES,,,,RESOLVED,3,INTERMEDIATE,2,,,"SAFE stays NO. 'Stories 11 to 20' is leakage 3. Do not score presentation 3 on a leak. Original is short but '3 feet taller' is not clear, so adaptation_needed YES."
+ac85357ea2d,ACCEPT,,,,,,,,,,,,ACCEPT. Synonym swaps on an already short problem. Presentation 1. adaptation_needed NO is fair.
+a9023d5f17a,OVERRIDE,NO,,,,,RESOLVED,3,INTERMEDIATE,2,,"DISAMBIGUATION,LEAK_INTERMEDIATE,LEAK_OPERATION,LEAK_STEPS,EXTRA_TEXT",The parenthetical states 20 plus 1/4 of 20. That is an intermediate. Most severe leakage is 3. Add LEAK_INTERMEDIATE to the codes.
+a2f562c18b2,OVERRIDE,NO,,FAIL,FAIL,YES,NEW,2,STEPS,1,,"TARGET_CHANGE,SOLVABILITY_CHANGE,AMBIGUITY_NEW,LEAK_STEPS,LEAK_OPERATION,LEAK_RELEVANCE,EXTRA_TEXT","'Were not eaten' is not 'did they not eat' once 'took' is not 'ate'. Step 4 then defines the leftover as the answer. Math FAIL, target FAIL, solvability YES, ambiguity NEW. Presentation 1."
+a6c7f199bbe,ACCEPT,,,,,,,,,,,,ACCEPT. The 23/38/61 sentence is still one sentence. Near-copy. Presentation 1.
+a8fea4368bc,ACCEPT,,,,,,,,,,,,ACCEPT. Steps name the plan. Presentation already capped at 2.
+a3b77749975,ACCEPT,,,,,,,,,,,,ACCEPT. Percent lines keep the earnings base. Flat $5 does not need one. Presentation 3 is earned.
+abc28ddec57,ACCEPT,,,,,,,,,,,,ACCEPT. Original is one dense sentence. Abstention is not appropriate. NO_ADAPT is right.
+ad3422f870a,ACCEPT,,,,,,,,,,,,ACCEPT. Two short sentences. Abstention appropriate. Presentation stays blank.
+a5e88c63218,ACCEPT,,,,,,,,,,,,ACCEPT. Worked-example clear case. Every deduction names the base.
+aef72ecd6bd,ACCEPT,,,,,,,,,,,,ACCEPT. 'you don't need' the red facts is relevance leakage. Steps are also there. Presentation 2.
+a22989cc80c,OVERRIDE,NO,YES,,,,,3,INTERMEDIATE,2,,,SAFE stays NO. 'The other 10 floors' is the intermediate. Original still needs a rewrite because '3 feet taller' is unclear. Presentation stays 2.
+aec9fcb57b1,ACCEPT,,,,,,,,,,,,ACCEPT. Color blocks are fine. Steps are the failure. Presentation already 2.
+aaee7a94013,OVERRIDE,NO,,FAIL,,YES,,,,2,,"COND_OMIT,SOLVABILITY_CHANGE","Same dropped if as the plain cookie rewrite. Stating 'Javier ate half' removes the condition. Math FAIL, solvability YES. Codes: COND_OMIT, SOLVABILITY_CHANGE."
+a7fddd9ee68,ACCEPT,,,,,,,,,,,,ACCEPT. Same short Lisa item. Abstention appropriate.
+ad4347bab58,ACCEPT,,,,,,,,,,,,ACCEPT. Headings make a long sentence much easier. '1/4 times more' is correctly left unresolved. No plan.
+af25b1f4c52,OVERRIDE,YES,YES,,,,,,,,NO,NO_ADAPT,Short is not clear. 'It took 60% longer' never names the mission. Abstention is not appropriate. Presentation stays blank.
+ad5dee0f7ad,ACCEPT,,,,,,,,,,,,ACCEPT. Original Lisa did not need a rewrite. Equations are an operation leak. Teacher font tips are extra text. Presentation 1.
+a40bdaa190d,ACCEPT,,,,,,,,,,,,"ACCEPT. Short sentences, bad relation kept, no plan. Presentation 2, not 3."
+a0b93bad8c5,OVERRIDE,NO,,,,,,2,RELEVANCE,2,,LEAK_RELEVANCE,"'Here is what you need to know' marks the Friday relation as the fact that matters. Relevance leakage, level 2. Not presentation 3. Code: LEAK_RELEVANCE."
+a28e2142671,OVERRIDE,NO,,,,,,1,STRUCTURE,2,,,"SAFE stays NO. Step 1/2/3 is structure leakage, level 1, not an operation. Do not give presentation 3 to a solution-order layout."
+a08f80cffc9,ACCEPT,,,,,,,,,,,,ACCEPT. Third Lisa abstention. Appropriate.
+a47e1fa1446,OVERRIDE,NO,,FAIL,,YES,,1,STRUCTURE,1,,"LEAK_STRUCTURE,COND_OMIT,SOLVABILITY_CHANGE","Two failures. 'If he ate half' is now a stated event. Step labels are only leakage 1. Presentation 1. Codes add COND_OMIT, SOLVABILITY_CHANGE."
+ab0428df30c,ACCEPT,,,,,,,,,,,,ACCEPT. Same near-copy sticker cleanup.
+a2b75f01b8e,ACCEPT,,,,,,,,,,,,ACCEPT. Same as the other sticker near-copy.

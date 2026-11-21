@@ -1,4 +1,4 @@
-# Annotation Guide (rubric v1.1, frozen 2026-11-19 after dev calibration)
+# Annotation Guide (rubric v1.2, frozen 2026-11-20 after the owner's review of the calibration)
 
 **Read this before labelling anything.** The schema is `schemas/annotation_schema.json`. Examples come from the real dev pilot (`docs/professor_examples.md`).
 
@@ -64,17 +64,19 @@ Leave blank for `NO_REWRITE_NEEDED` outputs and fill `abstention_appropriate` in
 - **YES** if the original is already short and clear (Example 2: "Lisa has 18 more dresses than Ana…").
 - **NO** if it was dense enough to benefit from the transformation (Sonnet on the payroll problem).
 
-### adaptation_needed (judged on the original, once per source; v1.1 rule)
-**YES** if any sentence of the original has more than 20 words, or carries three or more given quantities or relations, or the task depends on a word a struggling reader is unlikely to know. Otherwise **NO**. UNCLEAR only with a note.
-- YES: Vikki (one sentence holds three deductions), Cora, Katherine, Javier, Mary, Carly.
-- NO: Lisa (two short sentences), Karl's stickers, James's building, John's missions.
+### adaptation_needed (judged on the original, once per source; v1.2 rule)
+**YES** if any sentence of the original has more than 20 words, or carries three or more given quantities or relations, or the task depends on a word a struggling reader is unlikely to know, or a relation or reference is unclear (short is not the same as clear). Otherwise **NO**. UNCLEAR only with a note.
+- YES: Vikki (one sentence holds three deductions), Cora, Katherine, Javier, Mary, Carly, James's building ("3 feet taller" never says than what), John's missions ("It took 60% longer" never names the mission).
+- NO: Lisa (two short sentences), Karl's stickers.
 
-### Clarifications added in v1.1 (from the calibration disagreements)
-- **"If" clauses that state a given.** In GSM8K-style problems ("If he ate half of the remaining cookies, how many…?") the "if" clause is a given, not a hypothesis. Restating it as a fact ("Javier ate half of the remaining cookies.") is **PASS**: every value and the answer are unchanged. Use `COND_OMIT` / math FAIL only when a real condition that limits the case is dropped or changed.
-- **Dangling fragments.** A bullet that keeps the "If" as a fragment ("- If Jenny collected 30 red marbles and 25 blue marbles.") is a presentation defect: code `HARMFUL_FRAGMENT`, presentation ≤ 1 for that reason alone. Math stays PASS while the values remain givens the question needs.
-- **Level 3 needs a value.** An expression without its value ("20 hours, plus an extra 1/4 of 20 hours") is level 2 (STEPS/OPERATION), not 3. A stated range or count the student had to derive ("Stories 11 to 20", "the other 10 floors") is level 3.
-- **Headings.** A heading that groups facts ("What she has read so far") without saying which facts to use or ignore is level 0. "The red marble facts are extra information you don't need" is level 2 RELEVANCE.
-- **Target wording.** "How many were not eaten?" for "how many did they not eat?" is the same target. Choosing one reading of an ambiguous original is ambiguity RESOLVED, not a target change.
+### Clarifications (v1.1, revised in v1.2 by the owner's adjudication, 2026-11-20)
+- **"If" clauses are conditions.** In "If he ate half of the remaining cookies, how many…?" the question is asked *under* the condition. Keep the condition attached to the question ("Question: If Javier ate half of the remaining cookies, how many are left?"). Restating it as an event ("Javier ate half of the remaining cookies.") drops the condition: **math FAIL, solvability YES**, codes `COND_OMIT, SOLVABILITY_CHANGE`. Not SAFE.
+- **Dangling "If" fragments.** A bullet that keeps the "If" as a fragment ("- If Jenny collected 30 red marbles and 25 blue marbles.") is neither a fact nor the question; a student can read it as a hypothesis or drop it. **ambiguity NEW, math and solvability UNSURE**, codes `AMBIGUITY_NEW, HARMFUL_FRAGMENT, COND_OMIT`, presentation ≤ 1. Not SAFE.
+- **Bases.** A split line that loses its base ("20% for tax" with no "of her earnings") is ambiguity NEW (`AMBIGUITY_NEW`). A flat amount ("$5") needs no base.
+- **Level 3 is any intermediate the student had to set up.** A stated value, range or count ("Stories 11 to 20", "the other 10 floors") and an expression that sets up a derived quantity ("20 hours, plus an extra 1/4 of 20 hours") are level 3 INTERMEDIATE.
+- **Headings and relevance cues.** A heading that only groups facts ("What she has read so far", colour blocks) is level 0. Marking which facts matter or don't ("Here is what you need to know", "The red marble facts are extra information you don't need") is level 2 RELEVANCE.
+- **Step labels.** "Step 1 / Step 2 / Step 3" in solution order is level 1 STRUCTURE, not an operation. A solution-order layout or any leak caps presentation at 2.
+- **Target wording.** A reworded question is the same target only if it keeps the same agent and action. "How many were not eaten?" for "how many did they not eat?" changes the target when the original separates "took" from "ate": target FAIL, `TARGET_CHANGE`. Choosing one reading of an ambiguous original is ambiguity RESOLVED.
 
 ## Allowed versus not allowed
 
@@ -86,11 +88,11 @@ Leave blank for `NO_REWRITE_NEEDED` outputs and fill `abstention_appropriate` in
 - pronoun → unambiguous referent;
 - one fact per line;
 - filler removed;
-- "If X, how many…?" restated as "X. How many…?" when X is clearly intended as given;
+- an "If…" condition kept attached to the question ("Question: If X, how many…?");
 - regrouping facts by person or object, as long as no fact is misattributed and no values or operations are added.
 
 **Not allowed (modification):**
-- changing or dropping any quantity, unit, relation, quantifier, condition, time order, or the unknown;
+- changing or dropping any quantity, unit, relation, quantifier, condition, time order, or the unknown (including turning an "If" condition into a stated event, or leaving it as a dangling fragment);
 - operation words or equations not in the original;
 - numbered or "Step" labels in solution order;
 - hints, tips, "steps to try";
@@ -113,7 +115,7 @@ SAFE_AND_USEFUL = SAFE and ((presentation >= 2 and no NO_ADAPT/HARMFUL_FRAGMENT)
 
 **Outcome (2026-11-19).** Both annotators labelled all 70 items blind.
 - Agreement on SAFE: κ 0.79, AC1 0.89, so the 0.7 target was met. Presentation (AC1 0.53) and adaptation_needed (AC1 0.46) were low.
-- 30 items were adjudicated (`data/calibration/pilot/TO_ADJUDICATE.csv` → `adjudicated.csv`). The adjudication was done by an AI adjudicator (Claude), every decision with a written reason, and is pending owner review.
-- All 5 SAFE disagreements were "if"-clause and fragment cases. They resolve to SAFE under the clarifications above.
-- Adjudicated SAFE: careful prompts 50/50, realistic prompt 7/20.
-- The anchors above were added and the rubric frozen as **v1.1**. No main-study output had been labelled.
+- 30 items were adjudicated (`data/calibration/pilot/TO_ADJUDICATE.csv` → `adjudicated.csv`). A first AI adjudication (2026-11-19) sided with the lenient label on every SAFE disagreement. The owner reviewed all 30 on 2026-11-20 (`owner_review_2026-11-20.csv`: 16 ACCEPT, 14 OVERRIDE).
+- All 5 SAFE disagreements were "if"-clause, fragment and relevance-cue cases. All 5 resolve to **UNSAFE** under the clarifications above.
+- Adjudicated SAFE: careful prompts 46/50, realistic prompt 6/20 (`agreement_vs_adjudicated.md`).
+- v1.1 (2026-11-19) added the anchors; v1.2 (2026-11-20) replaced the AI-written "if"-clause, level-3 and target-wording rulings with the owner's. No main-study output had been labelled.

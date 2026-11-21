@@ -84,8 +84,10 @@ INSTRUCTIONS = [
     ("Other columns", "solvability_changed YES if it became unsolvable or has a different answer. ambiguity NEW if "
                       "it now allows a second reading; RESOLVED if it picked one reading of an ambiguous original "
                       "(say which in notes). adaptation_needed: judged on the ORIGINAL only: YES if any sentence "
-                      "is over 20 words or holds 3+ quantities/relations, else NO. An 'If ..., how many' clause is "
-                      "a given: restating it as a fact is PASS; a dangling 'If ...' bullet is HARMFUL_FRAGMENT."),
+                      "is over 20 words, holds 3+ quantities/relations, or has an unclear relation, else NO. 'If ...' is a "
+                      "condition: keep it on the question; stating it as an event is math FAIL + solvability YES; "
+                      "a dangling 'If ...' bullet is ambiguity NEW. Relevance cues are leakage 2; any leak caps "
+                      "presentation at 2."),
     ("Evidence", "For any FAIL, YES (solvability), NEW, or leakage > 0: paste the exact words in 'evidence' and add "
                  "failure codes (comma-separated; see the Codes tab)."),
     ("Unsure?", "Use UNSURE and write why in notes. Do not guess. Set confidence LOW."),

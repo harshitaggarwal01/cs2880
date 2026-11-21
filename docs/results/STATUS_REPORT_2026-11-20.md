@@ -16,7 +16,7 @@ Run `ollama-v1` (free tier, Brown OSCAR), branch `oscar-free-tier`.
 - **No judge is reliable enough to decide on its own:**
   - On the 54 careful-prompt rewrites whose recomputed answer changed, the best paid judge (GPT-6.1 Sol) catches 18 and the best free large judge catches 7.
   - The 3B judge "catches" 45, but only because it flags 85% of everything.
-- **Calibration:** the two annotators agree on SAFE at κ 0.79. After adjudication, careful-prompt rewrites are 50/50 SAFE and realistic-prompt rewrites 7/20. Rubric v1.1 is frozen.
+- **Calibration:** the two annotators agree on SAFE at κ 0.79. After the owner's adjudication (2026-11-20), careful-prompt rewrites are 46/50 SAFE and realistic-prompt rewrites 6/20. Rubric **v1.2** is frozen.
 - **Every method runs end-to-end:** PPI, conformal control (CRC and LTT), the cascade, the critic matrix with the self-preference test, the audit game, the rewrite policy (offline and online), distillation, a trained checker and the report all run on stand-in labels (exit 0).
 - **Blocking item:** human labels for the 1,062 items (about 17.3 h per annotator).
 
@@ -64,15 +64,24 @@ Reading:
 
 - **Annotators A vs B (70 items, 10 practice problems):** SAFE κ 0.79, AC1 0.89, 93% raw. All 5 SAFE disagreements were A unsafe / B safe.
 - **Adjudication:** 45 items agreed and 25 were adjudicated, giving `data/calibration/pilot/adjudicated.csv`.
-  - Adjudicated SAFE: careful 50/50, realistic 7/20. Annotator A alone had 92% and 30%.
-  - The adjudicator was an AI stand-in (owner decision 2026-11-19), with a reason recorded for each item. **The owner still needs to review the 5 SAFE adjudications** (annotation ids `ad4d9631c4d`, `a70d86fe508`, `ade58418190`, `aaee7a94013`, `a0b93bad8c5`; in all five the AI adjudicator sided with B, SAFE).
-- **Rubric v1.1, frozen 2026-11-19** (`docs/annotation_guide.md`):
-  - presentation anchors made explicit, which fixes the weak label (AC1 0.53);
-  - adaptation_needed given an objective trigger, which fixes the other weak label (AC1 0.46);
-  - rulings on "If…, how many" clauses and on headings.
-- **Stand-in labeller vs adjudicated:**
-  - SAFE κ 1.00 (70/70), presentation AC1 0.59, adaptation_needed AC1 0.83.
-  - The perfect SAFE score is **optimistic**: the v1.1 examples quote these same items.
+  - A first AI adjudication (2026-11-19) sided with the lenient label on all 5 SAFE disagreements.
+  - The owner reviewed all 30 disagreements on 2026-11-20 (`owner_review_2026-11-20.csv`, applied by `scripts/apply_owner_review.py`): 16 ACCEPT, 14 OVERRIDE. **All 5 SAFE disagreements resolve to UNSAFE**, for dropped "if" conditions, dangling "If" fragments and relevance cues.
+  - Adjudicated SAFE is now **careful 46/50 (92%) and realistic 6/20 (30%)**. That equals annotator A's rates; the AI adjudication had given 50/50 and 7/20.
+- **Agreement with the final labels, on SAFE** (`agreement_vs_adjudicated.md`):
+  - Annotator A: κ 1.00.
+  - Annotator B: κ 0.79.
+  - AI stand-in (Mistral): κ 0.79, down from 1.00 against the AI adjudication.
+  - The stand-in agrees with the lenient side, the same failure as the AI judges.
+  - Caveat: the owner adjudicating their own disagreements favours A. The main-study adjudication is joint (A + B).
+- **Rubric v1.2, frozen 2026-11-20** (`docs/annotation_guide.md`, `LABELLING_GUIDE.md`, the sheet instructions). It replaces the AI-written v1.1 rulings with the owner's:
+  - "If…" is a condition. Stating it as an event is math FAIL + solvability YES; a dangling "If" bullet is ambiguity NEW.
+  - A line that loses its base is ambiguity NEW.
+  - Any set-up intermediate is level 3.
+  - Relevance cues are level 2; Step labels are level 1. Any leak caps presentation at 2.
+  - A target must keep the same agent and action.
+  - "Short is not clear" for adaptation_needed.
+  - The blank main sheets were re-exported with these instructions. No main-study item had been labelled.
+- **Stand-in labels (Part 3) used v1.1.** This is one more reason they are a dry run only.
 
 ## Part 3 — Every method on AI stand-in labels (dry run, not ground truth)
 
@@ -88,6 +97,7 @@ Labels come from `data/annotations/ollama-v1-standin/` (1,062 of 1,062 items, Mi
 
 | Method | Result on stand-in labels |
 |---|---|
+| **Pooled rate, stratum-weighted** (new `src/ppi_pooled.py`, owner decision D2) | Overall unsafe rate 28.6% (classical, CI 27.4–29.7%); PPI++ 28.5% (27.4–29.6%). This replaces the invalid unweighted "all" row of `ppi.csv` (44.9% classical, 12.4% PPI). The per-stratum rows are unchanged. |
 | **PPI / PPI++** (per stratum) | Under the careful prompts the strata sit at 0–8% unsafe; under the realistic prompt, 85–100%. Checker flags fire on about 55% of rewrites while few are unsafe, so they are a weak predictor and PPI is *wider* than classical: no labelling saved here. |
 | **CRC** (guaranteed-PASS threshold) | At α = 0.05 it passes 53% of rewrites, with realized risk 4.0% (81% of splits under α). At α = 0.10 it passes 57%. |
 | **LTT** (high-probability version) | Passes nothing at α = 0.02 or 0.05, and 35% at α = 0.10 (risk 0.5%). Too few labelled unsafe items to certify tighter levels. |
@@ -105,26 +115,30 @@ Labels come from `data/annotations/ollama-v1-standin/` (1,062 of 1,062 items, Mi
 1. **The stand-in is itself an AI judge, and it is lenient.**
    - It calls only 7 of the 310 labelled careful-prompt rewrites unsafe, despite 54 recomputation mismatches across the careful set.
    - Every judge metric above therefore measures agreement with Mistral, not with the truth.
-2. **Its calibration score is inflated.** The rubric examples quote the calibration items.
-3. **The pooled "all" PPI row is invalid.**
-   - The labelling plan samples strata at different rates, and the pooled row treats the labelled set as uniform.
-   - The per-stratum rows are valid. `src/ppi.py` is protected, so this is flagged but not changed.
-   - The fix is a stratum-weighted pooled estimate.
+2. **Its perfect calibration score fell to κ 0.79 once the owner adjudicated.** It matched the lenient AI adjudication, not the owner. Do not quote κ 1.00.
+3. **The pooled "all" row in `ppi.csv` is invalid** (strata are labelled at different rates). Use `ppi_pooled.csv` instead; the per-stratum rows are valid.
 4. **Seven unsafe items** in the hard stratum is too few for LTT, self-preference or the trained checker to say anything.
 
-## Part 4 — What remains
+## Part 4 — What remains (full checklist: `docs/HUMAN_ACTIONS.md`)
 
-1. **Owner review** of the 5 SAFE adjudications (`data/calibration/pilot/TO_ADJUDICATE.csv`, annotation ids `ad4d9631c4d`, `a70d86fe508`, `ade58418190`, `aaee7a94013`, `a0b93bad8c5`). Full checklist: `docs/HUMAN_ACTIONS.md`.
-2. **Human labelling** of `data/annotations/ollama-v1/sheet_A.xlsx` and `sheet_B.xlsx`:
-   - 1,062 items, 323 of them double-labelled;
-   - about 693 items and about 17.3 h per annotator.
-3. **Rerun Part 3 on human labels.** Run the same commands as `scripts/standin_methods.sbatch` with `ANN=data/annotations/ollama-v1` and `--run data/outputs/ollama-v1`; no method code changes. Then replace this report's Part 3.
-4. **Optional:** a stratum-weighted pooled PPI estimate, which needs approval because `ppi.py` is protected.
+Done 2026-11-20 by the owner:
+- calibration review (16 ACCEPT, 14 OVERRIDE);
+- rubric v1.2 approved;
+- flip check scored. 2 SAFE flips among the 10 regenerations whose text changed (CI 3–56%). Identical text can't flip and 93% of regenerations were identical, so that is about 1–2% of all regenerations (`variance/flip_check_scored.json`);
+- decisions D1–D6.
+
+Still blocking:
+1. **Human labelling** of `data/annotations/ollama-v1/sheet_A.xlsx` and `sheet_B.xlsx` (re-exported with v1.2). Both are due **2026-12-01**: 1,062 items, 323 double-labelled, about 17.3 h per annotator, labelled independently. B must not see the owner's calibration overrides before finishing.
+2. **Joint adjudication** (A + B), 2026-12-02 to 12-03. Adjudicate the strict-vs-lenient gap; don't average it away.
+3. **Rerun Part 3 on human labels** with the same steps as `scripts/standin_methods.sbatch`, using `ANN=data/annotations/ollama-v1` and `--run data/outputs/ollama-v1`, plus `src/ppi_pooled.py`. Check the careful-prompt rate against the five calibration overrides before quoting it.
+4. **Rotate the OpenRouter key.** Revoke the pasted key and write the new one to `~/.config/safeadapt/openrouter.env` (chmod 600). Only the owner can do this.
+5. The remaining OpenRouter credit (about $18.58) stays unused (D3).
 
 ## Reproduce
 
 - Free run: `sbatch scripts/oscar_ollama.sbatch` (job 9153208).
 - Paid judges: `STAGE=main CRITICS=<name> sbatch scripts/paid_critics.sbatch` (key via `OPENROUTER_API_KEY` only).
 - Stand-in labels: `scripts/ai_label.sbatch` (4 shards).
-- Stand-in methods: `scripts/standin_methods.sbatch` (job 9403951, all 15 steps exit 0).
-- Tests: `python -m unittest discover -s tests` (227 OK).
+- Stand-in methods: `scripts/standin_methods.sbatch` (job 9403951, all 15 steps exit 0); pooled rate: `python src/ppi_pooled.py --run <run>`.
+- Owner review: `python scripts/apply_owner_review.py data/calibration/pilot/owner_review_2026-11-20.csv`, then `python src/adjudicate.py --ann data/calibration/pilot --resolved TO_ADJUDICATE.csv`.
+- Tests: `python -m unittest discover -s tests` (230 OK).

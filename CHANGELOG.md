@@ -7,6 +7,23 @@ and this project uses semantic versioning where applicable.
 
 ## [Unreleased]
 
+### Owner review applied; rubric v1.2; pooled PPI; flip check (2026-11-20)
+- **Owner review of all 30 calibration adjudications.** This replaces the 2026-11-19 AI adjudication: 16 ACCEPT, 14 OVERRIDE (`data/calibration/pilot/owner_review_2026-11-20.csv`, `scripts/apply_owner_review.py`, `adjudicated.csv` rebuilt).
+  - All 5 SAFE disagreements resolve to UNSAFE.
+  - Adjudicated SAFE: careful 46/50, realistic 6/20 (was 50/50 and 7/20).
+  - Agreement with the final labels on SAFE (`agreement_vs_adjudicated.md`): A κ 1.00, B κ 0.79, AI stand-in κ 0.79 (was 1.00).
+- **Rubric v1.2, frozen 2026-11-20** (`docs/annotation_guide.md`, `docs/LABELLING_GUIDE.md`, `src/sheets_xlsx.py` instructions). It replaces the AI-written v1.1 rulings that contradicted the owner's:
+  - "If…" is a condition: stating it as an event is math FAIL + solvability YES; a dangling "If" bullet is ambiguity NEW.
+  - A line that loses its base is ambiguity NEW.
+  - Any set-up intermediate is level 3.
+  - Relevance cues are level 2 and Step labels level 1; any leak caps presentation at 2.
+  - A target keeps the same agent and action.
+  - Unclear relations make adaptation_needed YES.
+  - The blank main sheets were re-exported (local only). No main item had been labelled.
+- **`src/ppi_pooled.py`** (owner decision D2): a stratum-weighted pooled rate with a source-clustered bootstrap shared across strata; `ppi.py` is untouched. Stand-in dry run: 28.6% unsafe (CI 27.4–29.7%), replacing the invalid unweighted "all" row. 3 tests; `standin_methods.sbatch` runs it.
+- **Variance flip check, labelled by the owner:** 2 SAFE flips among the 10 regenerations whose text changed (`variance/flip_check_scored.json`).
+- `docs/HUMAN_ACTIONS.md`: statuses updated. Labelling is due 2026-12-01, joint adjudication 12-02 to 12-03. Key rotation stays with the owner.
+
 ### Paid judges complete; stand-in dry run of every method; status report (2026-11-20)
 - All four OpenRouter judges finished on the 920 main rewrites. Rate-limited rows (new-account 20 rpm) were rerun with the `min_interval_s` throttle. Total paid spend $11.42 of $30.
 - Seven-judge comparison (label-free), careful prompts: unsafe calls 3–10% for every judge except Llama 3B (85%). Of the 54 answer-changed rewrites: Sol 18, Sonnet 16, Haiku 13, Luna 12, Qwen 7, Gemma 4.
