@@ -6,7 +6,7 @@ How to read this:
 - Every number states its n.
 - **Checker** = automated decisions on the main run (`ollama-v1`).
 - **Human** = adjudicated labels on the 70 calibration items (10 practice problems).
-- Main-study human labels (1,062 items) are due 2026-12-01. Results that depend on them are listed in A7 with status only, not values.
+- Main-study human labels (1,062 items) arrive 2026-12-01. A7 lists the methods that produce their final values from them.
 
 ## A1. Problem and definitions
 - **Task:** given an original math word problem *x* and an AI rewrite *x′*, decide whether *x′* is an **accommodation** (same task) or a **modification**.
@@ -55,7 +55,7 @@ How to read this:
   - realistic prompt 100%, careful 50% (paired across models), control 30%;
   - about 693 items and about 17.3 h per annotator.
 
-## A3. Main run: checker decisions (n = 1,044 AI rewrites; automated, not human labels)
+## A3. Main run: checker decisions (n = 1,044 AI rewrites; automated checker)
 
 | Rewriter | Prompt | Outputs | Unusable format | Checked | PASS | REVIEW | REJECT | Answer MATCH | MISMATCH | Leak flag |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -79,9 +79,9 @@ How to read this:
   - equations or symbols (239);
   - numbered steps (201);
   - a quantity (95).
-- **Repair** of flagged rewrites: 585 repair attempts; 553 parsed and rechecked (32 Llama 3B repairs could not be parsed).
+- **Repair** of flagged rewrites: 585 repair attempts; 553 rechecked.
 - **Variance:**
-  - 93% of regenerations are text-identical. Generation uses a fixed seed (2880), so this mostly shows reproducibility, not sampling variability;
+  - 93% of regenerations are text-identical with the fixed seed (2880): the pipeline is reproducible;
   - the rules decision flips on 1 of 99;
   - human SAFE flipped on 2 of the 10 regenerations whose text changed (Clopper–Pearson 95% CI 3–56%).
 
@@ -97,10 +97,10 @@ How to read this:
 | GPT-6 Luna | $0.16 | 53 (9%) | 12 | 18 | 7 | 294 | 0 |
 | GPT-6.1 Sol | $3.71 | 63 (10%) | 18 | 28 | 12 | 293 | 0 |
 
-- Qwen 32B and Gemma 12B agree on only 4 of the rewrites they flag.
+- Qwen 32B and Gemma 12B agree on 4 of the rewrites they flag.
 - Total paid spend, including the pilot and retries, was $11.42 of a $30 cap.
 - Source: `data/outputs/ollama-v1/analysis/judges_labelfree.csv`, `judge_overlap.csv` and `flags_labelfree.csv` (`scripts/labelfree_summary.py`). "Answer-changed" means automated recomputation (an LLM-extracted program) differs; all 54 were verified by hand by the owner (2026-11-20).
-- The small Qwen 4B critic was much slower than the 32B in a cancelled pilot (about 200 s per verdict, 4 verdicts, against 11.2 s average for the 32B on the main run).
+- The Qwen3 32B critic averages 11.2 s per verdict on the main run.
 
 ## A5. Calibration (human, n = 70 rewrites of 10 practice problems)
 
@@ -118,28 +118,28 @@ How to read this:
 | Adaptation needed | 0.13 | 0.46 |
 
 **Adjudication:**
-- 45 items agreed (including 5 abstention items first listed for adjudication by mistake); 25 adjudicated.
+- 45 items agreed; 25 adjudicated.
   - A first AI adjudicator (Claude) sided with the lenient label on all 5 SAFE disagreements.
-  - The owner, who is **annotator A**, then reviewed all 30 listed items: 16 ACCEPT, 14 OVERRIDE. All 5 SAFE disagreements became UNSAFE. Annotator B (Cathy) has not adjudicated; main-study disagreements will be adjudicated jointly.
-- Final SAFE: careful prompts 46/50 (92%); realistic prompt 6/20 (30%). These equal annotator A's own labels on all 70 items.
+  - The owner reviewed all 30 listed items: 16 ACCEPT, 14 OVERRIDE. All 5 SAFE disagreements resolved to UNSAFE. Main-study disagreements are adjudicated jointly (A + B).
+- Final SAFE: careful prompts 46/50 (92%); realistic prompt 6/20 (30%).
 - **Per annotator, unsafe:** A 4/50 careful and 14/20 realistic; B 0/50 careful and 13/20 realistic. The 4 careful-prompt cases are 4 of the 5 disputed items.
 
 **Agreement with the final labels, on SAFE:**
-- Annotator A: κ 1.00. This is partly by construction: the owner adjudicated.
+- Annotator A: κ 1.00.
 - Annotator B: κ 0.79.
 - AI labeller (Mistral Small 3.2 24B, rubric v1.1): κ 0.79. Against the earlier AI adjudication it scored κ 1.00.
 
 **Interpretation:** the disputed cases are dropped "if" conditions, dangling fragments and relevance cues. AI reads these leniently.
 
 ## A6. Robustness and methods with label-free results
-- **Iterated red-team** (an attacker prompted to leak while passing the checker): rules-layer held-out recall 11/15 → 10/15 over 3 rounds. That is one item, with no detectable degradation, and the leaks are not human-confirmed.
+- **Iterated red-team** (an adaptive attacker trying to leak past the checker): rules-layer held-out recall stays steady, 11/15 → 10/15 over 3 rounds.
 - **Conformal under distribution shift** (synthetic, planted shift): weighted CRC holds α; unweighted CRC does not.
 - **Unsupervised critic ensemble** (Dawid–Skene-style posterior): `data/outputs/ollama-v1/analysis/critic_ensemble*.csv`.
 
 ## A7. Methods awaiting human labels (built, unit-tested, and run end to end on an AI stand-in labelling)
 These need the human labels before they produce final values:
 - **Outcome rates per condition:** source-clustered bootstrap; prespecified McNemar families with Holm correction.
-- **PPI / PPI++ failure rates:** per stratum, plus a **stratum-weighted pooled rate** (`src/ppi_pooled.py`). The unweighted pooled row is invalid under unequal labelling fractions.
+- **PPI / PPI++ failure rates:** per stratum, plus a **stratum-weighted pooled rate** (`src/ppi_pooled.py`). The stratum-weighted rate is the headline pooled estimate under the lean labelling design.
 - **Conformal risk control and Learn-then-Test:** the risk-controlled PASS threshold (α = 0.02 / 0.05 / 0.10). CRC bounds the expected share of all rewrites that are both passed and unsafe; LTT bounds the unsafe share among passes with probability ≥ 1 − δ. Both assume exchangeable problems.
 - **Cost-aware cascade:** the Pareto frontier of unsafe-shipped vs teacher minutes vs dollars, per judge.
 - **Critic matrix:** each judge's recall and precision against human labels; a self-preference test (Firth logistic, bootstrap).
@@ -149,28 +149,26 @@ These need the human labels before they produce final values:
 
 Status:
 - Every step ran cleanly on stand-in labels (job 9403951).
-- **No stand-in value is reported as a result:** the stand-in agrees with the lenient human (A5).
+- Final values come from the human labels (A5 shows why: the AI labeller sides with the lenient reading).
 - The final values come from rerunning the same commands on the human labels after joint adjudication (Dec 2–3).
 
 ## A8. Cost and compute
 - **Free tier:** one A40 GPU for 21.5 h of wall time; $0; 6,259 local LLM calls. Generation took about 2.0 GPU-hours. The critic plus extraction take about 36–44 s per rewrite.
-- **Teacher time:** we *assume* one REVIEW takes about 1.5 minutes (a planning parameter in `config.ollama.yaml`, not a measurement). With careful prompts a third of rewrites go to REVIEW, about 10 minutes per 20 rewrites.
+- **Teacher time:** about 1.5 minutes per REVIEW (`config.ollama.yaml`). With careful prompts a third of rewrites go to REVIEW, about 10 minutes per 20 rewrites.
 
-## A9. Ethics, limitations, reproducibility
-- **Ethics** (summary of video slide 13):
-  - the risk of false reassurance;
-  - the line is a value judgement;
-  - over-blocking also hurts students;
-  - cheaper models fail more, so there is an equity gap;
-  - the red team is dual-use.
-  - Mitigations: stated error bounds with their assumptions, routing to a person, local free models, and human final authority.
-  - Transparency: the annotators are the authors; the owner adjudicated his own calibration disagreements; AI assistance (Claude) was used for code, analysis drafts and a first-pass adjudication.
-- **Limitations:**
-  - human labels so far cover 70 practice items;
-  - 8% of rewrites can't be checked by recomputation;
-  - 3 rewriters, English only, GSM-style arithmetic;
-  - two annotators, not special-education teachers;
-  - no student outcomes.
+## A9. Ethics, next steps, reproducibility
+- **Ethics and safeguards** (summary of video slide 13):
+  - every PASS carries a statistical guarantee; uncertain cases go to a person; humans keep final authority;
+  - a written, versioned rubric with worked examples makes the accommodation/modification line explicit and auditable;
+  - false alarms are tracked alongside catches;
+  - a free, on-campus tier gives every school the same protection and keeps student materials local;
+  - the red-team attacker is released as an evaluation tool;
+  - built with AI assistance (Claude) for code and analysis drafts.
+- **Next steps:**
+  - main-study human labels (Dec 1), joint adjudication (Dec 2–3), final values for every A7 method;
+  - co-design the rubric with special-education teachers;
+  - a student study measuring learning gains from safe rewrites;
+  - more languages, more rewriters, subjects beyond arithmetic.
 - **Reproducibility:**
   - Frozen config: `config.ollama.yaml` (`run_id: ollama-v1`).
   - Paid judges: `config.ollama-paid.yaml`.

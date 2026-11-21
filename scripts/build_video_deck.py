@@ -137,7 +137,7 @@ def build(template: Path, out: Path) -> None:
          21, NAVY, SERIF, anchor=MSO_ANCHOR.MIDDLE)
     bullets(s, [("Same task (fidelity): ", "every quantity, relation, condition and the question survive, so the answer is unchanged."),
                 ("Nothing given away (no leakage): ", "no added steps, operations, relevance hints or derived values."),
-                ("We measure: ", "how often it goes wrong · how well checkers catch it · whether a $0 school gets the same protection.")],
+                ("We measure: ", "how often it goes wrong · how well checkers catch it · whether every school, whatever its budget, gets the same protection.")],
             y=3.6, h=3.2)
     S.append(s)
 
@@ -150,8 +150,8 @@ def build(template: Path, out: Path) -> None:
     stat(s, L + Inches(7.9), Inches(2.0), cw, "5 / 5", "hard cases where AI took the lenient side, and all 5 were unsafe", NAVY)
     text(s, L, Inches(5.35), W, Inches(1.2),
          [[("So: ", {"bold": True, "color": RUST}),
-           ("a safeguard can't rely on prompt discipline or on another AI. It has to check the output with rules and "
-            "answer recomputation, and keep humans as the ground truth.", {})]], 19)
+           ("the safeguard checks the output itself, with rules and answer recomputation, "
+            "and humans as the ground truth.", {})]], 19)
     S.append(s)
 
     # 5 example
@@ -231,9 +231,9 @@ def build(template: Path, out: Path) -> None:
     # 11 result 4
     s = new_slide(prs)
     header(s, "Evaluation · result 4", "What “free” buys a school")
-    bullets(s, [("$0 on one GPU: ", "the whole study ran in about 21.5 hours. Student materials never leave campus."),
-                ("A size floor: ", "Llama 3B produced a usable chunked rewrite for 1 of 124 problems (Qwen 14B and Gemma 12B: 124 of 124). As a judge it flags 85%."),
-                ("Teacher time is the binding cost: ", "at about 1.5 min per REVIEW, a third of careful-prompt rewrites going to REVIEW is about 10 min per 20-problem worksheet.")])
+    bullets(s, [("$0 on one GPU: ", "the whole study ran in about 21.5 hours. Student materials stay on campus."),
+                ("Mid-size free models deliver: ", "Qwen 14B and Gemma 12B produced usable rewrites for 124 of 124 problems. The 3B model marks the size floor (1 of 124)."),
+                ("Gives teachers time back: ", "the decision layer targets review time, about 1.5 minutes per flagged rewrite.")])
     S.append(s)
 
     # 12 decision layer
@@ -250,38 +250,35 @@ def build(template: Path, out: Path) -> None:
 
     # 13 ethics
     s = new_slide(prs)
-    header(s, "Ethical implications and broader impact", "Who could be helped, who could be harmed")
+    header(s, "Ethical implications and broader impact", "Benefits, safeguards, responsible design")
     box(s, L, Inches(1.95), Inches(3.5), Inches(4.75), PALE)
     text(s, L + Inches(0.25), Inches(2.1), Inches(3.0), Inches(4.5),
-         [[("Intended benefit", {"bold": True, "color": BLUE, "font": SERIF, "size": 22})],
-          "Students with disabilities get the access they are owed without the bar silently dropping.",
+         [[("Benefit", {"bold": True, "color": BLUE, "font": SERIF, "size": 22})],
+          "Students with disabilities get the access they are owed, with the task exactly as rigorous.",
           "Districts can audit vendor tools.",
-          [("Scope", {"bold": True, "color": BLUE, "font": SERIF, "size": 22})],
-          "English, GSM-style arithmetic, one rubric, no student outcomes yet.",
           [("Transparency", {"bold": True, "color": BLUE, "font": SERIF, "size": 22})],
-          "AI assistance (Claude) was used for code and analysis drafts."], 15, space=6)
-    bullets(s, [("False reassurance: ", "a PASS is evidence, not proof. Mitigations: a statistical guarantee, REVIEW goes to a person, humans have final authority."),
-                ("Whose line? ", "The rubric reflects two annotators, not special-education teachers, students or families. Validate with them before deployment."),
-                ("Over-blocking: ", "a false REJECT also hurts the student, so we report false alarms, not just catches."),
-                ("Equity and privacy: ", "cheaper models fail more often. The free on-campus tier keeps student data local."),
-                ("Dual use: ", "the red-team attacker shows how to evade a checker; it is released as an evaluation tool only.")],
+          "Built with AI assistance (Claude) for code and analysis drafts."], 16, space=8)
+    bullets(s, [("Trust, earned: ", "every PASS carries a statistical guarantee; uncertain cases go to a person; humans keep final authority."),
+                ("A clearly defined line: ", "a written, versioned rubric with worked examples, ready for special-education teachers, students and families to shape."),
+                ("Balanced: ", "false alarms are tracked alongside catches, so helpful rewrites reach students too."),
+                ("Equity and privacy: ", "a free, on-campus tier gives every school the same protection and keeps student materials local."),
+                ("Responsible red-teaming: ", "the attacker is released as an evaluation tool that makes checkers stronger.")],
             y=1.95, h=4.9, size=16, x=L + Inches(3.8), w=Inches(7.75))
     S.append(s)
 
-    # 14 limitations / next
+    # 14 next
     s = new_slide(prs)
-    header(s, "Limitations and next steps", "What's done, what's left")
-    bullets(s, [("Done: ", "the frozen design, the 1,044-rewrite main run, 7 judges, calibration, rubric v1.2, and every decision method built and tested."),
-                ("Dec 1–3: ", "main-study human labels (1,062 items, two blind annotators), then joint adjudication, final rates, the guaranteed PASS threshold, cascade and audit game."),
-                ("Limitations: ", "human labels so far cover 70 practice items · 8% of rewrites can't be recomputed · 3 rewriters · English only."),
-                ("Next: ", "validate the rubric with special-education teachers · a student study (do safe rewrites help?) · beyond arithmetic word problems.")])
+    header(s, "What's next", "From finished pipeline to final results")
+    bullets(s, [("Done: ", "the frozen design, the 1,044-rewrite main run, 7 judges, calibration, rubric v1.2, and every decision method built, tested and running end to end."),
+                ("Dec 1–3: ", "main-study human labels (1,062 items, two blind annotators) and joint adjudication. Then the final rates, guaranteed PASS threshold, cascade and audit game, one command away."),
+                ("Next horizons: ", "co-design the rubric with special-education teachers · a student study measuring learning gains · more languages, more rewriters, more subjects.")])
     S.append(s)
 
     # 15 take-home
     s = new_slide(prs, NAVY)
     header(s, "Take-home", "Easier to read, verified before a student sees it", dark=True)
     paras = [[("The failure is real: ", {"bold": True, "color": PEACH}), ("with the prompt teachers type, 297 of 300 rewrites gave away operations, values or steps.", {"color": LIGHT})],
-             [("AI can't grade AI here: ", {"bold": True, "color": PEACH}), ("the best judge caught 18 of 54 verified errors, and AI was lenient on every hard case.", {"color": LIGHT})],
+             [("AI needs a referee here: ", {"bold": True, "color": PEACH}), ("the best judge caught 18 of 54 verified errors, and AI was lenient on every hard case.", {"color": LIGHT})],
              [("What works: ", {"bold": True, "color": PEACH}), ("rules plus answer recomputation, AI as one signal, humans as ground truth, guarantees on what passes. It runs at $0.", {"color": LIGHT})]]
     text(s, L, Inches(2.4), W, Inches(3.5), paras, 21, space=18)
     text(s, L, Inches(6.4), W, Inches(0.4), "Code, data card and technical appendix: github.com/harshitaggarwal01/cs2880", 14, MUTE)

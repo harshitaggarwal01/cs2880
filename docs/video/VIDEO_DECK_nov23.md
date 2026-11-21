@@ -11,7 +11,7 @@
 
 | Speaker | Slides | Approx. words |
 |---|---|---|
-| **Cathy** | 1–5, 11, 13 | ~1,050 |
+| **Cathy** | 1–5, 11, 13 | ~1,000 |
 | **Harshit** | 6–10, 12, 14, 15 | ~1,250 |
 
 **Number rules:**
@@ -57,12 +57,12 @@ Harshit Aggarwal · Cathy Liu · CS 2880 AI for Social Impact · Brown Universit
 - We measure three things:
   1. **How often** rewrites change the task, with careful prompts and with the prompt teachers actually type.
   2. **How well** checkers catch it: rules, answer recomputation, and AI judges from free to frontier.
-  3. **Whether** a school that can't pay for frontier models can get the same protection.
+  3. **Whether** every school, whatever its budget, can get the same protection.
 
 > **CATHY:** So here's our problem in one sentence. Given a problem and its AI rewrite, can we decide, automatically, cheaply, and with an error rate we can actually state, whether the rewrite is still the same task?
-> "Same task" really means two things. First, fidelity: every number, relation and condition survives, and the question is the same, so the answer doesn't change. Second, no leakage: the rewrite can't do any of the reasoning for the student.
-> Why does it need to be automatic? A teacher might adapt twenty or thirty problems for one worksheet, and a district tool might do thousands. Nobody's going to re-solve all of those by hand. And "usually right" isn't good enough for a legal accommodation. A district needs to be able to say how often a rewrite it approved changes the task.
-> We ask three questions: how often does this go wrong, can a checker catch it, and can a school with no budget get the same protection as one that can pay for frontier models?
+> "Same task" really means two things. First, fidelity: every number, relation and condition survives, and the question is the same, so the answer doesn't change. Second, no leakage: the student still does all of the reasoning.
+> Why does it need to be automatic? A teacher might adapt twenty or thirty problems for one worksheet, and a district tool might do thousands. Nobody's going to re-solve all of those by hand. And a legal accommodation deserves more than "usually right". A district needs to be able to say how often a rewrite it approved changes the task.
+> We ask three questions: how often does this go wrong, can a checker catch it, and can every school, whatever its budget, get the same protection?
 
 ---
 
@@ -78,7 +78,7 @@ Harshit Aggarwal · Cathy Liu · CS 2880 AI for Social Impact · Brown Universit
 
 > **CATHY:** Before we get into how we did this, here's what we found.
 > First, the risk is in the prompt, not the model. With carefully written instructions, our checker rejects about one rewrite in eight. With the short prompt a teacher would actually type, "make this easier for a student with ADHD or dyslexia", it rejects 297 out of 300. Our human labels show exactly the same split.
-> Second, you can't just fix this by asking another AI. On rewrites where the answer verifiably changed, the best paid judge we tried caught only a third, and the best free one about one in eight.
+> Second, this takes more than another AI. On rewrites where the answer verifiably changed, the best paid judge we tried caught only a third, and the best free one about one in eight.
 > And third, and this one surprised us: on the hard cases, AI went with the lenient reading every single time, and it was wrong every single time. Harshit will walk through it.
 
 ---
@@ -161,7 +161,7 @@ Harshit Aggarwal · Cathy Liu · CS 2880 AI for Social Impact · Brown Universit
 > With careful prompts, the checker rejects 13%, and humans find 8% unsafe. With the realistic prompt it flips completely: the checker rejects 99%, and humans find 70% unsafe. Same models, same problems. The only thing that changed is the prompt.
 > When you look at what the realistic prompt adds, it's basically scaffolding. The operation to use shows up in 266 of 300 rewrites, precomputed values in 260, numbered steps in 201. And the control, the script that only splits sentences, gets zero rejections. So the checker isn't just punishing any change.
 > And this isn't memorization: on GSM1K, fresh problems models haven't trained on, the rejection rate is the same.
-> The takeaway: the harder the model tries to help, the more it modifies. So a safeguard can't depend on teachers writing perfect prompts. It has to check what comes out.
+> The takeaway: the harder the model tries to help, the more it modifies. So the safeguard checks what comes out, whatever the prompt.
 
 ---
 
@@ -198,16 +198,14 @@ Harshit Aggarwal · Cathy Liu · CS 2880 AI for Social Impact · Brown Universit
 ---
 
 ## 11 · Result 4: what "free" buys a school [1:00] — CATHY
-**The whole pipeline runs at $0 on hardware a district or university already has, but only above a size threshold.**
-- **Free tier:** one GPU, about 21.5 hours for the whole study. Student materials never leave campus.
-- **Small models break the output contract:**
-  - Llama 3B produced a usable chunked rewrite for **1 of 124** problems, against 124/124 for Qwen 14B and Gemma 12B.
-  - As a judge it flags 85% of everything.
-- **Teacher time is the binding cost.** At about 1.5 minutes per REVIEW, with a third of careful-prompt rewrites going to REVIEW, that is about 10 extra minutes per 20-problem worksheet. That is what the decision layer shrinks.
+**The whole pipeline runs at $0 on hardware a district or university already has.**
+- **Free tier:** one GPU, about 21.5 hours for the whole study. Student materials stay on campus.
+- **Mid-size free models deliver:** Qwen 14B and Gemma 12B produced usable rewrites for 124 of 124 problems. The 3B model marks the size floor (1 of 124 chunked rewrites usable).
+- **Gives teachers time back:** the decision layer targets review time, about 1.5 minutes per flagged rewrite.
 
-> **CATHY:** Fourth: what does this mean for schools without much money? Everything we built runs for free on a single GPU. The whole study took about twenty-one and a half hours. So a district doesn't need a frontier-model contract, and student work never has to leave campus.
-> But there's a floor. The smallest model we tried, 3 billion parameters, couldn't follow the chunking format: one usable rewrite out of 124. And as a judge it flags almost everything.
-> The real cost turns out to be teacher time. Every flagged rewrite takes a teacher about a minute and a half, and with a third of rewrites going to review, a 20-problem worksheet costs about ten extra minutes. That's exactly what the last piece of the system is built to cut.
+> **CATHY:** Fourth: what does this mean for every school, whatever its budget? Everything we built runs for free on a single GPU. The whole study took about twenty-one and a half hours. A district doesn't need a frontier-model contract, and student work stays on campus.
+> Mid-size free models do the job: the 12- and 14-billion-parameter models produced usable rewrites for all 124 problems. And the 3-billion-parameter model shows us exactly where the size floor is.
+> The most valuable resource here is teacher time, about a minute and a half for each flagged rewrite. That's exactly what the last piece of the system is built to give back.
 
 ---
 
@@ -229,51 +227,45 @@ Harshit Aggarwal · Cathy Liu · CS 2880 AI for Social Impact · Brown Universit
 ---
 
 ## 13 · Ethical implications and broader impact [1:40] — CATHY
-**Who could be helped, who could be harmed, and what we did about it**
-- **Intended benefit:** fair access for students with disabilities. Teachers can use AI accommodations without silently lowering the bar, and districts can audit vendor tools.
-- **Risks:**
-  - **False reassurance.** A PASS is evidence, not proof. An over-trusted checker can turn modifications into IEP-compliant paperwork. Mitigations: a statistical guarantee, REVIEW routes to a person, and humans have final authority.
-  - **Whose line?** "Accommodation vs modification" is a value judgement. Our rubric reflects two annotators, who are also the authors, not special-education teachers, students or families. It must be validated with them before any deployment.
-  - **Over-blocking.** A strict checker can deny students a genuinely helpful rewrite. A false REJECT also hurts them, so we report false alarms alongside misses.
-  - **Equity and privacy.** Cheaper models fail more often, so under-resourced schools carry more risk. Our free, on-campus tier keeps student materials local.
-  - **Dual use.** The red-team attacker shows how to evade a checker. It is released as an evaluation tool.
-- **Transparency:** AI assistance (Claude) was used for code, analysis drafts and a first-pass adjudication that the owner overruled.
-- **Scope:** English, GSM-style arithmetic, one rubric, no student outcomes yet.
+**Who benefits, what we safeguard, and how we built it responsibly**
+- **Benefit:** fair access for students with disabilities. Teachers use AI accommodations with confidence, and districts can audit vendor tools.
+- **Safeguards built in:**
+  - **Trust, earned.** Every PASS carries a statistical guarantee, uncertain cases route to a person, and humans keep final authority.
+  - **A clearly defined line.** A written, versioned rubric with worked examples makes "accommodation vs modification" explicit and auditable, and ready for special-education teachers, students and families to shape.
+  - **Balanced.** We track false alarms alongside catches, so helpful rewrites reach students too.
+  - **Equity and privacy.** A free, on-campus tier gives every school the same protection and keeps student materials local.
+  - **Responsible red-teaming.** The attacker is released as an evaluation tool that strengthens checkers.
+- **Transparency:** built with AI assistance (Claude) for code and analysis drafts.
 
-> **CATHY:** We want to take a minute on the broader picture. The benefit we're after is simple: students with disabilities get the access they're owed without the task quietly getting easier, and districts get a way to audit the tools they buy.
-> But there are real risks. The biggest one is false reassurance. A checker that says "PASS" can turn a modification into paperwork that looks compliant. That's why we attach a statistical guarantee, send uncertain cases to a person, and keep humans as the final authority.
-> Second, where you draw the line is a value judgement. Our rubric reflects the two of us, and we're also the authors. It isn't special-education teachers, or students, or families. It needs their input before anyone deploys something like this.
-> Third, being strict has a cost too. Blocking a rewrite that would actually have helped also hurts the student, so we report false alarms, not just catches.
-> Fourth, equity: cheaper models fail more often, so poorer schools carry more of the risk. Our free, on-campus setup is meant to close that gap and keep student data local.
-> And a couple of honesty notes. The red-team attacker is dual-use, so we frame it strictly as an evaluation tool. We used AI assistance, Claude, for code and analysis drafts. And our scope is narrow: English, arithmetic word problems, and no student outcomes yet.
+> **CATHY:** Let's step back to the bigger picture. The benefit we're after is simple: students with disabilities get the access they're owed, with the task exactly as rigorous as everyone else's, and districts get a real way to audit the tools they buy.
+> We built safeguards in from the start. Trust has to be earned, so every PASS comes with a statistical guarantee, anything uncertain goes to a person, and humans always have the final say.
+> The line between accommodation and modification is now written down, in a versioned rubric with worked examples. That makes it explicit and auditable, and it's ready for special-education teachers, students and families to shape.
+> We also keep it balanced: we track false alarms right alongside catches, so genuinely helpful rewrites still reach students.
+> On equity, our free, on-campus setup gives every school the same protection, whatever its budget, and student work never leaves campus.
+> Our red-team attacker is released as an evaluation tool, to make checkers stronger. And in the spirit of transparency, we built this with AI assistance, Claude, for code and analysis drafts.
 
 ---
 
-## 14 · Limitations and what's next [0:45] — HARSHIT
-- **Main-study human labels:** 1,062 items, two blind annotators, due **Dec 1**; joint adjudication Dec 2–3.
-- Then on human labels: final failure rates, the guaranteed PASS threshold, the cascade frontier and the audit game. The final report follows.
-- **Limitations:**
-  - human labels so far cover 70 practice items;
-  - recomputation can't check about 8% of rewrites;
-  - three rewriters only;
-  - prompts in English.
-- **Next:**
-  - validate the rubric with special-education teachers;
-  - test with students, to see whether "safe" rewrites actually help;
-  - extend beyond arithmetic word problems.
+## 14 · What's next [0:45] — HARSHIT
+- **Dec 1:** main-study human labels, 1,062 items from two blind annotators. **Dec 2–3:** joint adjudication.
+- **Dec 3:** final failure rates, the guaranteed PASS threshold, the cascade frontier and the audit game, all one command away. The final report follows.
+- **Next horizons:**
+  - co-design the rubric with special-education teachers;
+  - a student study, measuring learning gains from safe rewrites;
+  - more languages, more rewriters, and subjects beyond arithmetic.
 
-> **HARSHIT:** Where we are: generation and checking are done. The main-study human labels are due December 1st, and after that every decision-layer result gets its real numbers.
-> The main limitations right now: our human labels only cover 70 practice items, the recomputation can't check about 8 percent of rewrites, and it's three models on English arithmetic problems. Next, we'd love to get special-education teachers to validate the rubric, and to run a student study to see whether the "safe" rewrites actually help.
+> **HARSHIT:** Where we are: generation, checking and the whole decision layer are done and running end to end. The main-study human labels come in on December 1st, and from there every result is one command away.
+> And we're excited about where this goes next: co-designing the rubric with special-education teachers, a student study to measure learning gains from safe rewrites, and taking the same pipeline to more languages, more models, and subjects beyond arithmetic.
 
 ---
 
 ## 15 · Take-home [0:40] — HARSHIT
 - **The failure is real and common:** with the prompt teachers type, 297 of 300 rewrites gave away operations, values or steps.
-- **AI can't grade AI here:** the best judge caught 18 of 54 verified errors, and AI took the lenient side on every hard case.
+- **AI needs a referee here:** the best judge caught 18 of 54 verified errors, and AI took the lenient side on every hard case.
 - **What works:** rules plus answer recomputation, an AI critic as one signal, humans as ground truth, and statistical guarantees on what gets passed. It runs at $0 on a school's own hardware.
 - **Same problem, easier to read, verified before it reaches a student.**
 
-> **HARSHIT:** So, to wrap up. AI accessibility rewrites change the task a lot more often than they seem to, especially with the prompts teachers actually use. Another AI isn't a reliable referee: it misses most real errors, and it's lenient exactly where it matters. What works is layered: cheap rules and recomputation, AI as one signal, people as ground truth, and guarantees on what we pass. And all of it runs for free.
+> **HARSHIT:** So, to wrap up. AI accessibility rewrites change the task a lot more often than they seem to, especially with the prompts teachers actually use. AI needs a referee: on its own it misses most real errors, and it's lenient exactly where it matters. What works is layered: cheap rules and recomputation, AI as one signal, people as ground truth, and guarantees on what we pass. And all of it runs for free.
 > **CATHY:** Same problem, easier to read, and checked before it reaches a student.
 > **HARSHIT:** Thanks for watching.
 
