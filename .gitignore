@@ -22,3 +22,14 @@ data/annotations/*-standin/KEY_DO_NOT_OPEN.csv
 # main-study labelling sheets and key: local only (blinding + GSM1K licence)
 data/annotations/ollama-v1/sheet_*
 data/annotations/ollama-v1/KEY_DO_NOT_OPEN.csv
+# ollama-v1 row-level outputs and stand-in labels: local only (blinding + GSM1K licence)
+data/outputs/ollama-v1/generations*.jsonl
+data/outputs/ollama-v1/ablation_generations*.jsonl
+data/outputs/ollama-v1/baseline*.jsonl
+data/outputs/ollama-v1/repairs*.jsonl
+data/outputs/ollama-v1/pilot_generations.verify-critic@sol61c-det-program.jsonl
+data/outputs/ollama-v1/redteam/redteam_iterated.jsonl
+data/outputs/ollama-v1/variance/variance_generations*.jsonl
+data/outputs/ollama-v1/variance/flip_check_sheet*.csv
+data/annotations/ollama-v1-standin/
+data/calibration/pilot/standin/
