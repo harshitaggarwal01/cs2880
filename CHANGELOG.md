@@ -7,6 +7,13 @@ and this project uses semantic versioning where applicable.
 
 ## [Unreleased]
 
+### Nov 23 video package and plan to finish (2026-11-20)
+- `docs/video/VIDEO_DECK_nov23.md`: 15 slides with full narration, about 2,200 words (15–16 min). The problem statement comes first, the main finding right after it, and there is a new ethics slide.
+- `docs/video/SafeAdapt-Math_video_nov23.pptx`: the Nov 16 v3 style, with the narration in the speaker notes. Built by `scripts/build_video_deck.py`.
+- `docs/video/fig_prompt.png` and `fig_judges.png`: the only two charts, from `scripts/make_video_figures.py`, using committed aggregates only.
+- `docs/video/TECHNICAL_APPENDIX.md`: all tables for the TF.
+- `docs/PLAN_TO_FINISH.md`: video by Nov 23, poster Nov 30, labels Dec 1, adjudication Dec 2–3, final rerun and report Dec 3–4.
+
 ### Owner review applied; rubric v1.2; pooled PPI; flip check (2026-11-20)
 - **Owner review of all 30 calibration adjudications.** This replaces the 2026-11-19 AI adjudication: 16 ACCEPT, 14 OVERRIDE (`data/calibration/pilot/owner_review_2026-11-20.csv`, `scripts/apply_owner_review.py`, `adjudicated.csv` rebuilt).
   - All 5 SAFE disagreements resolve to UNSAFE.
